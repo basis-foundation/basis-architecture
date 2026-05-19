@@ -4,6 +4,17 @@ This document establishes standards for architectural diagrams used throughout t
 
 These standards apply to all diagrams committed to this repository, regardless of tooling used to produce them.
 
+## Diagram Ownership and Location
+
+**Shared standards** (this document and any reusable reference diagrams) are maintained in `docs/diagrams/`.
+
+**White paper-specific diagrams** are maintained within each paper's own `diagrams/` subdirectory, adjacent to the sections and references they support. This keeps diagrams close to the content that uses them and avoids a single flat directory becoming a dumping ground for unrelated diagram artifacts.
+
+Current whitepaper diagram directories:
+- [`whitepapers/identity-aware-authorization-for-operational-technology/diagrams/`](../../whitepapers/identity-aware-authorization-for-operational-technology/diagrams/) — diagrams for the identity-aware authorization paper
+
+Each whitepaper `diagrams/` directory has its own `README.md` that lists its contents, usage notes, and any paper-specific deviations from these standards.
+
 ---
 
 ## 1. Purpose of Architectural Diagrams
