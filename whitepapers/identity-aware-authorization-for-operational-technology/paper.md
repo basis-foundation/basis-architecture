@@ -25,7 +25,7 @@ The paper is grounded in the BASIS (Building Automation Secure Identity Service)
 | 01 | [Introduction and Motivation](#introduction-and-motivation) | Draft |
 | 01b | [Non-Goals](sections/01b-non-goals.md) | Complete |
 | 02 | [Current State of OT Authorization](sections/02-current-state-of-ot-authorization.md) | Complete |
-| 03 | Current OT Trust Models *(stub)* | Not started |
+| 03 | [Why Existing Approaches Become Insufficient](sections/03-why-existing-approaches-are-incomplete.md) | Complete |
 | 04 | Architectural Limitations of Protocol-Centric Security *(stub)* | Not started |
 | 05 | Identity-Aware Authorization: Concepts and Architecture *(stub)* | Not started |
 | 06 | The BASIS Proof-of-Concept *(stub)* | Not started |
@@ -68,11 +68,11 @@ Describes the authorization landscape in OT environments as it exists today: net
 
 ---
 
-### 03 — Current OT Trust Models *(stub)*
+### 03 — Why Existing Approaches Become Insufficient
 
-*[sections/03-current-ot-trust-models.md](sections/03-current-ot-trust-models.md)*
+*[sections/03-why-existing-approaches-are-incomplete.md](sections/03-why-existing-approaches-are-incomplete.md)*
 
-*Planned content:* A more granular examination of specific trust model patterns in common BAS deployments — including BACnet device instance trust, controller-level authorization hierarchies, and vendor-specific access control schemes. Will include analysis of where the trust model is explicit versus implicit, and where its boundaries are formally defined versus assumed.
+Examines the structural limitations of network-centric trust, controller-local authorization, and distributed authorization logic as OT environments become more interconnected, remotely managed, and subject to audit and accountability requirements. Topics include the coarse granularity of network-based access control, the distinction between authentication and authorization, the operational scaling challenge of maintaining fragmented policy, inconsistent and incomplete auditability, and the inability to centrally reason about access decisions across heterogeneous systems. Closes by introducing the framing that authorization is increasingly a system-level concern rather than a protocol-level one — the architectural premise that the following section builds on.
 
 ---
 
