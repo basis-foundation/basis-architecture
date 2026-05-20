@@ -27,7 +27,7 @@ The paper is grounded in the BASIS (Building Automation Secure Identity Service)
 | 02 | [Current State of OT Authorization](sections/02-current-state-of-ot-authorization.md) | Complete |
 | 03 | [Why Existing Approaches Become Insufficient](sections/03-why-existing-approaches-are-incomplete.md) | Complete |
 | 04 | [Identity-Aware OT Architecture](sections/04-identity-aware-ot-architecture.md) | Complete |
-| 05 | The BASIS Proof-of-Concept *(stub)* | Not started |
+| 05 | [Identity-Aware OT Architecture](sections/05-identity-aware-ot-architecture.md) | Complete |
 | 06 | The BASIS Proof-of-Concept *(stub)* | Not started |
 | 07 | Production Considerations and Operational Constraints *(stub)* | Not started |
 | 08 | Future Directions *(stub)* | Not started |
@@ -84,7 +84,15 @@ Defines the generalized conceptual architecture for identity-aware authorization
 
 ---
 
-### 05 — The BASIS Proof-of-Concept *(stub)*
+### 05 — Identity-Aware OT Architecture
+
+*[sections/05-identity-aware-ot-architecture.md](sections/05-identity-aware-ot-architecture.md)*
+
+The conceptual center of the paper. Establishes authorization as a system-level concern, builds the full architecture from first principles, and integrates closely with the authorization flow diagram. Covers: the three-function separation (identity verification, policy evaluation, enforcement); subjects, resources, and actions as authorization primitives; identity propagation across trust boundaries and what breaks it; how protocol adapters normalize field-protocol semantics into the shared authorization model; why distributed enforcement can coexist with centralized policy through local policy caching; control plane and data plane as distinct architectural concerns with distinct traffic paths; centralized auditability as an architectural first-class property; offline resilience design and the policy cache staleness tradeoff; context-aware authorization and its complexity costs. Closes with an honest accounting of constraints — latency, legacy coverage, operational complexity, partial deployment, and high availability requirements for the authorization infrastructure itself.
+
+---
+
+### 06 — The BASIS Proof-of-Concept *(stub)*
 
 *[sections/06-basis-poc.md](sections/06-basis-poc.md)*
 
