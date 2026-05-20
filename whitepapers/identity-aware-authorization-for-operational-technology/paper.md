@@ -20,19 +20,19 @@ The paper is grounded in the BASIS (Building Automation Secure Identity Service)
 
 ## Table of Contents
 
-| # | Section | Status |
-|---|---|---|
-| 01 | [Introduction and Motivation](#introduction-and-motivation) | Draft |
-| 01b | [Non-Goals](sections/01b-non-goals.md) | Complete |
-| 02 | [Current State of OT Authorization](sections/02-current-state-of-ot-authorization.md) | Complete |
-| 03 | [Why Existing Approaches Become Insufficient](sections/03-why-existing-approaches-are-incomplete.md) | Complete |
-| 04 | [Identity-Aware OT Architecture](sections/04-identity-aware-ot-architecture.md) | Complete |
-| 05 | [Identity-Aware OT Architecture](sections/05-identity-aware-ot-architecture.md) | Complete |
-| 06 | The BASIS Proof-of-Concept *(stub)* | Not started |
-| 07 | Production Considerations and Operational Constraints *(stub)* | Not started |
-| 08 | Future Directions *(stub)* | Not started |
-| 09 | [Threat Modeling and Security Considerations](sections/09-threat-modeling-and-security-considerations.md) | Complete |
-| — | [References](references/sources.md) | In progress |
+| # | Section | File | Status |
+|---|---|---|---|
+| 01 | [Non-Goals](sections/01-non-goals.md) | `sections/01-non-goals.md` | Complete |
+| 02 | [Current State of OT Authorization](sections/02-current-state-of-ot-authorization.md) | `sections/02-current-state-of-ot-authorization.md` | Complete |
+| 03 | [Why Existing Approaches Become Insufficient](sections/03-why-existing-approaches-are-incomplete.md) | `sections/03-why-existing-approaches-are-incomplete.md` | Complete |
+| 04 | [Identity-Aware OT Architecture](sections/04-identity-aware-ot-architecture.md) | `sections/04-identity-aware-ot-architecture.md` | Complete |
+| 05 | [OT Trust Boundaries](sections/05-ot-trust-boundaries.md) | `sections/05-ot-trust-boundaries.md` | Stub |
+| 06 | The BASIS Proof-of-Concept | `sections/06-basis-poc.md` | Not started |
+| 07 | Production Realities and Constraints | `sections/07-production-considerations.md` | Not started |
+| 08 | [Threat Modeling and Security Considerations](sections/08-threat-modeling-and-security-considerations.md) | `sections/08-threat-modeling-and-security-considerations.md` | Complete |
+| 09 | Future Direction | `sections/09-future-directions.md` | Not started |
+| 10 | Conclusion | — | Not started |
+| — | [References](references/sources.md) | `references/sources.md` | In progress |
 
 ---
 
@@ -52,9 +52,9 @@ This paper describes what identity-aware authorization looks like when designed 
 
 ## Section Summaries
 
-### 01b — Non-Goals
+### 01 — Non-Goals
 
-*[sections/01b-non-goals.md](sections/01b-non-goals.md)*
+*[sections/01-non-goals.md](sections/01-non-goals.md)*
 
 Establishes explicit scope boundaries for the paper. Clarifies that the work does not propose replacing OT protocols, does not argue for eliminating network segmentation, does not claim BASIS is production-ready, does not assume cloud-only deployment, and does not claim identity-aware authorization alone resolves OT security. These are not aspirational limitations — they are deliberate scope decisions.
 
@@ -72,7 +72,7 @@ Describes the authorization landscape in OT environments as it exists today: net
 
 *[sections/03-why-existing-approaches-are-incomplete.md](sections/03-why-existing-approaches-are-incomplete.md)*
 
-Examines the structural limitations of network-centric trust, controller-local authorization, and distributed authorization logic as OT environments become more interconnected, remotely managed, and subject to audit and accountability requirements. Topics include the coarse granularity of network-based access control, the distinction between authentication and authorization, the operational scaling challenge of maintaining fragmented policy, inconsistent and incomplete auditability, and the inability to centrally reason about access decisions across heterogeneous systems. Closes by introducing the framing that authorization is increasingly a system-level concern rather than a protocol-level one — the architectural premise that the following section builds on.
+Examines the structural limitations of network-centric trust, controller-local authorization, and distributed authorization logic as OT environments become more interconnected, remotely managed, and subject to audit and accountability requirements. Topics include the coarse granularity of network-based access control, the distinction between authentication and authorization, the operational scaling challenge of maintaining fragmented policy, inconsistent and incomplete auditability, and the inability to centrally reason about access decisions across heterogeneous systems. Closes by introducing the framing that authorization is increasingly a system-level concern rather than a protocol-level one — the architectural premise that Section 04 builds on.
 
 ---
 
@@ -80,15 +80,17 @@ Examines the structural limitations of network-centric trust, controller-local a
 
 *[sections/04-identity-aware-ot-architecture.md](sections/04-identity-aware-ot-architecture.md)*
 
-Defines the generalized conceptual architecture for identity-aware authorization in OT environments. Introduces and explains the core model — subjects, resources, and actions as the authorization primitives; policy evaluation as a shared layer distinct from enforcement; enforcement points at trust boundary crossings; protocol adapters that normalize field-protocol messages into the shared representation; identity propagation across multi-hop request paths; centralized auditability through a shared audit pipeline; control plane and data plane separation; local policy caching for offline resilience; and context-aware authorization decisions. Closes with an honest accounting of architectural tradeoffs — latency, operational complexity, legacy device coverage gaps, partial deployment realities, and new failure modes introduced by the authorization infrastructure itself. Sets up the following sections on trust boundaries and the BASIS proof-of-concept.
+The conceptual center of the paper. Establishes authorization as a system-level concern, then builds the architecture from first principles. Covers the three-function separation of identity verification, policy evaluation, and enforcement; subjects, resources, and actions as authorization primitives; identity propagation across trust boundaries; how protocol adapters normalize field-protocol semantics into the shared authorization model; why distributed enforcement can coexist with centralized policy through local policy caching; control plane and data plane as distinct architectural concerns with distinct traffic paths; centralized auditability as a first-class property; offline resilience design and the policy cache staleness tradeoff; and context-aware authorization with its associated complexity costs. Integrates directly with the authorization flow diagram. Closes with an accounting of architectural constraints — latency, legacy device coverage gaps, operational complexity, partial deployment realities, and new failure modes introduced by the authorization infrastructure itself. Sets up Section 05's analysis of where and how trust boundaries are enforced in practice.
 
 ---
 
-### 05 — Identity-Aware OT Architecture
+### 05 — OT Trust Boundaries
 
-*[sections/05-identity-aware-ot-architecture.md](sections/05-identity-aware-ot-architecture.md)*
+*[sections/05-ot-trust-boundaries.md](sections/05-ot-trust-boundaries.md)*
 
-The conceptual center of the paper. Establishes authorization as a system-level concern, builds the full architecture from first principles, and integrates closely with the authorization flow diagram. Covers: the three-function separation (identity verification, policy evaluation, enforcement); subjects, resources, and actions as authorization primitives; identity propagation across trust boundaries and what breaks it; how protocol adapters normalize field-protocol semantics into the shared authorization model; why distributed enforcement can coexist with centralized policy through local policy caching; control plane and data plane as distinct architectural concerns with distinct traffic paths; centralized auditability as an architectural first-class property; offline resilience design and the policy cache staleness tradeoff; context-aware authorization and its complexity costs. Closes with an honest accounting of constraints — latency, legacy coverage, operational complexity, partial deployment, and high availability requirements for the authorization infrastructure itself.
+Extends the conceptual architecture from Section 04 with analysis of where trust boundaries exist in OT environments, why they matter operationally, and what enforcement at each boundary requires in practice. Covers the trust boundary taxonomy for BAS and broader OT deployments; enforcement at the operations zone boundary (jump host as ingress enforcement point); enforcement at the edge zone boundary (local enforcement point, protocol normalization, local policy cache); the field device zone as an enforcement-downstream zone; vendor access and cross-boundary flows; and asymmetric trust requirements for inbound commands versus outbound telemetry.
+
+*This section is currently a stub. It will be drafted after Section 04 is finalized.*
 
 ---
 
@@ -100,7 +102,7 @@ The conceptual center of the paper. Establishes authorization as a system-level 
 
 ---
 
-### 07 — Production Considerations and Operational Constraints *(stub)*
+### 07 — Production Realities and Constraints *(stub)*
 
 *[sections/07-production-considerations.md](sections/07-production-considerations.md)*
 
@@ -108,19 +110,25 @@ The conceptual center of the paper. Establishes authorization as a system-level 
 
 ---
 
-### 08 — Future Directions *(stub)*
+### 08 — Threat Modeling and Security Considerations
 
-*[sections/08-future-directions.md](sections/08-future-directions.md)*
+*[sections/08-threat-modeling-and-security-considerations.md](sections/08-threat-modeling-and-security-considerations.md)*
+
+Identifies and analyzes threats that are specifically relevant to, or materially affected by, the authorization architecture described in this paper. Threat categories include unauthorized command issuance, rogue gateways, telemetry spoofing, credential reuse, audit log tampering, policy misconfiguration, offline authorization failure modes, fail-open conditions, and operator impersonation. Each threat is described in terms of mechanism, architectural mitigation, and residual risk. The analysis is practical and systems-oriented rather than theoretical.
+
+---
+
+### 09 — Future Direction *(stub)*
+
+*[sections/09-future-directions.md](sections/09-future-directions.md)*
 
 *Planned content:* Open research and engineering questions in identity-aware OT authorization. Topics may include: lightweight authentication protocols for resource-constrained field devices; hardware attestation at the device level; standardization of identity context in OT protocols; anomaly detection based on authorization decision patterns; and the long-term trajectory of OT IAM as protocol ecosystems evolve.
 
 ---
 
-### 09 — Threat Modeling and Security Considerations
+### 10 — Conclusion *(stub)*
 
-*[sections/09-threat-modeling-and-security-considerations.md](sections/09-threat-modeling-and-security-considerations.md)*
-
-Identifies and analyzes threats that are specifically relevant to, or materially affected by, the authorization architecture described in this paper. Threat categories include unauthorized command issuance, rogue gateways, telemetry spoofing, credential reuse, audit log tampering, policy misconfiguration, offline authorization failure modes, fail-open conditions, and operator impersonation. Each threat is described in terms of mechanism, architectural mitigation, and residual risk. The analysis is practical and systems-oriented rather than theoretical.
+*Planned content:* Synthesis of the paper's findings. Will summarize what the authorization architecture provides, what it does not provide, and what the BASIS PoC demonstrated and left open. Will close with the paper's core claim: that identity-aware authorization is a tractable engineering problem in OT environments, that it requires architectural accommodation of OT-specific constraints, and that the gap between current practice and this model is narrowing incrementally through deployable components rather than wholesale infrastructure replacement.
 
 ---
 
@@ -130,8 +138,10 @@ Diagrams associated with this paper are maintained in the [`diagrams/`](diagrams
 
 | File | Description | Status |
 |---|---|---|
-| [`ot-trust-boundary-overview.mmd`](diagrams/ot-trust-boundary-overview.mmd) | Mermaid source: trust zones, enforcement points, data and control plane flows | Complete |
-| [`ot-trust-boundary-overview-spec.md`](diagrams/ot-trust-boundary-overview-spec.md) | Full diagram specification including color palette, Draw.io guidance, and checklist | Complete |
+| [`identity-aware-authorization-flow.mmd`](diagrams/identity-aware-authorization-flow.mmd) | Mermaid source: full architecture diagram showing trust zones, subjects, enforcement points, protocol adapters, policy engine, audit pipeline, and control/data plane flows | Complete |
+| [`identity-aware-authorization-flow-spec.md`](diagrams/identity-aware-authorization-flow-spec.md) | Full diagram specification including component responsibilities, flow semantics, Draw.io guidance, and pre-commit checklist | Complete |
+| [`ot-trust-boundary-overview.mmd`](diagrams/ot-trust-boundary-overview.mmd) | Mermaid source: trust boundary overview — zones, enforcement point positions, and cross-boundary flow directions | Redirect (see file) |
+| [`ot-trust-boundary-overview-spec.md`](diagrams/ot-trust-boundary-overview-spec.md) | Diagram specification for the trust boundary overview | Redirect (see file) |
 
 ---
 
@@ -141,4 +151,4 @@ This paper is in active development. Sections marked as stubs represent planned 
 
 Contributions to this paper should follow the writing guidelines document. The diagram standards in [`docs/diagrams/README.md`](../../docs/diagrams/README.md) apply to all diagrams added to this paper.
 
-The non-goals section (01b) and threat modeling section (09) should be reviewed whenever a new section is drafted to ensure the scope boundaries remain accurate and the threat analysis remains consistent with the architecture described.
+The non-goals section (01) and threat modeling section (08) should be reviewed whenever a new section is drafted to ensure the scope boundaries remain accurate and the threat analysis remains consistent with the architecture described.
