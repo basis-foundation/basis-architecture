@@ -8,6 +8,8 @@ This directory contains diagrams that are specific to the white paper *Identity-
 
 | File | Type | Description | Status |
 |---|---|---|---|
+| [`identity-aware-authorization-flow.mmd`](identity-aware-authorization-flow.mmd) | Mermaid source | **Primary architecture diagram.** Full authorization flow: operator identity initiation, identity propagation, protocol normalization, authorization request/decision cycle, distributed enforcement, operational command execution, immutable audit generation, control plane / data plane separation | Complete |
+| [`identity-aware-authorization-flow-spec.md`](identity-aware-authorization-flow-spec.md) | Specification | Full specification for the primary diagram: trust boundary rationale, component responsibilities, flow semantics, authorization semantics, control/data plane separation, offline operation, Draw.io authoring guidance, pre-commit checklist | Complete |
 | [`ot-trust-boundary-overview.mmd`](ot-trust-boundary-overview.mmd) | Mermaid source | Trust zone overview: operational zones, protocol boundaries, enforcement points, control plane / data plane flows, audit event routing | Complete |
 | [`ot-trust-boundary-overview-spec.md`](ot-trust-boundary-overview-spec.md) | Specification | Full diagram specification: title, layout description, component list, trust boundary definitions, style guide, color palette, Mermaid starter code, Draw.io authoring guidance, and pre-commit checklist | Complete |
 

@@ -1,0 +1,163 @@
+%%
+%% Identity-Aware Authorization Flow
+%% Identity-Aware Authorization for Operational Technology — Section 04
+%%
+%% Diagram type:  Conceptual architecture — not implementation-specific
+%% Layout:        Flowchart TB (top to bottom)
+%% Arrow styles:  Solid  = data plane (operational traffic)
+%%                Dashed = control plane (policy, identity, authorization)
+%%                Solid  = audit flows (labeled "Audit event" or "Decision record")
+%%
+%% Trust zones (subgraphs, dashed borders in Draw.io version):
+%%   CENTRAL  — Central Services Zone   (identity, policy, audit)
+%%   OPS      — Operations Zone         (human principals, jump host)
+%%   EDGE     — Edge / Gateway Zone     (protocol adapters, enforcement)
+%%   FIELD    — Field Device Zone       (BAS controllers, field hardware)
+%%
+%% [AuthZ] marks nodes where authorization decisions are applied (enforcement points).
+%%
+
+flowchart TB
+
+    %% ──────────────────────────────────────────────────────────
+    %% CENTRAL SERVICES ZONE
+    %% Control-plane infrastructure: identity, policy, audit, telemetry.
+    %% Operational traffic does NOT traverse this zone.
+    %% ──────────────────────────────────────────────────────────
+    subgraph CENTRAL["Central Services Zone"]
+        direction LR
+        IDP["Identity Provider"]
+        PE["Policy Engine"]
+        AUD[("Audit Log Store")]
+        TELEM[("Telemetry Pipeline")]
+    end
+
+    %% ──────────────────────────────────────────────────────────
+    %% OPERATIONS ZONE
+    %% Human-facing access layer. Identity is established here.
+    %% Jump host is the first authorization enforcement point.
+    %% ──────────────────────────────────────────────────────────
+    subgraph OPS["Operations Zone"]
+        direction LR
+        OP_WS(["Operator\nWorkstation"])
+        TECH_WS(["Technician\nWorkstation"])
+        JUMP["Jump Host\n[AuthZ]"]
+    end
+
+    %% ──────────────────────────────────────────────────────────
+    %% EDGE / GATEWAY ZONE
+    %% Protocol normalization and second enforcement boundary.
+    %% Local policy cache enables offline authorization.
+    %% ──────────────────────────────────────────────────────────
+    subgraph EDGE["Edge / Gateway Zone"]
+        direction LR
+        GW["OT Gateway"]
+        LEP["Local Enforcement Point\n[AuthZ]"]
+        LPC["Local Policy Cache"]
+        PA_B["Protocol Adapter\n― BACnet ―"]
+        PA_M["Protocol Adapter\n― Modbus ―"]
+    end
+
+    %% ──────────────────────────────────────────────────────────
+    %% FIELD DEVICE ZONE
+    %% BAS controllers and field hardware.
+    %% Devices have no native identity or authentication capability.
+    %% All traffic entering this zone has been authorized at the edge boundary.
+    %% ──────────────────────────────────────────────────────────
+    subgraph FIELD["Field Device Zone"]
+        direction LR
+        CTRL_B["BAS Controller\nBACnet/IP"]
+        CTRL_M["BAS Controller\nModbus TCP"]
+        SENS["Sensors /\nActuators"]
+    end
+
+
+    %% ══════════════════════════════════════════════════════════
+    %% CONTROL PLANE FLOWS  (dashed arrows)
+    %% Policy distribution, identity, authorization requests/decisions.
+    %% ══════════════════════════════════════════════════════════
+
+    %% Identity provider supplies verified identity context to policy engine
+    IDP -. "Identity context" .-> PE
+
+    %% Identity provider validates credentials at the jump host boundary
+    IDP -. "Credential validation" .-> JUMP
+
+    %% Policy engine distributes policy to the local cache at the edge
+    PE -. "Policy distribution" .-> LPC
+
+    %% Local cache supplies cached policy to the local enforcement point
+    LPC -. "Cached policy" .-> LEP
+
+    %% Jump host submits authorization requests to the policy engine
+    JUMP -. "AuthZ request" .-> PE
+
+    %% Policy engine returns authorization decisions to the jump host
+    PE -. "AuthZ decision" .-> JUMP
+
+    %% Local enforcement point submits authorization requests to the policy engine
+    LEP -. "AuthZ request" .-> PE
+
+    %% Policy engine returns authorization decisions to the local enforcement point
+    PE -. "AuthZ decision" .-> LEP
+
+
+    %% ══════════════════════════════════════════════════════════
+    %% DATA PLANE FLOWS  (solid arrows)
+    %% Operational traffic: commands downward, telemetry upward.
+    %% ══════════════════════════════════════════════════════════
+
+    %% ── Operator command flow (top → bottom) ──────────────────
+
+    %% Operators and technicians initiate authenticated sessions at the jump host
+    OP_WS --> JUMP
+    TECH_WS --> JUMP
+
+    %% Jump host forwards authenticated, authorized sessions into the edge zone
+    JUMP -- "Authenticated session" --> GW
+
+    %% OT gateway routes sessions to the local enforcement point
+    GW --> LEP
+
+    %% Enforcement point forwards authorized commands to protocol adapters
+    %% (Adapter normalizes the request for authorization; delivers authorized command)
+    LEP -- "Authorized command" --> PA_B
+    LEP -- "Authorized command" --> PA_M
+
+    %% Protocol adapters deliver commands to field controllers in native protocol
+    PA_B -- "BACnet/IP" --> CTRL_B
+    PA_M -- "Modbus TCP" --> CTRL_M
+
+    %% Controllers actuate connected field hardware
+    CTRL_B --> SENS
+    CTRL_M --> SENS
+
+    %% ── Telemetry flow (bottom → top) ────────────────────────
+
+    %% Sensors return readings to controllers
+    SENS -- "Sensor data" --> CTRL_B
+    SENS -- "Sensor data" --> CTRL_M
+
+    %% Controllers produce device telemetry collected by protocol adapters
+    CTRL_B -- "Device telemetry" --> PA_B
+    CTRL_M -- "Device telemetry" --> PA_M
+
+    %% Adapters normalize telemetry and route to the telemetry pipeline
+    PA_B -- "Normalized telemetry" --> TELEM
+    PA_M -- "Normalized telemetry" --> TELEM
+
+
+    %% ══════════════════════════════════════════════════════════
+    %% AUDIT FLOWS  (solid arrows, labeled)
+    %% Generated at every enforcement point and at the policy engine.
+    %% Written to the audit log store independently of operational outcomes.
+    %% ══════════════════════════════════════════════════════════
+
+    %% Jump host emits an audit event for every authorization decision applied
+    JUMP -- "Audit event" --> AUD
+
+    %% Local enforcement point emits an audit event for every decision applied
+    LEP -- "Audit event" --> AUD
+
+    %% Policy engine records every evaluation it performs (independent record)
+    PE -- "Decision record" --> AUD
