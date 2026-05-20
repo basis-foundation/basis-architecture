@@ -26,8 +26,8 @@ The paper is grounded in the BASIS (Building Automation Secure Identity Service)
 | 01b | [Non-Goals](sections/01b-non-goals.md) | Complete |
 | 02 | [Current State of OT Authorization](sections/02-current-state-of-ot-authorization.md) | Complete |
 | 03 | [Why Existing Approaches Become Insufficient](sections/03-why-existing-approaches-are-incomplete.md) | Complete |
-| 04 | Architectural Limitations of Protocol-Centric Security *(stub)* | Not started |
-| 05 | Identity-Aware Authorization: Concepts and Architecture *(stub)* | Not started |
+| 04 | [Identity-Aware OT Architecture](sections/04-identity-aware-ot-architecture.md) | Complete |
+| 05 | The BASIS Proof-of-Concept *(stub)* | Not started |
 | 06 | The BASIS Proof-of-Concept *(stub)* | Not started |
 | 07 | Production Considerations and Operational Constraints *(stub)* | Not started |
 | 08 | Future Directions *(stub)* | Not started |
@@ -76,23 +76,15 @@ Examines the structural limitations of network-centric trust, controller-local a
 
 ---
 
-### 04 — Architectural Limitations of Protocol-Centric Security *(stub)*
+### 04 — Identity-Aware OT Architecture
 
-*[sections/04-architectural-limitations.md](sections/04-architectural-limitations.md)*
+*[sections/04-identity-aware-ot-architecture.md](sections/04-identity-aware-ot-architecture.md)*
 
-*Planned content:* Analysis of the architectural gaps created when authorization decisions are embedded in protocol membership, network topology, or controller-local state. Will cover: why fragmented authorization produces inconsistent audit trails; why shared-credential environments resist meaningful access attribution; why protocol-centric trust cannot express temporal, contextual, or role-based constraints on access; and why the limitation of air-gap assumptions creates residual risk when connectivity requirements expand.
-
----
-
-### 05 — Identity-Aware Authorization: Concepts and Architecture *(stub)*
-
-*[sections/05-identity-aware-authorization-concepts.md](sections/05-identity-aware-authorization-concepts.md)*
-
-*Planned content:* The core architectural model — subjects, resources, actions, policy evaluation, identity propagation, and centralized auditability — explained in the OT context. Will describe how protocol adapters bridge the gap between field protocols and the identity layer, how enforcement points apply authorization decisions at trust boundaries, how the control plane and data plane are separated, and how the audit pipeline provides a unified record across heterogeneous systems.
+Defines the generalized conceptual architecture for identity-aware authorization in OT environments. Introduces and explains the core model — subjects, resources, and actions as the authorization primitives; policy evaluation as a shared layer distinct from enforcement; enforcement points at trust boundary crossings; protocol adapters that normalize field-protocol messages into the shared representation; identity propagation across multi-hop request paths; centralized auditability through a shared audit pipeline; control plane and data plane separation; local policy caching for offline resilience; and context-aware authorization decisions. Closes with an honest accounting of architectural tradeoffs — latency, operational complexity, legacy device coverage gaps, partial deployment realities, and new failure modes introduced by the authorization infrastructure itself. Sets up the following sections on trust boundaries and the BASIS proof-of-concept.
 
 ---
 
-### 06 — The BASIS Proof-of-Concept *(stub)*
+### 05 — The BASIS Proof-of-Concept *(stub)*
 
 *[sections/06-basis-poc.md](sections/06-basis-poc.md)*
 
