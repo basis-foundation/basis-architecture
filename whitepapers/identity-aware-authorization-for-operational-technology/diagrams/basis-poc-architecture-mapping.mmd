@@ -1,6 +1,7 @@
-%%
-%% BASIS PoC — Conceptual Architecture Mapping
-%% Identity-Aware Authorization for Operational Technology — Section 06
+flowchart TB
+
+%% BASIS PoC -- Conceptual Architecture Mapping
+%% Identity-Aware Authorization for Operational Technology -- Section 06
 %%
 %% Diagram type:  Conceptual architecture mapping (not a deployment diagram)
 %% Layout:        Flowchart TB (top-to-bottom, layered)
@@ -22,78 +23,76 @@
 %% the rationale and component reference.
 %%
 
-flowchart TB
-
-    %% ──────────────────────────────────────────────────────────────────────────
+    %% -------------------------------------------------------------------
     %% OPERATOR LAYER
     %% Human subjects who authenticate via Keycloak and interact with the API.
     %% The browser is outside the Docker Compose stack and connects to
     %% forwarded ports in Codespaces or localhost in local dev.
-    %% ──────────────────────────────────────────────────────────────────────────
+    %% -------------------------------------------------------------------
     subgraph OPLAYER["Operator Layer"]
         OP(["Operator / Technician\n(Browser / API Client)\n[Subject]"])
     end
 
-    %% ──────────────────────────────────────────────────────────────────────────
+    %% -------------------------------------------------------------------
     %% DEVELOPMENT ENVIRONMENT
     %% All remaining components run in a single Docker Compose stack.
-    %% Intended for local development and research — not a production topology.
-    %% ──────────────────────────────────────────────────────────────────────────
-    subgraph DEVCONT["GitHub Codespaces / Docker Compose  ·  local development environment"]
+    %% Intended for local development and research -- not a production topology.
+    %% -------------------------------------------------------------------
+    subgraph DEVCONT["GitHub Codespaces / Docker Compose -- local development environment"]
         direction TB
 
-        %% ──────────────────────────────────────────────────────────────────────
+        %% -------------------------------------------------------------------
         %% IDENTITY AND ACCESS LAYER
         %% Keycloak is the authority for user identities and realm roles.
         %% Issues OIDC tokens (RS256). The API validates tokens via JWKS.
         %% Keycloak outage prevents new logins; in-flight valid tokens continue.
         %% Conceptual role: Identity Provider
-        %% ──────────────────────────────────────────────────────────────────────
+        %% -------------------------------------------------------------------
         subgraph IDLAYER["Identity and Access Layer"]
-            KC["Keycloak\nOIDC  ·  RS256 JWT  ·  realm roles\n[Identity Provider]"]
+            KC["Keycloak\nOIDC / RS256 JWT / realm roles\n[Identity Provider]"]
         end
 
-        %% ──────────────────────────────────────────────────────────────────────
+        %% -------------------------------------------------------------------
         %% AUTHORIZATION / API LAYER
         %% FastAPI modular monolith. JWT validation, subject resolution, policy
         %% evaluation, and enforcement all occur at the API boundary.
         %% No command reaches a device without passing require_action().
         %%
         %% Conceptual roles:
-        %%   AUTH → Operator Identity (JWT → typed Subject)
-        %%   PE   → Authorization Logic (PolicyEngine + RoleBasedPolicy)
-        %%   EP   → Enforcement Point   (require_action() on every endpoint)
-        %% ──────────────────────────────────────────────────────────────────────
-        subgraph APILAYER["Authorization / API Layer  ·  FastAPI (modular monolith)"]
+        %%   AUTH -> Operator Identity (JWT -> typed Subject)
+        %%   PE   -> Authorization Logic (PolicyEngine + RoleBasedPolicy)
+        %%   EP   -> Enforcement Point   (require_action() on every endpoint)
+        %% -------------------------------------------------------------------
+        subgraph APILAYER["Authorization / API Layer -- FastAPI (modular monolith)"]
             direction LR
             AUTH["JWT Validation\nsubject_from_jwt()\n[Operator Identity]"]
             PE["PolicyEngine\nRoleBasedPolicy\n[Authorization Logic]"]
             EP["require_action()\nFastAPI routers\n[Enforcement Point]"]
         end
 
-        %% ──────────────────────────────────────────────────────────────────────
+        %% -------------------------------------------------------------------
         %% PROTOCOL ADAPTER LAYER
         %% MQTT and Modbus TCP adapters both implement AdapterBase.
         %% Protocol-specific logic is contained in each adapter; the API's
         %% authorization and audit paths are protocol-agnostic.
-        %% Mosquitto is transport only — no authorization logic at the broker.
+        %% Mosquitto is transport only -- no authorization logic at the broker.
         %% WebSocket delivers authenticated real-time telemetry to the browser.
         %%
         %% Conceptual roles:
-        %%   MA → Protocol Adapter (MQTT)
-        %%   MB → Protocol Adapter (Modbus TCP)
-        %%   MQ → Telemetry Transport
-        %%   WS → Real-Time Telemetry View
-        %% ──────────────────────────────────────────────────────────────────────
+        %%   MA -> Protocol Adapter (MQTT)
+        %%   MB -> Protocol Adapter (Modbus TCP)
+        %%   MQ -> Telemetry Transport
+        %%   WS -> Real-Time Telemetry View
+        %% -------------------------------------------------------------------
         subgraph ADAPTLAYER["Protocol Adapter Layer"]
             direction LR
             MA["MQTT Adapter\n(AdapterBase)\n[Protocol Adapter]"]
             MB["Modbus TCP Adapter\n(AdapterBase)\n[Protocol Adapter]"]
             MQ["Mosquitto\n[Telemetry Transport]"]
-            WS["WebSocket Broadcaster\nTelemetrySession  ·  JWT auth\n[Real-Time Telemetry View]"]
+            WS["WebSocket Broadcaster\nTelemetrySession / JWT auth\n[Real-Time Telemetry View]"]
         end
 
-        %% ──────────────────────────────────────────────────────────────────────
+        %% -------------------------------------------------------------------
         %% SIMULATED OT RESOURCES
         %% Python-simulated devices that represent the operational resources
         %% the authorization layer governs. Not real OT hardware.
@@ -101,35 +100,35 @@ flowchart TB
         %% Data center (dc-boise-01) publishes rack, thermal, power, and UPS data.
         %% Chiller and pump are simulated as in-memory Modbus registers.
         %% Conceptual role: Operational Resources
-        %% ──────────────────────────────────────────────────────────────────────
-        subgraph SIMLAYER["Simulated OT Resources  ·  [Operational Resources]"]
+        %% -------------------------------------------------------------------
+        subgraph SIMLAYER["Simulated OT Resources -- [Operational Resources]"]
             direction LR
             HVAC["HVAC Simulator\nhvac:main"]
-            SENSORS["CO₂ · Occupancy\nSensors"]
+            SENSORS["CO2 / Occupancy\nSensors"]
             DC["Data Center\ndc-boise-01"]
             MOD["Chiller / Pump\n(Modbus registers)"]
         end
 
-        %% ──────────────────────────────────────────────────────────────────────
+        %% -------------------------------------------------------------------
         %% AUDIT LAYER
         %% DualAuditStore writes every authorization decision to SQLite (durable,
         %% append-only) and to structured stdout. Two audit events are recorded
         %% per command: one for the authorization decision and one for the
         %% command dispatch outcome. Audit writes never fail the request.
         %% Conceptual role: Audit Pipeline
-        %% ──────────────────────────────────────────────────────────────────────
-        subgraph AUDITLAYER["Audit Layer  ·  [Audit Pipeline]"]
-            DB[("audit.db  (SQLite)\nDualAuditStore\nappend-only")]
+        %% -------------------------------------------------------------------
+        subgraph AUDITLAYER["Audit Layer -- [Audit Pipeline]"]
+            DB[("audit.db (SQLite)\nDualAuditStore\nappend-only")]
         end
 
     end
 
 
-    %% ══════════════════════════════════════════════════════════════════════════
-    %% IDENTITY AND AUTH FLOWS  (dashed — control-plane analog)
-    %% ══════════════════════════════════════════════════════════════════════════
+    %% ===========================================================
+    %% IDENTITY AND AUTH FLOWS  (dashed -- control-plane analog)
+    %% ===========================================================
 
-    %% OIDC/PKCE login — browser redirects to Keycloak, receives RS256 JWT
+    %% OIDC/PKCE login -- browser redirects to Keycloak, receives RS256 JWT
     OP -. "OIDC login (PKCE)" .-> KC
     KC -. "RS256 JWT" .-> OP
 
@@ -142,20 +141,20 @@ flowchart TB
     PE -. "PolicyResult" .-> EP
 
 
-    %% ══════════════════════════════════════════════════════════════════════════
-    %% OPERATIONAL FLOWS  (solid — data-plane analog)
-    %% ══════════════════════════════════════════════════════════════════════════
+    %% ===========================================================
+    %% OPERATIONAL FLOWS  (solid -- data-plane analog)
+    %% ===========================================================
 
-    %% Authorized command — MQTT path (HVAC setpoint, sensor commands)
+    %% Authorized command -- MQTT path (HVAC setpoint, sensor commands)
     EP -- "authorized MQTT command" --> MA
     MA -- "MQTT publish (QoS 1)" --> MQ
     MQ -- "setpoint command" --> HVAC
 
-    %% Authorized command — Modbus TCP path (chiller setpoint, pump speed)
+    %% Authorized command -- Modbus TCP path (chiller setpoint, pump speed)
     EP -- "authorized Modbus command" --> MB
     MB -- "register write" --> MOD
 
-    %% Telemetry path: simulated devices → MQTT broker → adapter → WebSocket → browser
+    %% Telemetry path: simulated devices -> MQTT broker -> adapter -> WebSocket -> browser
     HVAC    --> MQ
     SENSORS --> MQ
     DC      --> MQ
@@ -164,10 +163,10 @@ flowchart TB
     WS      -- "authenticated WebSocket" --> OP
 
 
-    %% ══════════════════════════════════════════════════════════════════════════
+    %% ===========================================================
     %% AUDIT FLOWS  (solid, labeled)
-    %% Every authorization decision — allowed or denied — produces an AuditEvent.
+    %% Every authorization decision -- allowed or denied -- produces an AuditEvent.
     %% A second AuditEvent records the command dispatch outcome (allowed path only).
-    %% ══════════════════════════════════════════════════════════════════════════
+    %% ===========================================================
 
-    EP -- "AuditEvent  (every allow / deny)" --> DB
+    EP -- "AuditEvent (every allow / deny)" --> DB

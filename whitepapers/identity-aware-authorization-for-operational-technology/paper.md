@@ -96,7 +96,7 @@ Extends the conceptual architecture from Section 04 with analysis of where trust
 
 *[sections/06-basis-poc.md](sections/06-basis-poc.md)*
 
-*Planned content:* Description of the BASIS PoC implementation — its scope, components, design decisions, and what it demonstrates. Will cover Keycloak integration for identity, OPA-based policy evaluation, MQTT telemetry pipeline, audit logging design, and protocol adapter implementation. Will be explicit about what was validated and what remains to be validated.
+*Planned content:* Description of the BASIS PoC implementation — its scope, components, design decisions, and what it demonstrates. Will cover Keycloak integration for identity, FastAPI-based authorization middleware with chain-of-responsibility policy evaluation (PolicyEngine + RoleBasedPolicy), MQTT telemetry pipeline, SQLite audit logging design, and protocol adapter implementation across MQTT and Modbus TCP. Will be explicit about what was validated and what remains to be validated.
 
 ---
 
@@ -138,8 +138,8 @@ Diagrams associated with this paper are maintained in the [`diagrams/`](diagrams
 |---|---|---|
 | [`identity-aware-authorization-flow.mmd`](diagrams/identity-aware-authorization-flow.mmd) | Mermaid source: full architecture diagram showing trust zones, subjects, enforcement points, protocol adapters, policy engine, audit pipeline, and control/data plane flows | Complete |
 | [`identity-aware-authorization-flow-spec.md`](diagrams/identity-aware-authorization-flow-spec.md) | Full diagram specification including component responsibilities, flow semantics, Draw.io guidance, and pre-commit checklist | Complete |
-| [`ot-trust-boundary-overview.mmd`](diagrams/ot-trust-boundary-overview.mmd) | Mermaid source: trust boundary overview — zones, enforcement point positions, and cross-boundary flow directions | Redirect (see file) |
-| [`ot-trust-boundary-overview-spec.md`](diagrams/ot-trust-boundary-overview-spec.md) | Diagram specification for the trust boundary overview | Redirect (see file) |
+| [`ot-trust-boundary-overview.mmd`](diagrams/ot-trust-boundary-overview.mmd) | Mermaid source: trust boundary overview — zones, enforcement point positions, and cross-boundary flow directions | Complete |
+| [`ot-trust-boundary-overview-spec.md`](diagrams/ot-trust-boundary-overview-spec.md) | Diagram specification for the trust boundary overview | Complete |
 | [`basis-poc-architecture-mapping.mmd`](diagrams/basis-poc-architecture-mapping.mmd) | Mermaid source: conceptual architecture mapping diagram — maps BASIS PoC components to the authorization architecture roles described in Sections 04 and 05 | Complete |
 | [`basis-poc-architecture-mapping-spec.md`](diagrams/basis-poc-architecture-mapping-spec.md) | Diagram specification including component reference table, flow semantics, intentional omissions, and guidance for use in Section 06 | Complete |
 
@@ -149,6 +149,6 @@ Diagrams associated with this paper are maintained in the [`diagrams/`](diagrams
 
 This paper is in active development. Sections marked as stubs represent planned content that has not yet been drafted. Sections marked as complete have been reviewed for tone and content consistency against the writing guidelines in [`docs/standards/writing-guidelines.md`](../../docs/standards/writing-guidelines.md).
 
-Contributions to this paper should follow the writing guidelines document. The diagram standards in [`docs/diagrams/README.md`](../../docs/diagrams/README.md) apply to all diagrams added to this paper.
+Contributions to this paper should follow the writing guidelines document. The diagram standards in [`docs/standards/diagram-standards.md`](../../docs/standards/diagram-standards.md) apply to all diagrams added to this paper.
 
 The non-goals section (01) and threat modeling section (08) should be reviewed whenever a new section is drafted to ensure the scope boundaries remain accurate and the threat analysis remains consistent with the architecture described.
