@@ -26,7 +26,7 @@ The paper is grounded in the BASIS (Building Automation Secure Identity Service)
 | 02 | [Current State of OT Authorization](sections/02-current-state-of-ot-authorization.md) | `sections/02-current-state-of-ot-authorization.md` | Complete |
 | 03 | [Why Existing Approaches Become Insufficient](sections/03-why-existing-approaches-are-incomplete.md) | `sections/03-why-existing-approaches-are-incomplete.md` | Complete |
 | 04 | [Identity-Aware OT Architecture](sections/04-identity-aware-ot-architecture.md) | `sections/04-identity-aware-ot-architecture.md` | Complete |
-| 05 | [OT Trust Boundaries](sections/05-ot-trust-boundaries.md) | `sections/05-ot-trust-boundaries.md` | Stub |
+| 05 | [OT Trust Boundaries](sections/05-ot-trust-boundaries.md) | `sections/05-ot-trust-boundaries.md` | Complete |
 | 06 | The BASIS Proof-of-Concept | `sections/06-basis-poc.md` | Not started |
 | 07 | Production Realities and Constraints | `sections/07-production-considerations.md` | Not started |
 | 08 | [Threat Modeling and Security Considerations](sections/08-threat-modeling-and-security-considerations.md) | `sections/08-threat-modeling-and-security-considerations.md` | Complete |
@@ -90,8 +90,6 @@ The conceptual center of the paper. Establishes authorization as a system-level 
 
 Extends the conceptual architecture from Section 04 with analysis of where trust boundaries exist in OT environments, why they matter operationally, and what enforcement at each boundary requires in practice. Covers the trust boundary taxonomy for BAS and broader OT deployments; enforcement at the operations zone boundary (jump host as ingress enforcement point); enforcement at the edge zone boundary (local enforcement point, protocol normalization, local policy cache); the field device zone as an enforcement-downstream zone; vendor access and cross-boundary flows; and asymmetric trust requirements for inbound commands versus outbound telemetry.
 
-*This section is currently a stub. It will be drafted after Section 04 is finalized.*
-
 ---
 
 ### 06 — The BASIS Proof-of-Concept *(stub)*
@@ -142,6 +140,8 @@ Diagrams associated with this paper are maintained in the [`diagrams/`](diagrams
 | [`identity-aware-authorization-flow-spec.md`](diagrams/identity-aware-authorization-flow-spec.md) | Full diagram specification including component responsibilities, flow semantics, Draw.io guidance, and pre-commit checklist | Complete |
 | [`ot-trust-boundary-overview.mmd`](diagrams/ot-trust-boundary-overview.mmd) | Mermaid source: trust boundary overview — zones, enforcement point positions, and cross-boundary flow directions | Redirect (see file) |
 | [`ot-trust-boundary-overview-spec.md`](diagrams/ot-trust-boundary-overview-spec.md) | Diagram specification for the trust boundary overview | Redirect (see file) |
+| [`basis-poc-architecture-mapping.mmd`](diagrams/basis-poc-architecture-mapping.mmd) | Mermaid source: conceptual architecture mapping diagram — maps BASIS PoC components to the authorization architecture roles described in Sections 04 and 05 | Complete |
+| [`basis-poc-architecture-mapping-spec.md`](diagrams/basis-poc-architecture-mapping-spec.md) | Diagram specification including component reference table, flow semantics, intentional omissions, and guidance for use in Section 06 | Complete |
 
 ---
 

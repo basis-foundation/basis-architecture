@@ -1,29 +1,28 @@
-%%
+flowchart TB
+
 %% Identity-Aware Authorization Flow
-%% Identity-Aware Authorization for Operational Technology — Section 04
+%% Identity-Aware Authorization for Operational Technology -- Section 04
 %%
-%% Diagram type:  Conceptual architecture — not implementation-specific
+%% Diagram type:  Conceptual architecture -- not implementation-specific
 %% Layout:        Flowchart TB (top to bottom)
 %% Arrow styles:  Solid  = data plane (operational traffic)
 %%                Dashed = control plane (policy, identity, authorization)
 %%                Solid  = audit flows (labeled "Audit event" or "Decision record")
 %%
 %% Trust zones (subgraphs, dashed borders in Draw.io version):
-%%   CENTRAL  — Central Services Zone   (identity, policy, audit)
-%%   OPS      — Operations Zone         (human principals, jump host)
-%%   EDGE     — Edge / Gateway Zone     (protocol adapters, enforcement)
-%%   FIELD    — Field Device Zone       (BAS controllers, field hardware)
+%%   CENTRAL  -- Central Services Zone   (identity, policy, audit)
+%%   OPS      -- Operations Zone         (human principals, jump host)
+%%   EDGE     -- Edge / Gateway Zone     (protocol adapters, enforcement)
+%%   FIELD    -- Field Device Zone       (BAS controllers, field hardware)
 %%
 %% [AuthZ] marks nodes where authorization decisions are applied (enforcement points).
 %%
 
-flowchart TB
-
-    %% ──────────────────────────────────────────────────────────
+    %% -----------------------------------------------------------
     %% CENTRAL SERVICES ZONE
     %% Control-plane infrastructure: identity, policy, audit, telemetry.
     %% Operational traffic does NOT traverse this zone.
-    %% ──────────────────────────────────────────────────────────
+    %% -----------------------------------------------------------
     subgraph CENTRAL["Central Services Zone"]
         direction LR
         IDP["Identity Provider"]
@@ -32,11 +31,11 @@ flowchart TB
         TELEM[("Telemetry Pipeline")]
     end
 
-    %% ──────────────────────────────────────────────────────────
+    %% -----------------------------------------------------------
     %% OPERATIONS ZONE
     %% Human-facing access layer. Identity is established here.
     %% Jump host is the first authorization enforcement point.
-    %% ──────────────────────────────────────────────────────────
+    %% -----------------------------------------------------------
     subgraph OPS["Operations Zone"]
         direction LR
         OP_WS(["Operator\nWorkstation"])
@@ -44,26 +43,26 @@ flowchart TB
         JUMP["Jump Host\n[AuthZ]"]
     end
 
-    %% ──────────────────────────────────────────────────────────
+    %% -----------------------------------------------------------
     %% EDGE / GATEWAY ZONE
     %% Protocol normalization and second enforcement boundary.
     %% Local policy cache enables offline authorization.
-    %% ──────────────────────────────────────────────────────────
+    %% -----------------------------------------------------------
     subgraph EDGE["Edge / Gateway Zone"]
         direction LR
         GW["OT Gateway"]
         LEP["Local Enforcement Point\n[AuthZ]"]
         LPC["Local Policy Cache"]
-        PA_B["Protocol Adapter\n― BACnet ―"]
-        PA_M["Protocol Adapter\n― Modbus ―"]
+        PA_B["Protocol Adapter\nBACnet"]
+        PA_M["Protocol Adapter\nModbus"]
     end
 
-    %% ──────────────────────────────────────────────────────────
+    %% -----------------------------------------------------------
     %% FIELD DEVICE ZONE
     %% BAS controllers and field hardware.
     %% Devices have no native identity or authentication capability.
     %% All traffic entering this zone has been authorized at the edge boundary.
-    %% ──────────────────────────────────────────────────────────
+    %% -----------------------------------------------------------
     subgraph FIELD["Field Device Zone"]
         direction LR
         CTRL_B["BAS Controller\nBACnet/IP"]
@@ -72,10 +71,10 @@ flowchart TB
     end
 
 
-    %% ══════════════════════════════════════════════════════════
+    %% ===========================================================
     %% CONTROL PLANE FLOWS  (dashed arrows)
     %% Policy distribution, identity, authorization requests/decisions.
-    %% ══════════════════════════════════════════════════════════
+    %% ===========================================================
 
     %% Identity provider supplies verified identity context to policy engine
     IDP -. "Identity context" .-> PE
@@ -102,12 +101,12 @@ flowchart TB
     PE -. "AuthZ decision" .-> LEP
 
 
-    %% ══════════════════════════════════════════════════════════
+    %% ===========================================================
     %% DATA PLANE FLOWS  (solid arrows)
     %% Operational traffic: commands downward, telemetry upward.
-    %% ══════════════════════════════════════════════════════════
+    %% ===========================================================
 
-    %% ── Operator command flow (top → bottom) ──────────────────
+    %% Operator command flow (top -> bottom)
 
     %% Operators and technicians initiate authenticated sessions at the jump host
     OP_WS --> JUMP
@@ -132,7 +131,7 @@ flowchart TB
     CTRL_B --> SENS
     CTRL_M --> SENS
 
-    %% ── Telemetry flow (bottom → top) ────────────────────────
+    %% Telemetry flow (bottom -> top)
 
     %% Sensors return readings to controllers
     SENS -- "Sensor data" --> CTRL_B
@@ -147,11 +146,11 @@ flowchart TB
     PA_M -- "Normalized telemetry" --> TELEM
 
 
-    %% ══════════════════════════════════════════════════════════
+    %% ===========================================================
     %% AUDIT FLOWS  (solid arrows, labeled)
     %% Generated at every enforcement point and at the policy engine.
     %% Written to the audit log store independently of operational outcomes.
-    %% ══════════════════════════════════════════════════════════
+    %% ===========================================================
 
     %% Jump host emits an audit event for every authorization decision applied
     JUMP -- "Audit event" --> AUD
