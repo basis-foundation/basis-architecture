@@ -32,9 +32,9 @@ The primary research questions addressed by this repository are:
 
 3. What threats does an identity-aware authorization layer address, what threats does it not address, and what residual risks remain after the authorization layer is in place?
 
-4. What are the production engineering challenges — high availability, latency, offline operation, credential lifecycle — that would need to be resolved before patterns like those explored here could be deployed at scale?
+4. What are the production engineering challenges — high availability, policy distribution, cache synchronization, credential lifecycle, governance ownership — that must be addressed before patterns like those explored here can be deployed and operated at scale?
 
-These questions are examined through a combination of architectural analysis and proof-of-concept implementation. The research is ongoing and the answers are not complete.
+These questions are examined through a combination of architectural analysis and proof-of-concept implementation. The PoC validates the core mechanisms at limited scope; the production analysis identifies where the distance between a coherent architecture and a deployable system is larger than the conceptual description implies.
 
 ---
 
@@ -48,22 +48,31 @@ basis-architecture/
 ├── docs/
 │   ├── glossary.md                    # Canonical terminology definitions
 │   ├── architecture-principles.md    # Guiding architectural principles
-│   ├── diagrams/
-│   │   └── README.md                 # Diagram standards and conventions
 │   └── standards/
-│       └── writing-guidelines.md     # Writing tone, terminology, and style guidance
+│       ├── diagram-standards.md      # Diagram conventions, categories, and visual style
+│       ├── terminology-guidelines.md # Controlled terminology and usage rules
+│       └── writing-guidelines.md     # Writing tone, prohibited language, and style guidance
 │
 └── whitepapers/
     └── identity-aware-authorization-for-operational-technology/
         ├── paper.md                   # Master document: abstract, TOC, section summaries
-        ├── README.md                  # Paper overview and status
         ├── sections/                  # Individual paper sections
-        │   ├── 01b-non-goals.md
+        │   ├── 01-non-goals.md
         │   ├── 02-current-state-of-ot-authorization.md
-        │   └── 09-threat-modeling-and-security-considerations.md
-        ├── diagrams/                  # Diagrams specific to this paper
+        │   ├── 03-why-existing-approaches-are-incomplete.md
+        │   ├── 04-identity-aware-ot-architecture.md
+        │   ├── 05-ot-trust-boundaries.md
+        │   ├── 06-basis-proof-of-concept.md
+        │   ├── 07-production-realities-and-constraints.md
+        │   └── 08-threat-modeling-and-security-considerations.md
+        ├── diagrams/                  # Architectural analysis diagrams
+        │   ├── README.md              # Diagram index and conventions
+        │   ├── identity-aware-authorization-flow.mmd
+        │   ├── identity-aware-authorization-flow-spec.md
         │   ├── ot-trust-boundary-overview.mmd
-        │   └── ot-trust-boundary-overview-spec.md
+        │   ├── ot-trust-boundary-overview-spec.md
+        │   ├── basis-poc-architecture-mapping.mmd
+        │   └── basis-poc-architecture-mapping-spec.md
         ├── references/
         │   └── sources.md
         └── exported/                  # Exported diagram images for publication
@@ -77,16 +86,23 @@ basis-architecture/
 
 **Location:** [`whitepapers/identity-aware-authorization-for-operational-technology/`](whitepapers/identity-aware-authorization-for-operational-technology/)
 
-**Status:** Draft — active development
+**Status:** Draft — sections 01–08 in varying stages of completion
 
-This paper examines how identity-aware authorization can be applied to operational technology environments, with building automation systems as the primary domain. It covers the current state of OT authorization, the architectural patterns required for identity-aware models, the operational constraints that shape implementation, threat analysis, and open engineering questions.
+This paper examines how identity-aware authorization can be applied to operational technology environments, with building automation systems as the primary domain. It covers the current state of OT authorization, the architectural patterns required for identity-aware models, trust boundary analysis, a proof-of-concept implementation against those patterns, the production engineering realities that govern what deployment actually requires, and architectural threat analysis specific to the authorization layer.
 
-The master document at [`paper.md`](whitepapers/identity-aware-authorization-for-operational-technology/paper.md) provides the abstract, table of contents, section status, and editorial notes.
+The paper's analysis emphasizes operational realism throughout. It treats OT-specific constraints — long asset lifecycles, availability requirements, intermittent connectivity, legacy protocol stacks, narrow maintenance windows — as first-order design inputs rather than edge cases. Sections on production deployment address synchronization complexity, degraded operation, governance ownership, and distributed coordination tradeoffs that architectural descriptions typically abstract away.
 
-**Completed sections:**
-- [Non-Goals](whitepapers/identity-aware-authorization-for-operational-technology/sections/01b-non-goals.md) — scope boundaries for the paper
-- [Current State of OT Authorization](whitepapers/identity-aware-authorization-for-operational-technology/sections/02-current-state-of-ot-authorization.md) — how authorization is handled in OT environments today
-- [Threat Modeling and Security Considerations](whitepapers/identity-aware-authorization-for-operational-technology/sections/09-threat-modeling-and-security-considerations.md) — threat analysis specific to the authorization architecture
+The master document at [`paper.md`](whitepapers/identity-aware-authorization-for-operational-technology/paper.md) provides the abstract, table of contents, section status, section summaries, diagram index, and editorial notes.
+
+**Sections:**
+- [01 — Non-Goals](whitepapers/identity-aware-authorization-for-operational-technology/sections/01-non-goals.md) — explicit scope boundaries
+- [02 — Current State of OT Authorization](whitepapers/identity-aware-authorization-for-operational-technology/sections/02-current-state-of-ot-authorization.md) — how authorization works in OT environments today
+- [03 — Why Existing Approaches Become Insufficient](whitepapers/identity-aware-authorization-for-operational-technology/sections/03-why-existing-approaches-are-incomplete.md) — structural limitations of network-centric and controller-local models
+- [04 — Identity-Aware OT Architecture](whitepapers/identity-aware-authorization-for-operational-technology/sections/04-identity-aware-ot-architecture.md) — conceptual architecture: policy evaluation, enforcement, protocol adaptation, audit
+- [05 — OT Trust Boundaries](whitepapers/identity-aware-authorization-for-operational-technology/sections/05-ot-trust-boundaries.md) — trust boundary taxonomy and enforcement requirements at each zone boundary
+- [06 — The BASIS Proof-of-Concept](whitepapers/identity-aware-authorization-for-operational-technology/sections/06-basis-proof-of-concept.md) — PoC scope, implementation analysis, validated claims, and unvalidated properties
+- [07 — Production Realities and Constraints](whitepapers/identity-aware-authorization-for-operational-technology/sections/07-production-realities-and-constraints.md) — operational engineering challenges: HA, policy distribution, cache synchronization, lifecycle management, governance
+- [08 — Threat Modeling and Security Considerations](whitepapers/identity-aware-authorization-for-operational-technology/sections/08-threat-modeling-and-security-considerations.md) — threat analysis across nine categories with architectural mitigations and residual risk assessment
 
 ---
 
@@ -116,27 +132,30 @@ Internal writing standards for all content in this repository. Covers tone, proh
 
 ### Diagram Standards
 
-[`docs/diagrams/README.md`](docs/diagrams/README.md)
+[`docs/standards/diagram-standards.md`](docs/standards/diagram-standards.md)
 
 Establishes standards for all diagrams committed to this repository. Covers diagram categories, visual style, trust boundary conventions, color usage, labeling standards, simplification rules, recommended diagram types, Mermaid vs Draw.io guidance, file naming conventions, versioning, and accessibility. All diagrams should conform to these standards.
 
 ### Whitepaper Diagrams
 
-Diagrams specific to individual white papers are maintained within each paper's `diagrams/` subdirectory. The trust boundary overview diagram for the identity-aware authorization paper is at:
+Diagrams specific to individual white papers are maintained within each paper's `diagrams/` subdirectory. These diagrams are architectural analysis artifacts — they make structural relationships, component responsibilities, and flow semantics explicit, and they are intended to be read alongside the section text rather than as standalone illustrations. Each diagram has a companion specification document that describes the rendering guidance, component annotations, and intentional omissions that the diagram source file alone does not convey.
 
-- [`whitepapers/identity-aware-authorization-for-operational-technology/diagrams/ot-trust-boundary-overview.mmd`](whitepapers/identity-aware-authorization-for-operational-technology/diagrams/ot-trust-boundary-overview.mmd) — Mermaid source
-- [`whitepapers/identity-aware-authorization-for-operational-technology/diagrams/ot-trust-boundary-overview-spec.md`](whitepapers/identity-aware-authorization-for-operational-technology/diagrams/ot-trust-boundary-overview-spec.md) — Full diagram specification including Draw.io guidance
+Diagrams for the identity-aware authorization paper:
+
+- [`identity-aware-authorization-flow.mmd`](whitepapers/identity-aware-authorization-for-operational-technology/diagrams/identity-aware-authorization-flow.mmd) / [`-spec.md`](whitepapers/identity-aware-authorization-for-operational-technology/diagrams/identity-aware-authorization-flow-spec.md) — Full architecture diagram: trust zones, subjects, enforcement points, protocol adapters, policy engine, audit pipeline, and control/data plane flows
+- [`ot-trust-boundary-overview.mmd`](whitepapers/identity-aware-authorization-for-operational-technology/diagrams/ot-trust-boundary-overview.mmd) / [`-spec.md`](whitepapers/identity-aware-authorization-for-operational-technology/diagrams/ot-trust-boundary-overview-spec.md) — Trust boundary overview: zone structure, enforcement point positions, and cross-boundary flow directions
+- [`basis-poc-architecture-mapping.mmd`](whitepapers/identity-aware-authorization-for-operational-technology/diagrams/basis-poc-architecture-mapping.mmd) / [`-spec.md`](whitepapers/identity-aware-authorization-for-operational-technology/diagrams/basis-poc-architecture-mapping-spec.md) — PoC architecture mapping: BASIS PoC components annotated with their conceptual architecture roles from Sections 04 and 05
 
 ---
 
 ## Threat Modeling
 
-Threat analysis is maintained as a section within each white paper rather than as standalone threat model documents. This keeps threat analysis adjacent to the architecture it describes and makes it easier to keep the two in sync as the architecture evolves.
+Threat analysis is maintained as a section within each white paper rather than as standalone threat model documents. This keeps threat analysis integrated with the architectural context it describes and makes it easier to keep the two in sync as the architecture evolves.
 
 The threat modeling section for the identity-aware authorization paper is at:
-[`whitepapers/identity-aware-authorization-for-operational-technology/sections/09-threat-modeling-and-security-considerations.md`](whitepapers/identity-aware-authorization-for-operational-technology/sections/09-threat-modeling-and-security-considerations.md)
+[`whitepapers/identity-aware-authorization-for-operational-technology/sections/08-threat-modeling-and-security-considerations.md`](whitepapers/identity-aware-authorization-for-operational-technology/sections/08-threat-modeling-and-security-considerations.md)
 
-It covers nine threat categories with mechanism analysis, architectural mitigations, and residual risk assessment for each.
+It covers nine threat categories with mechanism analysis, architectural mitigations, and residual risk assessment for each. The analysis is positioned within the authorization architecture described in the paper rather than treating OT threat modeling in general terms.
 
 As the repository grows to include ADRs and additional research areas, threat models for specific components may be maintained separately. This README will be updated to reflect that structure when it is introduced.
 
@@ -146,6 +165,8 @@ As the repository grows to include ADRs and additional research areas, threat mo
 
 This repository is a technical reference, not a product presentation. The documentation here is intended to be useful to engineers working on similar problems, researchers studying OT identity and access management, and practitioners evaluating whether identity-aware authorization is appropriate for their OT environments.
 
-The work is honest about what is not known, what has not been validated, and what the current proof-of-concept does not demonstrate. The architecture described here addresses specific, well-defined problems in OT authorization — it does not claim to solve OT security broadly.
+The work is honest about what is not known, what has not been validated, and where the proof-of-concept falls short of production readiness. The architecture described here addresses specific, well-defined problems in OT authorization — it does not claim to solve OT security broadly, and it does not treat the constraints of OT environments as problems to be argued away.
+
+A recurring theme across the documentation is that deploying identity-aware authorization in OT environments requires negotiating tradeoffs that the conceptual architecture cannot resolve on its own: between policy currency and operational independence, between security posture and availability, between audit completeness and delivery reliability under degraded connectivity, between precise policy expressiveness and deterministic evaluation behavior. The repository documents these tradeoffs explicitly rather than presenting the architecture as though they do not exist.
 
 Contributions to this repository should preserve the analytical, restrained tone established in the existing documentation. The writing guidelines document describes this in more detail. The goal is documentation that is useful to a careful technical reader, not documentation that is persuasive to a general audience.
