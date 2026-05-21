@@ -12,6 +12,8 @@ This directory contains diagrams that are specific to the white paper *Identity-
 | [`identity-aware-authorization-flow-spec.md`](identity-aware-authorization-flow-spec.md) | Specification | Full specification for the primary diagram: trust boundary rationale, component responsibilities, flow semantics, authorization semantics, control/data plane separation, offline operation, Draw.io authoring guidance, pre-commit checklist | Complete |
 | [`ot-trust-boundary-overview.mmd`](ot-trust-boundary-overview.mmd) | Mermaid source | Trust zone overview: operational zones, protocol boundaries, enforcement points, control plane / data plane flows, audit event routing | Complete |
 | [`ot-trust-boundary-overview-spec.md`](ot-trust-boundary-overview-spec.md) | Specification | Full diagram specification: title, layout description, component list, trust boundary definitions, style guide, color palette, Mermaid starter code, Draw.io authoring guidance, and pre-commit checklist | Complete |
+| [`basis-poc-architecture-mapping.mmd`](basis-poc-architecture-mapping.mmd) | Mermaid source | **PoC architecture mapping.** BASIS PoC components annotated against their conceptual architecture roles from Sections 04 and 05 — identity provider, enforcement point, policy engine, protocol adapters, audit store, and simulated OT resources, with the monolithic PoC collapse of concerns made structurally visible | Complete |
+| [`basis-poc-architecture-mapping-spec.md`](basis-poc-architecture-mapping-spec.md) | Specification | Full specification for the PoC mapping diagram: component reference table, conceptual role annotations, flow semantics, intentional omissions, and guidance for use alongside Section 06 prose | Complete |
 
 ---
 
@@ -25,7 +27,7 @@ The specification file (`ot-trust-boundary-overview-spec.md`) contains guidance 
 
 ## Diagram Standards
 
-All diagrams in this directory must conform to the standards defined in [`docs/diagrams/README.md`](../../../../docs/diagrams/README.md). This includes:
+All diagrams in this directory must conform to the standards defined in [`docs/standards/diagram-standards.md`](../../../../docs/standards/diagram-standards.md). This includes:
 
 - Trust boundaries represented as dashed enclosing borders with labels
 - Authorization enforcement points marked with `[AuthZ]` or equivalent

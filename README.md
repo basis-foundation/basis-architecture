@@ -64,7 +64,9 @@ basis-architecture/
         │   ├── 05-ot-trust-boundaries.md
         │   ├── 06-basis-proof-of-concept.md
         │   ├── 07-production-realities-and-constraints.md
-        │   └── 08-threat-modeling-and-security-considerations.md
+        │   ├── 08-threat-modeling-and-security-considerations.md
+        │   ├── 09-future-direction.md
+        │   └── 10-conclusion.md
         ├── diagrams/                  # Architectural analysis diagrams
         │   ├── README.md              # Diagram index and conventions
         │   ├── identity-aware-authorization-flow.mmd
@@ -86,11 +88,11 @@ basis-architecture/
 
 **Location:** [`whitepapers/identity-aware-authorization-for-operational-technology/`](whitepapers/identity-aware-authorization-for-operational-technology/)
 
-**Status:** Draft — sections 01–08 in varying stages of completion
+**Status:** Mature Draft — all ten sections complete
 
-This paper examines how identity-aware authorization can be applied to operational technology environments, with building automation systems as the primary domain. It covers the current state of OT authorization, the architectural patterns required for identity-aware models, trust boundary analysis, a proof-of-concept implementation against those patterns, the production engineering realities that govern what deployment actually requires, and architectural threat analysis specific to the authorization layer.
+This paper examines how identity-aware authorization can be applied to operational technology environments, with building automation systems as the primary domain. It covers the current state of OT authorization, the architectural patterns required for identity-aware models, trust boundary analysis, a proof-of-concept implementation against those patterns, the production engineering realities that govern what deployment actually requires, architectural threat analysis specific to the authorization layer, open engineering problems in identity-aware OT authorization, and a concluding synthesis of the paper's architectural and operational findings.
 
-The paper's analysis emphasizes operational realism throughout. It treats OT-specific constraints — long asset lifecycles, availability requirements, intermittent connectivity, legacy protocol stacks, narrow maintenance windows — as first-order design inputs rather than edge cases. Sections on production deployment address synchronization complexity, degraded operation, governance ownership, and distributed coordination tradeoffs that architectural descriptions typically abstract away.
+The paper's analysis emphasizes operational realism throughout. It treats OT-specific constraints — long asset lifecycles, availability requirements, intermittent connectivity, legacy protocol stacks, narrow maintenance windows — as first-order design inputs rather than edge cases. Sections on production deployment address synchronization complexity, degraded operation, governance ownership, and distributed coordination tradeoffs that architectural descriptions typically abstract away. The paper's consistent position is that identity-aware authorization redistributes operational complexity rather than eliminating it, and that deployment realities shape the architecture more than conceptual purity can.
 
 The master document at [`paper.md`](whitepapers/identity-aware-authorization-for-operational-technology/paper.md) provides the abstract, table of contents, section status, section summaries, diagram index, and editorial notes.
 
@@ -103,6 +105,8 @@ The master document at [`paper.md`](whitepapers/identity-aware-authorization-for
 - [06 — The BASIS Proof-of-Concept](whitepapers/identity-aware-authorization-for-operational-technology/sections/06-basis-proof-of-concept.md) — PoC scope, implementation analysis, validated claims, and unvalidated properties
 - [07 — Production Realities and Constraints](whitepapers/identity-aware-authorization-for-operational-technology/sections/07-production-realities-and-constraints.md) — operational engineering challenges: HA, policy distribution, cache synchronization, lifecycle management, governance
 - [08 — Threat Modeling and Security Considerations](whitepapers/identity-aware-authorization-for-operational-technology/sections/08-threat-modeling-and-security-considerations.md) — threat analysis across nine categories with architectural mitigations and residual risk assessment
+- [09 — Future Direction](whitepapers/identity-aware-authorization-for-operational-technology/sections/09-future-direction.md) — open engineering problems: policy federation, device identity at scale, safety-authorization interaction, governance evolution, and the structural constraints that architectural refinement is unlikely to resolve
+- [10 — Conclusion](whitepapers/identity-aware-authorization-for-operational-technology/sections/10-conclusion.md) — synthesis of the paper's architectural and operational analysis; authorization as operational infrastructure; complexity redistribution; long-term architectural uncertainty; final perspective
 
 ---
 

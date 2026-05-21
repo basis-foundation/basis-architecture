@@ -1,6 +1,6 @@
 # Identity-Aware Authorization for Operational Technology
 
-**Status:** Draft — active development
+**Status:** Mature Draft — final stabilization
 **Repository:** `basis-architecture`
 **Last structural revision:** See git log
 
@@ -30,9 +30,9 @@ The paper is grounded in the BASIS (Building Automation Secure Identity Service)
 | 06 | [The BASIS Proof-of-Concept](sections/06-basis-proof-of-concept.md) | `sections/06-basis-proof-of-concept.md` | Mature Draft |
 | 07 | [Production Realities and Constraints](sections/07-production-realities-and-constraints.md) | `sections/07-production-realities-and-constraints.md` | Mature Draft |
 | 08 | [Threat Modeling and Security Considerations](sections/08-threat-modeling-and-security-considerations.md) | `sections/08-threat-modeling-and-security-considerations.md` | Mature Draft |
-| 09 | Future Direction | `sections/09-future-directions.md` | Not started |
-| 10 | Conclusion | — | Not started |
-| — | [References](references/sources.md) | `references/sources.md` | In progress |
+| 09 | [Future Direction](sections/09-future-direction.md) | `sections/09-future-direction.md` | Mature Draft |
+| 10 | [Conclusion](sections/10-conclusion.md) | `sections/10-conclusion.md` | Mature Draft |
+| — | [References](references/sources.md) | `references/sources.md` | Complete |
 
 ---
 
@@ -150,17 +150,27 @@ Identifies and analyzes threats that are specifically relevant to, or materially
 
 ---
 
-### 09 — Future Direction *(stub)*
+### 09 — Future Direction
 
-*[sections/09-future-directions.md](sections/09-future-directions.md)*
+*[sections/09-future-direction.md](sections/09-future-direction.md)*
 
-*Planned content:* Open research and engineering questions in identity-aware OT authorization. Topics may include: lightweight authentication protocols for resource-constrained field devices; hardware attestation at the device level; standardization of identity context in OT protocols; anomaly detection based on authorization decision patterns; and the long-term trajectory of OT IAM as protocol ecosystems evolve.
+Examines open engineering problems in identity-aware OT authorization as a characterization of persistent constraints rather than a development roadmap. The section is explicit that it does not describe a trajectory — it describes the space of problems that remain unresolved and explains why many of them are hard.
+
+Topics include: distributed policy coordination at scale and the limitations of the centralized-engine model as deployments become geographically dispersed; identity federation across organizational boundaries and the revocation coordination problems that single-organization federation patterns do not address; device identity enrollment and certificate lifecycle management over the multi-decade operational life of OT assets; fine-grained and context-aware authorization under the latency and determinism constraints of OT environments; policy validation, verification, and explainability tooling in a distributed enforcement environment with persistently heterogeneous policy state across the fleet; safety-authorization interaction and the absence of shared analysis methods spanning security and functional safety disciplines; operational workflow integration and the tension between procedural completeness and emergency usability; governance model evolution across multi-site and multi-organization deployments; cross-vendor and cross-protocol interoperability and the limits of specification-derived adapter normalization; reliability modeling for distributed authorization infrastructure across long deployment lifecycles; edge and partially connected architectures and the operational conditions that the current cache-and-synchronize model does not fully address; and the absence of OT-specific authorization standards and the challenges of cross-sector coordination.
+
+Closes by identifying the tensions that future architectural development is unlikely to resolve: CAP theorem constraints that produce bounded inconsistency are not engineering deficiencies; organizational fragmentation reflects structures that have legitimate reasons to exist; the operational continuity priority that creates pressure for fail-open behavior reflects a genuine operational reality rather than a governance failure. Future OT authorization deployments will almost certainly remain heterogeneous across organizations and sites, shaped by deployment-specific operational requirements rather than converging on a universal model. The realistic expectation is a well-characterized set of deployment patterns — operationally constrained and organizationally negotiated — rather than a solved and standardized architecture.
 
 ---
 
-### 10 — Conclusion *(stub)*
+### 10 — Conclusion
 
-*Planned content:* Synthesis of the paper's findings. Will summarize what the authorization architecture provides, what it does not provide, and what the BASIS PoC demonstrated and left open. Will close with the paper's core claim: that identity-aware authorization is a tractable engineering problem in OT environments, that it requires architectural accommodation of OT-specific constraints, and that the gap between current practice and this model is narrowing incrementally through deployable components rather than wholesale infrastructure replacement.
+*[sections/10-conclusion.md](sections/10-conclusion.md)*
+
+Synthesizes the paper's architectural and operational analysis into a restrained closing reflection. The section does not recapitulate earlier sections sequentially or introduce new concepts; it draws out the implications of what the preceding analysis, taken together, reveals about the nature of identity-aware authorization as an engineering discipline applied to OT environments.
+
+Organized into five subsections. **Closing Architectural Reflection** affirms that the architecture's conceptual case is coherent while introducing the complexity-redistribution framing: the architecture does not reduce complexity, it moves it from network administration into policy governance, credential lifecycle, synchronization infrastructure, and organizational coordination. **Operational Realities and Persistent Constraints** names the structural constraints from Section 07 — synchronization complexity, credential revocation within the staleness window, fail behavior design, lifecycle sustainability accumulation — as features of OT deployment that any authorization architecture must accommodate rather than as solvable engineering deficiencies. **Authorization as Operational Infrastructure** articulates the section's strongest normative claim: identity-aware authorization cannot be administered as a security overlay separate from operational systems; it carries the same availability requirements, change management obligations, lifecycle burden, and governance requirements as the OT systems it governs, and must be designed, monitored, and operated accordingly. **Long-Term Architectural Uncertainty** names the tensions that architectural refinement is unlikely to dissolve — CAP theorem constraints, organizational fragmentation, the absence of OT-specific authorization standards, the diversity of operational requirements across OT sectors — and closes with the explicit position that future deployments will remain heterogeneous, deployment-specific, and operationally negotiated rather than converging on a universal model. **Final Perspective** restates the case for the architectural direction without triumphalism, acknowledges the partiality of the improvement, and closes on the paper's consistent positioning: the architecture is a starting point, not a conclusion.
+
+The section reinforces throughout that identity-aware authorization in OT environments is not a solved architectural problem. It remains operationally difficult, deployment-specific, synchronization-constrained, governance-dependent, and organizationally negotiated. The most realistic trajectory is incremental and heterogeneous, shaped by deployment realities rather than architectural idealism.
 
 ---
 
@@ -181,12 +191,12 @@ Diagrams associated with this paper are maintained in the [`diagrams/`](diagrams
 
 ## Editorial Notes
 
-Sections 01–08 are drafted. Sections 01–05 have been reviewed for tone and content consistency. Sections 06–08 are mature drafts — substantively complete but not yet through a final consistency review pass. Sections 09 (Future Direction) and 10 (Conclusion) are not yet started.
+All ten sections are drafted as mature drafts. Sections 01–05 have been reviewed for tone and content consistency. Sections 06–10 are substantively complete and have undergone a final cross-paper stabilization pass for terminology, status, and structural consistency.
 
-The paper has reached a stage where conceptual cohesion, architectural consistency, and stable terminology are more important than expansion. New sections and revisions should be evaluated against whether they strengthen the paper's central argument — that identity-aware authorization in OT environments requires engineering the operational, synchronization, governance, and deployment tradeoffs carefully rather than abstracting them away — rather than whether they add coverage of adjacent topics.
+The paper is at the stage where stability and coherence take priority over expansion. Revisions should be evaluated against whether they strengthen the paper's central argument — that identity-aware authorization in OT environments requires engineering the operational, synchronization, governance, and deployment tradeoffs carefully rather than abstracting them away — rather than whether they add coverage of adjacent topics.
 
-Sections 01 (Non-Goals) and 08 (Threat Modeling) should be reviewed whenever a new section is drafted to ensure that scope boundaries remain accurate and that the threat analysis remains consistent with the architecture as described.
+Sections 01 (Non-Goals) and 08 (Threat Modeling) should be reviewed whenever substantive revisions are made to the architecture sections, to ensure that scope boundaries remain accurate and that the threat analysis remains consistent with the architecture as described.
 
-The Introduction and Motivation, Section Summaries, and Diagram Index in this master document should be kept current as section content is revised. The section summaries are the primary way a reader scans the paper's coverage before reading individual sections; they should accurately reflect conceptual emphasis, not just list topics.
+The Introduction and Motivation, Section Summaries, and Diagram Index in this master document should be kept current if section content is revised. The section summaries are the primary way a reader scans the paper's coverage before reading individual sections; they should accurately reflect conceptual emphasis, not just list topics.
 
 Contributions to this paper should follow the writing guidelines in [`docs/standards/writing-guidelines.md`](../../docs/standards/writing-guidelines.md). The diagram standards apply to all diagrams added to the paper.
