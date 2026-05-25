@@ -1,8 +1,18 @@
 # BASIS Architecture
 
-This repository contains architecture documentation, white papers, threat models, architecture decision records (ADRs), and diagramming standards for the BASIS (Building Automation Secure Identity Service) research project.
+This repository contains architecture documentation, white papers, threat models, architecture decision records (ADRs), and diagramming standards for the BASIS ecosystem.
 
-BASIS explores identity-aware authorization, centralized policy enforcement, and auditability for operational technology (OT) environments. The work is focused on building automation systems (BAS) as a primary domain, with architectural patterns intended to be broadly applicable across OT contexts including data centers, hospitals, campuses, commercial buildings, and industrial facilities.
+BASIS is an open-source core services distribution for identity-aware authorization in operational technology (OT) environments, governed by the Basis Foundation. The work addresses identity-aware authorization, centralized policy enforcement, and auditability for OT environments, with building automation systems (BAS) as the primary domain. Architectural patterns are intended to be broadly applicable across OT contexts including data centers, hospitals, campuses, commercial buildings, and industrial facilities.
+
+The BASIS ecosystem consists of three distinct layers:
+
+- **Basis Foundation** — the nonprofit body that governs the open-source work, maintains architectural standards, and stewards the core services distribution
+- **BASIS Core Services Distribution** — the open-source, deployable set of components (basis-core, basis-gateway, basis-console, basis-adapters, basis-deploy, basis-schemas) that together provide a functional identity-aware authorization system
+- **BASAuth** — the future for-profit commercial company that builds enterprise products and managed services on top of the open-source distribution
+
+The architectural center of the distribution is **basis-core**, the isolated authorization kernel. basis-core owns the stable policy evaluation semantics, enforcement contracts, and audit event definitions that all other components in the distribution depend on. It does not depend on higher-level services, cloud infrastructure, identity providers, protocol stacks, or UI components.
+
+For a complete description of the ecosystem structure, component responsibilities, and dependency rules, see [`docs/architecture/basis-ecosystem.md`](docs/architecture/basis-ecosystem.md).
 
 ---
 
@@ -14,9 +24,13 @@ The repository does not contain application code, deployment configuration, or o
 
 ---
 
-## Relationship to BASIS PoC
+## Relationship to BASIS PoC and basis-core
 
-The BASIS proof-of-concept is a research implementation developed to validate the architectural patterns described in the white papers. It is not a production system and should not be treated as one. References to the PoC in this repository are illustrative — they demonstrate that a specific architectural pattern is implementable, not that the implementation is production-ready or that the specific technology choices are prescriptive.
+The BASIS proof-of-concept (basis-poc) is a research implementation developed to validate the architectural patterns described in the white papers. It is not a production system and should not be treated as one. References to the PoC in this repository are illustrative — they demonstrate that specific architectural patterns are implementable, not that the implementation is production-ready or that the specific technology choices are prescriptive.
+
+The PoC is also distinct from basis-core. Where the PoC is a breadth-first research artifact that validated core mechanisms in a monolithic, containerized form, basis-core is the isolated authorization kernel that represents the architectural direction that emerged from the lessons the PoC surfaced. The PoC demonstrated that identity propagation, policy evaluation, and protocol-agnostic enforcement are logically coherent and implementable. basis-core defines those mechanisms as stable, separately deployable evaluation semantics that higher-level services depend on.
+
+Section 06 of the white paper ("The BASIS Proof-of-Concept") addresses this distinction directly, including a dedicated subsection titled "From PoC to Core Services Distribution."
 
 The PoC implementation repositories are separate from this architecture repository. This repository documents the *why* and *what* of the architecture; the implementation repositories contain the *how*.
 
@@ -40,7 +54,7 @@ These questions are examined through a combination of architectural analysis and
 
 ## Repository Structure
 
-```
+```text
 basis-architecture/
 ├── README.md                          # This file
 ├── LICENSE
@@ -48,6 +62,8 @@ basis-architecture/
 ├── docs/
 │   ├── glossary.md                    # Canonical terminology definitions
 │   ├── architecture-principles.md    # Guiding architectural principles
+│   ├── architecture/
+│   │   └── basis-ecosystem.md        # Ecosystem structure: Foundation, distribution, BASAuth, component boundaries
 │   └── standards/
 │       ├── diagram-standards.md      # Diagram conventions, categories, and visual style
 │       ├── terminology-guidelines.md # Controlled terminology and usage rules
@@ -111,6 +127,12 @@ The master document at [`paper.md`](whitepapers/identity-aware-authorization-for
 ---
 
 ## Architecture Standards
+
+### Ecosystem Structure
+
+[`docs/architecture/basis-ecosystem.md`](docs/architecture/basis-ecosystem.md)
+
+Describes the three layers of the BASIS ecosystem — the Basis Foundation, the BASIS Core Services Distribution, and BASAuth — along with the component structure of the distribution (basis-core, basis-gateway, basis-console, basis-adapters, basis-deploy, basis-schemas), the dependency rules that govern relationships between them, and the boundaries that define what belongs in basis-core and what must stay outside it.
 
 ### Glossary
 

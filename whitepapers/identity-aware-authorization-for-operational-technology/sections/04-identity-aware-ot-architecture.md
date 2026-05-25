@@ -20,6 +20,37 @@ The diagram depicts these three functions across four trust zones. The Central S
 
 ---
 
+## Architecture Model and Implementation Scope
+
+The architecture described in this section is a full system model. It defines the complete set of components, zones, and flows required for identity-aware authorization in OT environments: the identity provider, the policy engine, the enforcement points, the protocol adapters, the local policy cache, and the audit pipeline — each in its defined position relative to the others.
+
+This model is intentionally independent of any specific implementation. It describes what must exist and how those things must relate. It does not prescribe which software component implements which role, or how the roles are packaged and distributed.
+
+Within this architecture, the authorization kernel — the component responsible for policy evaluation semantics, enforcement contracts, and audit event definitions — represents the stable, isolated core that all other components depend on. In the BASIS ecosystem, this role corresponds to basis-core.
+
+**What basis-core owns within this architecture:**
+
+- The normalized decision semantics: the canonical meaning of `allow`, `deny`, and `not applicable` decisions and the conditions under which each applies
+- The policy evaluation behavior: the logic that takes subject identity, resource descriptor, action, and applicable policy as inputs and produces a deterministic authorization decision
+- The enforcement semantics: the contracts that define what enforcement points must evaluate and how they must behave when evaluation cannot complete
+- The failure mode contracts: the defined behavior for conditions where evaluation cannot proceed normally
+- The audit event contracts: the canonical schema for authorization decision events, including required fields, their types, and the conditions under which events must be emitted
+
+**What basis-core does not own:**
+
+- Identity provider operation — authenticating subjects and issuing credentials is the responsibility of the identity layer above the kernel
+- Protocol adapter implementation — normalizing BACnet, Modbus, MQTT, or other field-protocol messages is the responsibility of the adapter layer (basis-adapters in the ecosystem)
+- Runtime API hosting — receiving authorization requests over a network, managing sessions, and returning decisions to callers is the responsibility of the gateway layer (basis-gateway)
+- User interfaces — operator consoles, administrative dashboards, and policy review tools belong in a separate console component
+- Telemetry pipelines — OT telemetry collection and routing are operational data concerns that sit outside the authorization kernel
+- Deployment and cloud infrastructure — basis-core must not depend on cloud platform SDKs, specific database runtimes, deployment orchestrators, or cloud-specific service integrations
+
+These boundaries are not implementation details. They are architectural constraints. A kernel that imports from protocol stacks, cloud SDKs, or UI frameworks cannot be deployed portably in the range of OT environments the architecture is designed to serve. A kernel with narrow, stable dependencies can be tested independently, versioned conservatively, and deployed in environments where the surrounding infrastructure changes frequently.
+
+Higher-level services — the gateway, the console, the adapter implementations, the deployment tooling — sit above the kernel and depend on it. They provide the operational surface that makes the architecture usable. The kernel provides the stable evaluation semantics that they all share.
+
+---
+
 ## Authorization as a System-Level Concern
 
 The core architectural claim of this paper is that authorization cannot be effectively managed as a local property of individual protocols and devices when the environment in which those protocols and devices operate has become interconnected, remotely accessible, and subject to audit and accountability requirements.

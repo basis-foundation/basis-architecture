@@ -1,6 +1,36 @@
 # Glossary
 
-This glossary defines terminology used throughout the BASIS (Building Automation Secure Identity Service) architecture documentation. Terms are drawn from the domains of operational technology, identity and access management, and distributed systems security. Definitions are intended as engineering reference material — precise enough to support design decisions and implementation work, and consistent with the specific usage of each term within this project.
+This glossary defines terminology used throughout the BASIS architecture documentation. Terms are drawn from the domains of operational technology, identity and access management, distributed systems security, and the BASIS ecosystem itself. Definitions are intended as engineering reference material — precise enough to support design decisions and implementation work, and consistent with the specific usage of each term within this project.
+
+---
+
+## Authorization Kernel
+
+The isolated, minimal component responsible for policy evaluation semantics, enforcement contracts, and audit event definitions in the BASIS ecosystem. The authorization kernel — implemented as basis-core — owns the stable logic that all other components in the distribution depend on for determining whether a request is permitted. It does not host a runtime API, operate protocol adapters, provide a user interface, or depend on cloud infrastructure or identity providers. See also: **BASIS Core Services Distribution**, **basis-core**.
+
+---
+
+## BASIS Core Services Distribution
+
+The open-source, deployable set of components maintained under Basis Foundation governance. The distribution includes basis-core (the authorization kernel), basis-gateway (the API and runtime wrapper), basis-console (the operator and administrative UI), basis-adapters (protocol normalization adapters), basis-deploy (deployment and distribution tooling), and basis-schemas (shared schemas and compatibility definitions). The distribution is designed to be complete enough for real deployments without requiring commercial services from BASAuth. See also: **Basis Foundation**, **BASAuth**.
+
+---
+
+## Basis Foundation
+
+The nonprofit open-source body responsible for governing the BASIS Core Services Distribution, maintaining the architectural standards and design principles of the BASIS ecosystem, and stewarding the open-source repositories under the BASIS namespace. The Foundation is not a commercial entity and does not operate managed services. See also: **BASIS Core Services Distribution**, **BASAuth**.
+
+---
+
+## BASAuth
+
+The future for-profit commercial company that builds enterprise products and managed services on top of the BASIS Core Services Distribution. BASAuth commercial offerings address managed hosting, enterprise support, fleet management, advanced policy workflows, audit and compliance tooling, adapter certification, enterprise integrations, and related operational services. BASAuth does not own or modify the open-source kernel or the core distribution components. See also: **BASIS Core Services Distribution**, **Basis Foundation**.
+
+---
+
+## basis-core
+
+The isolated authorization kernel in the BASIS Core Services Distribution. basis-core implements the policy evaluation logic, enforcement semantics, failure mode contracts, and audit event schema that all other distribution components depend on. basis-core must not depend on basis-gateway, basis-console, basis-adapters, basis-deploy, identity providers, cloud platform SDKs, or UI frameworks. See also: **Authorization Kernel**, **BASIS Core Services Distribution**.
 
 ---
 

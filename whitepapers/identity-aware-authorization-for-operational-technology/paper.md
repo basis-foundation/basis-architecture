@@ -14,7 +14,7 @@ The conditions that made those mechanisms sufficient have changed. OT networks a
 
 This paper examines how identity-aware authorization — the use of verified identity context and centralized policy evaluation to make access decisions — can be applied to OT environments. It describes the architectural patterns required to do so, the operational constraints that complicate implementation, the threats that the authorization layer addresses and the ones it does not, and the directions in which this problem space is likely to develop.
 
-The paper is grounded in the BASIS (Building Automation Secure Identity Service) proof-of-concept, which was developed to validate the feasibility of these patterns in a realistic BAS context. BASIS is a research artifact, not a production system. The architectural patterns described here are intended to be applicable beyond the specific implementation choices made in the PoC.
+The paper is grounded in the BASIS proof-of-concept (basis-poc), which was developed to validate the feasibility of these patterns in a realistic BAS context. The proof-of-concept is a research artifact, not a production system. The architectural patterns described here are intended to be applicable beyond the specific implementation choices made in the PoC, and the paper's analysis informed the development of basis-core — the isolated authorization kernel that represents the architectural direction the ecosystem is building toward. BASIS itself refers to the open-source core services distribution governed by the Basis Foundation, not to the PoC alone.
 
 ---
 
@@ -96,7 +96,7 @@ Extends the conceptual architecture from Section 04 with analysis of where trust
 
 *[sections/06-basis-proof-of-concept.md](sections/06-basis-proof-of-concept.md)*
 
-Documents the BASIS PoC as a research artifact: its scope, implementation choices, validated claims, and explicitly unvalidated properties. The PoC was scoped breadth-first — designed to exercise the full path from operator authentication through policy evaluation, enforcement, protocol dispatch, and audit recording at limited scope, using simulated OT resources rather than physical hardware, with reproducibility as an explicit design constraint.
+Documents the BASIS PoC (basis-poc) as a research artifact: its scope, implementation choices, validated claims, and explicitly unvalidated properties. The PoC was scoped breadth-first — designed to exercise the full path from operator authentication through policy evaluation, enforcement, protocol dispatch, and audit recording at limited scope, using simulated OT resources rather than physical hardware, with reproducibility as an explicit design constraint.
 
 The implementation is organized into five layers — operator, identity and access, authorization and API, protocol adapter, and simulated OT resources — all running within a single Docker Compose stack. Keycloak serves as the identity provider issuing OIDC tokens. A FastAPI application combines the enforcement point and policy engine, implementing RBAC through a `PolicyEngine` with `RoleBasedPolicy`. Two protocol adapters — MQTT and Modbus TCP — implement a shared `AdapterBase` interface, each translating the authorization model's resource-action vocabulary into protocol-specific operations while keeping the policy evaluation path protocol-agnostic. A `DualAuditStore` records authorization decisions and dispatch outcomes to both SQLite and structured stdout.
 
@@ -107,6 +107,8 @@ The section identifies three key architectural observations embedded in the impl
 **What the PoC did not demonstrate:** Distributed policy evaluation and local policy cache operation; production-scale OT resource coverage; operational latency under realistic command volumes; high availability; real industrial protocol handling; safety constraint interaction; or production security hardening.
 
 The section closes with lessons from the implementation: that the enforcement point's correctness depends on semantic accuracy of upstream subject and resource resolution, not only structural gate behavior; that audit schema design requires operational input that a research implementation cannot supply; and that reproducibility as a design constraint surfaces assumptions that would otherwise remain implicit.
+
+A dedicated subsection, "From PoC to Core Services Distribution," explains the relationship between the PoC and basis-core, distinguishes the research artifact from the isolated kernel that emerged from its lessons, and describes the future open-source services (basis-gateway, basis-console, basis-adapters, basis-deploy, basis-schemas) that together form the BASIS Core Services Distribution.
 
 ---
 

@@ -134,20 +134,30 @@ The word "security" is often used to mean different things in different contexts
 
 ### 4.1 What BASIS is, in this repository
 
-BASIS (Building Automation Secure Identity Service) is a proof-of-concept research implementation. It should be referred to as such. It is not a product, a platform, a framework, or a service offering. It is a research artifact used to validate the architectural patterns described in the white paper.
+BASIS refers to the open-source core services distribution governed by the Basis Foundation. The distribution is intended to provide a complete, genuinely useful set of components for identity-aware authorization in OT environments. It is not a single product, a commercial offering, or a finished system — it is an open-source project with defined component boundaries, governance, and architectural standards.
 
-When referring to BASIS:
-- "The BASIS proof-of-concept" or "the BASIS PoC" is correct.
-- "BASIS demonstrates that..." followed by a specific, demonstrable claim is acceptable.
-- "BASIS solves..." or "BASIS enables..." as general capability claims is not acceptable.
+**The three layers of the BASIS ecosystem** are described in [`docs/architecture/basis-ecosystem.md`](../architecture/basis-ecosystem.md). Content in this repository should be consistent with that document.
+
+When referring to the components:
+
+- "the BASIS proof-of-concept" or "the BASIS PoC" or "basis-poc" refers specifically to the research implementation that validated the core architectural mechanisms. It is a research artifact, not a production system.
+- "basis-core" refers to the isolated authorization kernel — the stable evaluation component that the other distribution services depend on. It is distinct from the PoC.
+- "the BASIS Core Services Distribution" refers to the full set of open-source components (basis-core, basis-gateway, basis-console, basis-adapters, basis-deploy, basis-schemas).
+- "BASAuth" refers to the future for-profit commercial entity that builds enterprise services on top of the open-source distribution. Do not describe BASAuth capabilities as part of the open-source distribution, and do not describe open-source distribution capabilities as if they require BASAuth.
+
+Do not conflate the PoC with basis-core. The PoC demonstrated architectural feasibility in a monolithic, research-scope form. basis-core is the isolated kernel direction that emerged from the lessons the PoC surfaced. They are related but distinct things.
+
+Do not describe the BASIS Core Services Distribution as artificially limited or as a "freemium" crippled version of a commercial product. The distribution is designed to be complete enough for real deployments. Commercial services from BASAuth address managed operations, fleet management, enterprise integrations, and similar concerns — they do not address missing authorization capability that the distribution intentionally withholds.
 
 ### 4.2 Distinguishing architecture from implementation
 
 Maintain a clear distinction between the architectural patterns described in the white paper (which are general and technology-agnostic) and the specific implementation choices made in the BASIS PoC (which are specific and illustrative). Language like "the architecture requires Keycloak" conflates the two. Language like "the BASIS PoC uses Keycloak as its identity provider" is accurate.
 
-### 4.3 No forward-looking BASIS claims
+Similarly, maintain a clear distinction between what basis-core owns (policy evaluation semantics, enforcement contracts, audit event schemas) and what higher-level components own (API hosting, protocol normalization, user interfaces, deployment tooling). Do not attribute to the kernel capabilities that belong in the gateway, adapter, or console layers.
 
-Do not make claims about what BASIS will do in future versions, what features are planned, or what directions the project will take. Documentation in this repository reflects what has been designed and implemented, not what might be designed or implemented.
+### 4.3 No forward-looking claims about unbuilt components
+
+Documentation in this repository reflects what has been designed, specified, or implemented. When describing components of the BASIS Core Services Distribution that are defined in architecture but not yet implemented, use language that clearly indicates their status — "defined in architecture," "specified but not yet implemented," or similar. Do not describe planned future components as if they are currently available.
 
 ---
 

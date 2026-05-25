@@ -20,11 +20,13 @@ The critique of network segmentation as a *sole* authorization mechanism is not 
 
 ---
 
-## This Paper Does Not Claim BASIS Is Production-Ready
+## This Paper Does Not Claim the Proof-of-Concept Is Production-Ready
 
-The BASIS proof-of-concept referenced in this paper is a research implementation. It demonstrates that the architectural patterns described here are implementable and coherent, not that they are ready for deployment in production OT environments.
+The BASIS proof-of-concept (basis-poc) referenced in this paper is a research implementation. It demonstrates that the architectural patterns described here are implementable and coherent, not that they are ready for deployment in production OT environments.
 
 Production readiness requires sustained validation against real operational conditions, formal security review, interoperability testing against a meaningful range of OT hardware and protocols, and operational tooling that does not yet exist at the maturity level appropriate for critical infrastructure. This paper does not claim that threshold has been reached, and readers should not interpret the PoC work as evidence that it has.
+
+The BASIS Core Services Distribution — the open-source ecosystem of components governed by the Basis Foundation — represents the direction that builds toward production capability. basis-core, basis-gateway, basis-adapters, and the other distribution components address the engineering separation and operational discipline that the PoC intentionally deferred. The distribution's readiness for any specific production deployment must be evaluated independently against the constraints of that deployment.
 
 ---
 

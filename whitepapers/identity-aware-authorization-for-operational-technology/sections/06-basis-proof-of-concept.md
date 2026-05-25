@@ -4,7 +4,7 @@ Sections 04 and 05 described identity-aware authorization in architectural terms
 
 The BASIS proof-of-concept was built to perform that confirmation at a limited but concrete scope. Its purpose was not to produce a deployable system, but to validate that the core mechanisms of the architecture — identity propagation, explicit policy evaluation, enforcement at a defined boundary, protocol normalization, and audit recording — are coherent enough to implement in a connected form. The implementation revealed where the abstractions require additional specification, where assumptions embedded in the conceptual architecture do not map cleanly to available tooling, and where gaps between a development implementation and a production-grade one are larger than the architectural description suggests.
 
-The analysis that follows treats the BASIS PoC as a research artifact. It describes what was built, why specific choices were made, what the implementation demonstrated, and what it explicitly did not demonstrate. It does not represent BASIS as a production architecture, a finished platform, or evidence that identity-aware OT authorization is a solved problem.
+The analysis that follows treats the BASIS PoC as a research artifact. It describes what was built, why specific choices were made, what the implementation demonstrated, and what it explicitly did not demonstrate. It does not represent the PoC as a production architecture, a finished platform, or evidence that identity-aware OT authorization is a solved problem. The PoC is also distinct from basis-core — the isolated authorization kernel that represents the architectural direction that emerged from PoC lessons. The relationship between the two is examined in the "From PoC to Core Services Distribution" section below.
 
 ---
 
@@ -193,6 +193,30 @@ Several observations from building the PoC are directly relevant to how the conc
 **Reproducibility as a constraint surfaced assumptions that would otherwise remain implicit.** Constraining the PoC to containerized, open-source components deployable from a public repository forced every external dependency to be explicitly declared and documented. This made the implementation's actual dependency set visible in a way that an implementation built against existing shared infrastructure would not. The limitations of the development configuration — single-instance Keycloak, no TLS, no HA — are explicit and acknowledged rather than inherited and overlooked. That explicitness is what makes the configuration useful as a starting point for reasoning about what a production deployment would require.
 
 > **Key Architectural Observation:** Reproducibility is not merely a convenience property for a research implementation — it is an epistemic one. An architectural exploration whose assumptions are hidden in infrastructure that the reader cannot inspect is harder to evaluate critically than one whose assumptions are visible in a configuration file. The PoC's containerized approach trades operational realism for analytical transparency. That tradeoff is appropriate for an exploratory implementation whose purpose is to make the architecture's structure visible, not to validate it under operational conditions.
+
+---
+
+## From PoC to Core Services Distribution
+
+The BASIS proof-of-concept is not the same thing as basis-core, and the two should not be conflated. Understanding their relationship requires distinguishing between the role the PoC served and the architectural direction it informed.
+
+**The PoC as a research artifact.** The basis-poc implementation was built to answer a specific question: can the core mechanisms of the identity-aware authorization architecture — identity propagation, explicit policy evaluation, enforcement at a defined boundary, protocol normalization, and audit recording — be assembled into a coherent, functioning system? It was a breadth-first, research-scope implementation designed to validate architectural claims and surface implementation-level gaps. It was never intended to be deployed in production, and the implementation choices it made (single-container Keycloak, in-memory Modbus simulation, SQLite audit store, no TLS on the broker) were appropriate for a development environment and inappropriate for anything else.
+
+**basis-core as the extracted kernel.** The lessons learned from building the PoC — the enforcement-point abstraction is more load-bearing than the conceptual description suggests, the audit schema requires operational input, the monolithic co-location of identity resolution and policy evaluation conceals the operational separation that resilience requires — informed a clearer understanding of what the authorization kernel specifically needs to own and what it must not absorb. basis-core is not the PoC improved; it is the stable, isolated authorization kernel that the PoC's architecture implies but its implementation did not separate. Where the PoC collapsed identity resolution, policy evaluation, and enforcement into a single process, basis-core defines only the policy evaluation and enforcement semantics that a properly separated architecture requires at its center.
+
+**What basis-core takes from the PoC.** The PoC validated that policy evaluation and enforcement are logically separable concerns that interact in a defined sequence. It demonstrated that protocol-agnostic authorization is achievable through the adapter abstraction. It showed that the dual-event audit structure — authorization decision recorded independently of dispatch outcome — is implementable. basis-core inherits these validated structural relationships as architectural commitments. It does not inherit the PoC's implementation choices.
+
+**What the PoC deferred.** The PoC explicitly did not implement the local policy cache, the policy distribution mechanism, or the operational separation between the enforcement point and the policy engine. These deferred elements are precisely the boundary between basis-core (which owns evaluation semantics) and basis-gateway (which owns the runtime that distributes policy and hosts the enforcement surface). The PoC made that boundary visible by demonstrating what happens when it is not present: a monolithic implementation that cannot validate the distributed properties the architecture requires.
+
+**Future open-source services.** The BASIS Core Services Distribution, governed by the Basis Foundation, extends beyond the kernel toward a complete deployable system. Future open-source components may include:
+
+- **basis-gateway** — an API and runtime wrapper around the kernel that handles request routing, policy distribution to remote enforcement points, and session management
+- **basis-console** — an operator and administrative interface for policy inspection, audit review, and basic operational management
+- **basis-adapters** — a library of protocol-specific adapter implementations for BACnet, Modbus, MQTT, and other OT protocols, each conforming to the normalization contracts defined by basis-core
+- **basis-deploy** — deployment and distribution tooling for packaging the core services distribution for OT environments
+- **basis-schemas** — the shared schema and contract definitions that allow all components to interoperate
+
+Each of these represents a defined role in the full system model described in Sections 04 and 05. The PoC demonstrated that a single monolithic implementation can exercise those roles together. The Core Services Distribution expresses them as separately maintained, separately deployable components — each with its own scope and its own dependency relationship to the kernel.
 
 ---
 
