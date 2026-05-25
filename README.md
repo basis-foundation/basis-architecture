@@ -24,6 +24,42 @@ The repository does not contain application code, deployment configuration, or o
 
 ---
 
+## How to Use This Repository
+
+### Start Here
+
+If you are new to this repository, start with the white paper abstract and the ecosystem structure document:
+
+- [`whitepapers/identity-aware-authorization-for-operational-technology/paper.md`](whitepapers/identity-aware-authorization-for-operational-technology/paper.md) — the master document for the identity-aware authorization white paper: abstract, table of contents, section summaries, and diagram index
+- [`docs/architecture/basis-ecosystem.md`](docs/architecture/basis-ecosystem.md) — the three layers of the BASIS ecosystem, component responsibilities, and dependency rules
+- [`docs/glossary.md`](docs/glossary.md) — canonical definitions for all terms used across the documentation
+
+### For Architecture Reviewers
+
+- [`docs/architecture-principles.md`](docs/architecture-principles.md) — the fifteen guiding principles
+- [`docs/architecture/kernel-boundary-rules.md`](docs/architecture/kernel-boundary-rules.md) — the enforceable rules for the basis-core isolation boundary
+- [`docs/architecture/compatibility-philosophy.md`](docs/architecture/compatibility-philosophy.md) — compatibility and stability commitments for shared contracts
+- [`docs/architecture/reference-vs-implementation.md`](docs/architecture/reference-vs-implementation.md) — the distinction between conceptual architecture, reference architecture, and implementation
+- [`docs/adr/README.md`](docs/adr/README.md) — the ADR process and when an ADR is required
+
+### For Contributors
+
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribution scope, writing expectations, and review criteria
+- [`docs/standards/writing-guidelines.md`](docs/standards/writing-guidelines.md) — tone, prohibited language, and style
+- [`docs/standards/terminology-rules.md`](docs/standards/terminology-rules.md) — canonical terminology and rules for introducing new terms
+- [`docs/standards/diagram-standards.md`](docs/standards/diagram-standards.md) — diagram conventions and lifecycle rules
+- [`GOVERNANCE.md`](GOVERNANCE.md) — governance model, ADR requirements, and basis-core boundary protection policy
+
+### For Implementation Repositories
+
+- [`docs/architecture/basis-ecosystem.md`](docs/architecture/basis-ecosystem.md) — component boundaries, dependency direction, and what belongs in each component
+- [`docs/architecture/kernel-boundary-rules.md`](docs/architecture/kernel-boundary-rules.md) — the non-negotiable rules for basis-core, including the boundary decision test and import hierarchy
+- [`docs/architecture/action-vocabulary.md`](docs/architecture/action-vocabulary.md) — action naming structure, conventions, and stability expectations
+- [`docs/architecture/compatibility-philosophy.md`](docs/architecture/compatibility-philosophy.md) — breaking change expectations and schema evolution philosophy
+- [`docs/adr/README.md`](docs/adr/README.md) — when implementation decisions require an ADR in this repository
+
+---
+
 ## Relationship to BASIS PoC and basis-core
 
 The BASIS proof-of-concept (basis-poc) is a research implementation developed to validate the architectural patterns described in the white papers. It is not a production system and should not be treated as one. References to the PoC in this repository are illustrative — they demonstrate that specific architectural patterns are implementable, not that the implementation is production-ready or that the specific technology choices are prescriptive.

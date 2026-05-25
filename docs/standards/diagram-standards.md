@@ -243,3 +243,37 @@ Diagrams must be readable by people with color vision deficiencies and must rema
 ```
 
 Alt-text for diagrams should describe structure and content, not just label the diagram type. "Architecture diagram" is not useful alt-text.
+
+---
+
+## 13. Diagrams as Architectural Aids
+
+Diagrams in this repository are architectural aids. They make structural relationships, component responsibilities, and flow semantics visible in a way that prose alone cannot. They are not authoritative specifications by themselves.
+
+**Textual semantics take precedence when ambiguity exists.** When a diagram appears to imply something that the accompanying prose does not explicitly state — or that contradicts what the prose states — the prose is authoritative. Diagrams are simplified representations; they omit detail deliberately. The prose that accompanies a diagram carries the full semantic content. Readers who interpret a diagram independently of its accompanying text may reach incorrect conclusions.
+
+**Diagrams are not the sole specification of a component's behavior.** A diagram that shows a component in a specific position does not specify the component's internal behavior, its failure modes, or its contract with adjacent components. Those specifications belong in prose — in white paper sections, ADRs, and architecture documents.
+
+**Conceptual diagrams do not prescribe deployment topology.** A conceptual diagram that shows a single policy engine instance does not require exactly one deployed instance in production. A diagram that co-locates components in the same zone does not require that those components be co-located on the same host. See [`docs/architecture/reference-vs-implementation.md`](../architecture/reference-vs-implementation.md) for the distinction between conceptual architecture and deployment realization.
+
+**Implementation-specific diagrams must be explicitly labeled.** Any diagram that shows specific technology choices, version numbers, specific database products, specific identity providers, or specific deployment infrastructure is an implementation diagram and must be labeled as such. An unlabeled diagram is assumed to be conceptual.
+
+---
+
+## 14. Diagram Lifecycle and Maintenance
+
+Diagrams age. A diagram that was accurate when it was committed may become inaccurate as the architecture evolves, component boundaries shift, or trust zone analysis is refined. Managing diagram accuracy over time requires explicit lifecycle rules.
+
+**The source file is the source of truth.** The `.mmd` or `.drawio` source file is the authoritative artifact for every diagram. Exported images (PNG, SVG) are derivative. When source and export conflict, the source is correct and the export must be regenerated. See Section 11 (Versioning and Source Control) for commit requirements.
+
+**Diagrams must be updated when the architecture they depict changes.** A diagram that no longer accurately reflects the architecture is worse than no diagram — it provides confident misinformation. When an architectural change affects a diagram, updating the diagram is part of the same pull request as the prose change, not a deferred follow-up.
+
+**Drift between prose and diagram is a defect.** When the prose describes an enforcement point at a specific zone boundary and the diagram does not show it, that is a defect in the diagram, not an acceptable divergence. Prose-diagram drift should be caught in review and corrected before merge.
+
+**Diagram ownership follows document ownership.** Diagrams that are part of a white paper section are owned by the same review process as that section. Shared reference diagrams in `docs/diagrams/` are owned by the Foundation standards process. Each diagram's companion specification document (where one exists) records the owner and the review expectations.
+
+**Diagram review is part of pull request review.** Changes to diagram source files must be described in the pull request in terms of what architectural content changed, not only in terms of what visual elements changed. A reviewer who cannot assess whether a diagram change is architecturally correct from the PR description alone has not been given enough information to review the change.
+
+**Exported images committed without updated source files will not be accepted.** An exported image that does not correspond to a committed, current source file is not reviewable and not maintainable. Source files must accompany all exports.
+
+**Diagrams that have become unmaintainable should be removed, not left in place.** A diagram that requires access to tooling no longer available, or whose source file has been lost, cannot be updated when the architecture changes. Such a diagram should be flagged for removal and replaced with a newly created diagram when the architectural need for it remains. A stale diagram that cannot be updated is a liability, not an asset.
