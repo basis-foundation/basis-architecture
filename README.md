@@ -134,6 +134,12 @@ The master document at [`paper.md`](whitepapers/identity-aware-authorization-for
 
 Describes the three layers of the BASIS ecosystem — the Basis Foundation, the BASIS Core Services Distribution, and BASAuth — along with the component structure of the distribution (basis-core, basis-gateway, basis-console, basis-adapters, basis-deploy, basis-schemas), the dependency rules that govern relationships between them, and the boundaries that define what belongs in basis-core and what must stay outside it.
 
+### Kernel Boundary Rules
+
+[`docs/kernel-boundary-rules.md`](docs/kernel-boundary-rules.md)
+
+The enforceable rules that protect basis-core as an isolated authorization kernel. Defines what may enter the kernel, what must stay outside it, the allowed subpackage responsibilities, the disallowed concerns and named technologies, a boundary decision test for evaluating proposed changes, the import boundary summary, and the relationship of basis-core to each surrounding component. This document is the review reference for any proposed change to basis-core.
+
 ### Glossary
 
 [`docs/glossary.md`](docs/glossary.md)
