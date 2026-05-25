@@ -176,6 +176,23 @@ This dependency is the reason that the control-plane path — from the policy en
 
 ---
 
+## Component Implementation of Enforcement Points
+
+The trust boundary analysis in this section describes enforcement points in terms of their architectural role — where they are positioned, what authorization questions they answer, and what trust transitions they manage. It does not specify which software component implements that role at each boundary.
+
+In the BASIS ecosystem, enforcement is implemented by components that depend on the authorization kernel:
+
+- **basis-gateway** hosts the authorization request lifecycle — receiving requests from subjects or forwarding systems, invoking the kernel for policy evaluation, and returning decisions. It is the runtime that enforcement points in the Operations Zone and Supervisory Zone typically surface as.
+- **basis-adapters** perform the normalization that makes field-protocol traffic legible to the authorization model. A protocol adapter translates a BACnet write or a Modbus register operation into the subject-resource-action representation that the kernel can evaluate. The adapter also applies the decision the kernel returns, permitting or blocking the protocol-level operation accordingly.
+
+The authorization kernel itself — basis-core — does not sit at trust boundaries as a deployed network component. It is the evaluation engine that gateway and adapter components call into. The distinction matters for understanding what the architecture requires at each boundary: the gateway or adapter is the deployed enforcement point; the kernel is the shared evaluation logic those enforcement points invoke.
+
+This division reflects a general principle in the ecosystem: **adapters normalize, the kernel evaluates, and gateway or adapter services apply decisions.** The kernel does not normalize protocol-specific inputs. The adapter does not define evaluation semantics. Each component remains responsible for the function it owns.
+
+The trust boundary topology described in this section is therefore a map of where gateway and adapter components must be positioned — not a map of where the kernel is deployed directly. The kernel is deployed once (or in a replicated configuration for availability), and the services that depend on it are distributed to the boundary positions this section identifies.
+
+---
+
 ## Summary
 
 Trust boundaries in OT deployments are not locations where security controls are optionally applied — they are points where the nature of trust fundamentally changes, and where the architecture must be positioned to reflect that change. Each zone in the reference architecture carries distinct trust assumptions that determine what authorization questions can be asked and answered at its boundaries, what identity context is available to attach to authorization requests, and what the audit record can reliably capture.

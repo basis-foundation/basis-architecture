@@ -8,6 +8,33 @@ The following analysis does not argue that the architecture is wrong or that pro
 
 ---
 
+## Why Production Realities Argue for an Isolated Kernel
+
+The production constraints analyzed in this section are not incidental complications of OT deployment. They are the structural conditions that shape what the authorization architecture must look like if it is to survive real operational environments. Taken together, they make a specific argument about how the authorization kernel — basis-core — must be designed.
+
+Each production constraint places a different kind of pressure on the authorization infrastructure:
+
+- High availability requirements demand that components can fail and recover independently. A kernel that is entangled with the gateway, the console, or the identity provider cannot be failed over, updated, or replaced without disrupting all the services that share its process or its dependencies.
+- Policy distribution and cache management require that the evaluation logic is stable enough to be versioned and distributed to remote enforcement points. A kernel that absorbs distribution logic cannot be treated as a stable, versioned artifact — it becomes a moving target that enforcement points cannot safely cache.
+- Credential and certificate lifecycle management requires that each component in the authorization path has its own credential identity. A kernel that is fused with its surrounding runtime shares that runtime's attack surface and credential lifecycle, rather than maintaining its own.
+- Change management in OT environments demands that components can be updated within constrained maintenance windows, independently of each other. A monolithic authorization system that bundles kernel, gateway, UI, and adapter logic must be tested and deployed as a whole — a constraint that is operationally untenable in environments where maintenance windows are measured in hours per month.
+- Governance complexity grows with the surface area of the authorization system. A kernel that encodes identity provider configuration, adapter normalization, and cloud-specific deployment logic cannot be governed by a single team; it spans the responsibilities of IT security, OT operations, and BAS integrators simultaneously. A kernel that owns only evaluation semantics can be governed by the team that owns policy.
+
+The consequence is that the production constraints documented in the following sections are not only arguments for operational care — they are arguments for kernel isolation. The more of these constraints that are present in a deployment, the stronger the case for keeping basis-core minimal and the more important it becomes that the surrounding services — basis-gateway, basis-adapters, basis-console, basis-deploy — carry the operational machinery that the kernel cannot absorb without undermining its own stability.
+
+**Concerns that belong outside basis-core, not within it:**
+
+- High-availability topology design — the kernel must be deployable in HA configurations, but the HA logic (clustering, load balancing, failover) belongs in the deployment layer or the gateway
+- Policy distribution services — delivering policy from a central engine to remote enforcement points is a gateway and deployment concern, not a kernel concern
+- Console and policy authoring workflows — the operational tooling that administrators use to author, review, and deploy policy belongs in basis-console and commercial tooling
+- Adapter certification and validation — testing that a specific adapter correctly normalizes a specific device's object model is a quality assurance concern for the adapter, not for the kernel
+- Deployment orchestration — the mechanics of standing up, configuring, and upgrading authorization infrastructure belong in basis-deploy and commercial deployment services
+- Commercial managed services — fleet monitoring, enterprise support, upgrade orchestration, and advanced compliance reporting belong in BASAuth, not in the open-source distribution and certainly not in the kernel
+
+The kernel is not simplified by excluding these concerns — it is made stable and governable. The services that carry these concerns are not compensating for kernel limitations — they are providing the operational surface that a minimal, stable kernel cannot and should not provide.
+
+---
+
 ## High Availability and Operational Continuity
 
 The identity provider and the policy engine are the components that all enforcement points depend on for session establishment and policy synchronization. In the conceptual architecture, the local policy cache at each edge enforcement point provides resilience against temporary unavailability of the policy engine — enforcement continues against cached policy when the central engine is unreachable. But the cache only addresses one of several availability dependencies. A jump host that cannot reach the identity provider to validate operator tokens cannot admit new sessions, regardless of what the local policy cache holds. An enforcement point that cannot establish its own authenticated channel to the policy engine cannot receive policy updates or validate that its cached policy remains authoritative.
