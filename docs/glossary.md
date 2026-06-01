@@ -148,9 +148,21 @@ The process by which a policy engine applies relevant policies to a specific aut
 
 ---
 
+## Adapter
+
+A protocol-specific translation component that converts external operational semantics into BASIS authorization semantics. An adapter parses protocol-native messages, normalizes them into `DecisionRequest` objects that `basis-core` can evaluate, and serializes authorization decisions back into protocol-native responses. Adapters are the only components in the BASIS ecosystem that contain protocol-specific logic. See also: **Protocol Normalization**, **Trusted Adapter Boundary**, **basis-adapters**.
+
+---
+
 ## Protocol Adapter
 
 A software component that translates between a field-level device protocol (such as BACnet/IP, Modbus TCP, or MQTT) and the internal representation used by the authorization or telemetry infrastructure. Protocol adapters decouple the policy enforcement and audit systems from the specifics of device communication protocols, allowing the core identity and authorization logic to remain protocol-agnostic. Each adapter is responsible for normalizing device messages and, where applicable, attaching or verifying identity context.
+
+---
+
+## Protocol Normalization
+
+The process of converting protocol-specific operations into protocol-independent authorization semantics. Normalization is the core responsibility of a BASIS adapter: the adapter understands the protocol-native operation and translates it into the subject-resource-action vocabulary that `basis-core` evaluates. After normalization, the originating protocol is no longer visible to the authorization kernel. See also: **Adapter**, **basis-adapters**.
 
 ---
 
@@ -187,6 +199,12 @@ Structured data collected from devices and system components that describes oper
 ## Telemetry Ingestion
 
 The process of receiving, parsing, normalizing, and routing telemetry data from source devices or adapters into storage or processing systems. Telemetry ingestion infrastructure must handle the volume, variability, and protocol diversity characteristic of OT environments. Ingestion pipelines are responsible for attaching metadata (such as device identity and timestamp) and routing data to appropriate consumers, including monitoring systems and anomaly detection components.
+
+---
+
+## Trusted Adapter Boundary
+
+The trust position occupied by a BASIS adapter: trusted to parse protocol requests accurately, normalize protocol intent faithfully, preserve operational semantics, and serialize responses correctly; not trusted to authorize, grant permissions, define policy, or override kernel decisions. An adapter that accepts untrusted protocol input and invokes `basis-core` directly becomes an enforcement boundary and must protect that boundary accordingly. See also: **Adapter**, **Trust Boundary**.
 
 ---
 

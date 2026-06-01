@@ -136,7 +136,7 @@ The full import boundary specification, including enforcement via static analysi
 
 **basis-console** depends on basis-gateway and must not implement authorization logic directly. It provides operator visibility into the system; it does not evaluate policy.
 
-**basis-adapters** produces normalized `DecisionRequest` objects from field-protocol messages and applies `DecisionResponse` outcomes to field-level command delivery. basis-adapters depends on basis-core for its contract definitions; basis-core does not depend on basis-adapters for anything.
+**basis-adapters** produces normalized `DecisionRequest` objects from field-protocol messages and applies `DecisionResponse` outcomes to field-level command delivery. basis-adapters depends on basis-core for its contract definitions; basis-core does not depend on basis-adapters for anything. See [`docs/architecture/basis-adapters.md`](architecture/basis-adapters.md) for the canonical adapter architecture reference.
 
 **basis-deploy** packages the runtime — basis-gateway, basis-adapters, and their dependencies — for deployment into OT environments. It is not part of the authorization runtime. basis-core must be deployable independently of basis-deploy's packaging choices.
 

@@ -49,7 +49,7 @@ The console provides an operator and administrator interface for the authorizati
 
 **basis-adapters** — protocol and integration adapters
 
-The adapter library provides the normalization layer between field-level OT protocols and the subject-resource-action representation that basis-core evaluates. Each adapter handles a specific protocol family (BACnet, Modbus, MQTT, and others) and is responsible for translating protocol-specific messages into the shared authorization vocabulary and for delivering authorized commands back to the protocol layer. basis-adapters depends on basis-core for its authorization contracts and event schemas.
+The adapter library provides the normalization layer between field-level OT protocols and the subject-resource-action representation that basis-core evaluates. Each adapter handles a specific protocol family (BACnet, Modbus, MQTT, and others) and is responsible for translating protocol-specific messages into the shared authorization vocabulary and for delivering authorized commands back to the protocol layer. basis-adapters depends on basis-core for its authorization contracts and event schemas. See [`docs/architecture/basis-adapters.md`](basis-adapters.md) for the canonical adapter architecture reference.
 
 **basis-deploy** — deployment and distribution tooling
 
