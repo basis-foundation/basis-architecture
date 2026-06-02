@@ -166,7 +166,7 @@ Protocol
 → basis-core
 ```
 
-In this model, the adapter normalizes the protocol request and submits a `DecisionRequest` to `basis-gateway` over a network or inter-process boundary. The gateway authenticates the adapter, performs identity normalization for the subject embedded in the request, invokes `basis-core`, enforces the decision, and assembles the canonical audit record. The adapter receives the decision result and serializes the protocol-native response.
+In this model, the adapter normalizes the protocol request and submits a `DecisionRequest` to `basis-gateway` over a network or inter-process boundary. The gateway authenticates the adapter, performs identity normalization for the subject embedded in the request, invokes `basis-core`, enforces the decision, and emits the gateway-layer audit record. The adapter receives the decision result and serializes the protocol-native response.
 
 This is the preferred deployment architecture whenever a trusted gateway boundary is operationally feasible. The gateway-mediated model provides:
 
@@ -214,7 +214,7 @@ flowchart LR
         Adapter["Protocol Adapter\nParse • Normalize • Serialize"]
     end
     subgraph GatewayPath["Preferred Gateway-Mediated Path"]
-        Gateway["basis-gateway\nAuthentication • Runtime Enforcement • Audit Assembly"]
+        Gateway["basis-gateway\nAuthentication • Enforcement • Audit Assembly"]
         CoreA["basis-core\nDeterministic Policy Evaluation"]
     end
     subgraph EmbeddedPath["Constrained Embedded Path"]
@@ -252,6 +252,8 @@ The kernel decides. Enforcement boundaries enforce.
 
 The kernel produces `DecisionResponse` objects. It does not enforce them. Enforcement is the act of translating a decision into an operational effect — denying a protocol request, blocking a command, returning a protocol-level error. That act belongs at the enforcement boundary, whether that boundary is the gateway in the preferred model or the adapter host in the embedded model.
 
+In gateway-mediated deployments, the gateway enforces the authorization boundary; the adapter enforces the resulting protocol behavior. These are distinct enforcement acts: the gateway controls whether the request is permitted; the adapter controls how the denial or permit is expressed in protocol terms.
+
 ---
 
 ## Audit Ownership
@@ -264,7 +266,7 @@ The kernel produces `DecisionResponse` objects. It does not enforce them. Enforc
 
 Adapters enrich audit evidence but must not define independent audit semantics.
 
-The kernel generates the decision evidence: the subject, resource, action, decision outcome, and policy context that constitute the core of an authorization audit record. The gateway assembles the canonical audit record from that evidence plus its own runtime context. The adapter contributes protocol-specific context — protocol type, operation name, device identifiers — that enriches the record without redefining its structure.
+The kernel writes its own audit record capturing the evaluation event: the subject, resource, action, decision outcome, and policy context. The gateway writes a separate audit record capturing the caller-facing runtime context: authentication outcomes, transport details, and the decision returned to the caller. Both records are part of the complete audit trail. The adapter contributes protocol-specific context — protocol type, operation name, device identifiers — via the `context` field of the `DecisionRequest`, enriching the gateway's record without redefining the audit schema.
 
 Audit remains a shared compatibility surface. Adapters must not emit audit records that diverge from the canonical `AuditEvent` schema defined in `basis-schemas`. Protocol evidence fields must be carried in the defined extension points, not in new top-level fields that bypass schema governance.
 
