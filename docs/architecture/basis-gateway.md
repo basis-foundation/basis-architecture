@@ -68,7 +68,7 @@ The dashed line is an architectural invariant, not a configuration option: untru
 
 **basis-schemas** — The gateway consumes shared schema contracts for `DecisionRequest`, `DecisionResponse`, and `AuditEvent`. It must not fork or diverge from these definitions. Schema compatibility is the kernel's domain; the gateway is a consumer.
 
-**basis-adapters** — Adapters normalize protocol-specific messages into `DecisionRequest` objects. Adapters do not authorize independently. The preferred deployment model routes adapter requests through `basis-gateway`: the adapter normalizes the protocol operation and submits it to the gateway, which handles authentication, identity normalization, kernel invocation, and audit assembly. This is preferred over direct kernel invocation because it centralizes authentication, enforcement, and audit at a defined boundary. In operationally constrained deployments — air-gapped, embedded, or low-latency environments — adapters may invoke `basis-core` directly without a gateway. Both models are architecturally supported; the gateway-mediated path is preferred when operationally feasible. In either case, the gateway remains protocol-agnostic: it sees normalized requests, not BACnet frames or Modbus registers. See [`docs/architecture/basis-adapters.md`](basis-adapters.md) for the canonical adapter architecture reference.
+**basis-adapters** — Adapters normalize protocol-specific messages into `DecisionRequest` objects. Adapters do not authorize independently. The preferred deployment model routes adapter requests through `basis-gateway`: the adapter normalizes the protocol operation and submits it to the gateway, which handles authentication, identity normalization, kernel invocation, enforcement, and audit. This is preferred over direct kernel invocation because it centralizes authentication, enforcement, and audit at a defined boundary. In operationally constrained deployments — air-gapped, embedded, or resource-constrained environments — adapters may invoke `basis-core` directly in the embedded model, without routing through a gateway. In the embedded model, the adapter host assumes the enforcement and audit responsibilities the gateway would otherwise carry; this shifts enforcement responsibility but does not alter authorization semantics or public contract requirements. Both models are architecturally supported; the gateway-mediated path is preferred when operationally feasible. In either case, the gateway remains protocol-agnostic: it sees normalized requests, not BACnet frames or Modbus registers. See [`docs/architecture/basis-adapters.md`](basis-adapters.md) for the canonical adapter architecture reference.
 
 **basis-console** — The console is a human-facing operator and administrator interface. It calls gateway APIs for policy inspection, audit log queries, and operational management. In normal deployments, the console does not bypass the gateway to call `basis-core` directly. The gateway is the console's access point to the authorization system.
 
@@ -92,7 +92,7 @@ If an untrusted caller could submit requests to `basis-core` directly, they coul
 
 The trust boundary is enforced by deploying the kernel such that only `basis-gateway` (and other explicitly trusted in-process components) can reach it. In a typical deployment, `basis-core` is not accessible over the network at all. The network surface of the authorization system is `basis-gateway`.
 
-The PoC validated one practical instantiation of this boundary: a FastAPI service that verified Keycloak-issued JWTs before reaching the policy engine. The distribution generalizes that pattern: the gateway handles authentication and token verification; the kernel handles evaluation; the two responsibilities do not mix.
+The PoC validated one practical instantiation of this boundary: a FastAPI service that verified Keycloak-issued JWTs before reaching the authorization kernel. The distribution generalizes that pattern: the gateway handles authentication and token verification; the kernel handles evaluation; the two responsibilities do not mix.
 
 ---
 
@@ -406,12 +406,12 @@ Including it in v0.1 adds complexity but may significantly reduce latency for ad
 mTLS is particularly relevant for machine-to-machine paths (adapter-to-gateway) in environments where JWT issuance is not practical. Is the operational case for mTLS strong enough to warrant v0.1 implementation, or is JWT sufficient for initial deployments?
 
 **6. Adapter integration pattern**
-Should adapters call the gateway over the network (gateway-as-service) or embed the kernel directly (in-process adapter)? The answer may vary by deployment topology:
+Should adapters call the gateway over the network (gateway-mediated model) or invoke the kernel directly in the embedded model? The answer may vary by deployment topology:
 
-- Network call through gateway: simpler operational model, single audit pipeline, but adds network latency.
-- In-process kernel: lower latency, but requires the adapter process to manage its own kernel configuration and audit path.
+- Gateway-mediated model: simpler operational model, centralized audit pipeline, but adds network latency.
+- Embedded model: lower latency, but the adapter host must manage its own kernel configuration, enforcement boundary, and audit path.
 
-Both patterns should be architecturally supported. The gateway should not assume it is the only path to the kernel.
+Both models are architecturally supported. The gateway should not assume it is the only path to the kernel.
 
 **7. subject_from_jwt placement**
 `basis-core` currently includes `subject_from_jwt()` in `basis_core.domain.subject`, but it assumes a Keycloak/OIDC JWT structure. This is a kernel boundary violation: JWT claim interpretation is an IdP-specific runtime concern that belongs at the gateway, not in the authorization kernel. This is formally tracked in `basis-core` as ADR-0005. The gateway implementation must not build dependencies on the current import path of `subject_from_jwt()` — the function is expected to move, be deprecated, or be replaced by a gateway-owned normalization step before `basis-gateway` v0.1 is considered stable.
