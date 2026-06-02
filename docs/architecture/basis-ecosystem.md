@@ -45,7 +45,7 @@ The API gateway wraps the authorization kernel and exposes it as a runtime servi
 
 **basis-console** — operator and administrator UI
 
-The console provides an operator and administrator interface for the authorization system. It supports policy inspection, authorization decision review, audit log querying, and basic operational management. It depends on basis-gateway. It does not contain authorization logic of its own.
+The console provides an operator and administrator interface for the authorization system. It supports policy inspection, authorization decision review, audit log querying, and basic operational management. It depends on basis-gateway. It does not contain authorization logic of its own. See [`docs/architecture/basis-console.md`](basis-console.md) for the canonical console architecture reference.
 
 **basis-adapters** — protocol and integration adapters
 
