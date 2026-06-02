@@ -28,6 +28,12 @@ The future for-profit commercial company that builds enterprise products and man
 
 ---
 
+## Administrative Interface
+
+A human-facing surface for submitting configuration changes, reviewing system state, and initiating operational requests through established enforcement boundaries. In the BASIS ecosystem, `basis-console` is the administrative interface for the authorization system. An administrative interface must not bypass the enforcement boundaries it interacts through — it submits requests; those boundaries authenticate and enforce them. See also: **Console**, **Operator Workflow**, **basis-console**.
+
+---
+
 ## basis-core
 
 The isolated authorization kernel in the BASIS Core Services Distribution. basis-core implements the policy evaluation logic, enforcement semantics, failure mode contracts, and audit event schema that all other distribution components depend on. basis-core must not depend on basis-gateway, basis-console, basis-adapters, basis-deploy, identity providers, cloud platform SDKs, or UI frameworks. See also: **Authorization Kernel**, **BASIS Core Services Distribution**.
@@ -67,6 +73,12 @@ A networked control system used to manage and monitor mechanical, electrical, an
 ## Centralized Authorization
 
 An authorization architecture in which policy evaluation is performed by a dedicated, shared service rather than embedded independently within each individual component. Centralized authorization enables consistent policy enforcement across heterogeneous systems, simplifies auditing, and allows policies to be updated without modifying individual enforcement points. It introduces a dependency on the availability and performance of the authorization service and requires careful design for resilience and failover behavior.
+
+---
+
+## Console
+
+The human-facing operational interface for observing, configuring, and interacting with BASIS components through established enforcement boundaries. In the BASIS ecosystem, `basis-console` is the console component. The console provides operators with visibility into policy state, authorization decisions, and audit activity, and provides interaction paths for submitting changes and initiating administrative operations. The console is not an authorization engine, identity provider, protocol adapter, or deployment platform. It is an interface layer: it surfaces what the authorization system has done and submits requests through channels the authorization system enforces. See also: **Administrative Interface**, **Operator Workflow**, **basis-console**.
 
 ---
 
@@ -115,6 +127,12 @@ The mechanism by which a subject's verified identity is carried through a multi-
 ## Immutable Audit Logging
 
 A logging discipline in which records of system events — particularly authorization decisions — are written in a form that cannot be modified or deleted after the fact. Immutability may be achieved through append-only storage, cryptographic chaining, or write-once media. Immutable audit logs provide a trustworthy record for forensic investigation, compliance verification, and incident response, and their integrity must be protected as a security property of the system.
+
+---
+
+## Operator Workflow
+
+A structured sequence of human-initiated actions through which an operator interacts with the authorization system to accomplish a defined operational objective — reviewing policy state, examining audit records, submitting a configuration change, or investigating a denial. In the BASIS ecosystem, operator workflows are mediated by `basis-console` and flow through `basis-gateway`; they do not bypass enforcement boundaries or reach `basis-core` directly in production deployments. See also: **Console**, **Administrative Interface**.
 
 ---
 
