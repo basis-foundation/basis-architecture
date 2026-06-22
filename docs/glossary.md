@@ -42,7 +42,7 @@ The isolated authorization kernel in the BASIS Core Services Distribution. basis
 
 ## Action
 
-An operation that a subject requests to perform against a resource. In the context of authorization, actions are discrete, enumerable operations (e.g., `read`, `write`, `command`, `subscribe`) that a policy engine evaluates against applicable policies. The set of permitted actions for a given subject-resource pair is determined at authorization decision time.
+An operation that a subject requests to perform against a resource. In the context of authorization, actions are discrete, enumerable operations that a policy engine evaluates against applicable policies. BASIS recognizes five canonical action verbs — `read`, `write`, `execute`, `browse`, `subscribe` — which compose with a domain into the `{verb}:{domain}[:{object}]` action-name form (e.g. `read:hvac:setpoint`). See [`docs/architecture/action-vocabulary.md`](architecture/action-vocabulary.md). The set of permitted actions for a given subject-resource pair is determined at authorization decision time.
 
 ---
 
