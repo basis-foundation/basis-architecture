@@ -4,7 +4,7 @@ This document defines the governance model for action naming in the BASIS ecosys
 
 Section 04 of the white paper establishes why actions are one of three fundamental primitives in the authorization model — alongside subjects and resources — and notes that "the granularity of action definition directly determines the expressiveness of the policy model." This document extends that analysis with the governance rules that keep the action vocabulary coherent, stable, and interoperable across components and deployments.
 
-Cross-references: [`docs/architecture/compatibility-philosophy.md`](compatibility-philosophy.md) — action vocabulary stability requirements. [`docs/architecture/basis-ecosystem.md`](basis-ecosystem.md) — adapter normalization responsibilities. [`docs/glossary.md`](../glossary.md) — definitions of Action, Resource, Subject, Protocol Adapter, and Policy Evaluation.
+Cross-references: [`docs/architecture/action-vocabulary-reconciliation.md`](action-vocabulary-reconciliation.md) — the ecosystem-wide inventory and reconciliation that established the canonical verb set recorded here. [`docs/architecture/compatibility-philosophy.md`](compatibility-philosophy.md) — action vocabulary stability requirements. [`docs/architecture/basis-ecosystem.md`](basis-ecosystem.md) — adapter normalization responsibilities. [`docs/glossary.md`](../glossary.md) — definitions of Action, Resource, Subject, Protocol Adapter, and Policy Evaluation.
 
 ---
 
@@ -40,38 +40,63 @@ Examples of well-formed action names:
 | - | - |
 | `read:hvac:setpoint` | Read a setpoint value on an HVAC subsystem resource |
 | `write:hvac:setpoint` | Write a setpoint value on an HVAC subsystem resource |
-| `command:hvac:override` | Issue an override command to an HVAC subsystem resource |
+| `execute:hvac:override` | Issue an override command to an HVAC subsystem resource |
 | `read:hvac:sensor` | Read a sensor value from an HVAC subsystem resource |
 | `read:access:event` | Read an access control event |
-| `command:access:unlock` | Issue an unlock command to an access control resource |
+| `execute:access:unlock` | Issue an unlock command to an access control resource |
 | `write:controller:config` | Write a configuration parameter on a controller |
 | `read:power:meter` | Read a value from a power metering resource |
-| `command:fire:suppress` | Issue a suppression command to a fire system resource |
-| `audit:policy:read` | Read audit records for policy evaluation events |
+| `execute:fire:suppress` | Issue a suppression command to a fire system resource |
+| `browse:controller:point` | Enumerate the points exposed by a controller |
+| `read:audit:log` | Read audit records (`audit` is a domain, not a verb) |
 | `write:policy:rule` | Write a policy rule to the policy store |
 
 ---
 
 ## Naming Conventions
 
-**Verbs must be chosen from a controlled set.** The following verbs are recognized in the action vocabulary:
+**Verbs must be chosen from a controlled set.** The action vocabulary recognizes exactly **five** canonical verbs. This set was confirmed by an ecosystem-wide inventory (see [`action-vocabulary-reconciliation.md`](action-vocabulary-reconciliation.md)): these five cover every operation emitted by all nine protocol adapters (BACnet, Modbus, OPC UA, MQTT, DNP3, IEC 61850, KNX, Niagara, REST).
 
 - `read` — retrieve the current value, state, or configuration of a resource, without modification
-- `write` — modify the value, setpoint, configuration parameter, or state of a resource
-- `command` — issue an operational command that causes the resource to perform an action (distinct from writing a value)
+- `write` — modify the value, setpoint, configuration parameter, or state of a resource (this **absorbs** structural configuration changes; there is no separate `configure` verb)
+- `execute` — cause the resource to perform an operation or command, as distinct from writing a value (method invocation, select-before-operate / operate, overrides, command points, acknowledgements)
+- `browse` — enumerate or navigate the resource or address space without retrieving operational values
 - `subscribe` — establish a subscription to ongoing telemetry or event notifications from a resource
-- `configure` — change the structural configuration of a resource, as distinct from its operational parameters
-- `audit` — access authorization or operational audit records
-- `enroll` — register a new device, subject, or credential with the authorization infrastructure
-- `revoke` — revoke a credential, permission, or enrollment
 
-New verbs should not be introduced without Foundation review and an update to this document. Using an unrecognized verb in an action name produces an action that the policy model cannot associate with the recognized operational taxonomy, which degrades policy clarity and auditability.
+**Deprecated and absorbed verbs.** The following earlier or protocol-local terms map onto the canonical set and must not be used in new action names:
+
+| Deprecated verb | Canonical replacement | Notes |
+| - | - | - |
+| `control` | `execute` | BACnet `CommandValue` and the shared base set used `control`; the majority of adapters used `execute` for the same concept. |
+| `command` | `execute` | Used in earlier governance text and console starter-domains. |
+| `discover` | `browse` | REST `OPTIONS` used `discover`; OPC UA / Niagara used `browse` for the same concept. |
+| `configure` | `write` | Structural configuration is a `write` to a configuration resource. |
+| `audit` (as a verb) | `read` with the `audit` **domain** | The kernel models audit access as `read:audit:log`; `audit` is a domain, not a verb. |
+
+`control` and `discover` are established in the `basis-adapters` normalized-request schema and are therefore retained as **deprecated aliases** during a defined deprecation window (see [Deprecation Expectations](#deprecation-expectations)); adapters should update their default maps to emit the canonical verbs, and the aliases should be removed only after the window closes.
+
+**Credential-infrastructure operations are out of scope for this vocabulary.** Enrolling and revoking devices, subjects, or credentials are identity-infrastructure operations, not protocol actions on operational resources. They are deliberately **not** verbs in the operational action vocabulary; if such a contract is needed it belongs to a separate identity/administration vocabulary.
+
+New verbs must not be introduced without Foundation review and an update to this document. Using an unrecognized verb in an action name produces an action that the policy model cannot associate with the recognized operational taxonomy, which degrades policy clarity and auditability.
 
 **Domain names must be lowercase, singular, and operationally meaningful.** Domains should reflect operational categories that an OT operator would recognize: `hvac`, `access`, `lighting`, `power`, `fire`, `controller`, `policy`, `audit`. They must not reflect protocol names (`bacnet`, `modbus`), vendor names, or device model categories.
 
 **Object qualifiers must be lowercase and operationally meaningful.** Object qualifiers should describe the resource type at the operational level: `setpoint`, `sensor`, `override`, `config`, `rule`, `event`. They must not describe protocol-specific object types (`BACnetObject`, `HoldingRegister`, `Topic`).
 
 **The three-part form is preferred over two-part when meaningful distinctions exist.** If a domain contains resource types that warrant distinct policy treatment — an HVAC domain that contains both setpoints and sensors, for which separate policies are appropriate — the object qualifier makes those distinctions expressible without creating separate domains.
+
+---
+
+## Verbs vs. Composite Action Names
+
+A **verb** and a **composite action name** are different things, and several components in the ecosystem currently disagree about which one the `action` field holds. This section makes the contract explicit.
+
+- A **verb** (`read`, `write`, `execute`, `browse`, `subscribe`) names the operational intent. It is one segment.
+- A **composite action name** (`read:hvac:setpoint`) is what the **policy engine evaluates** and what the **audit record stores**. It is the verb plus a domain (and optional object), in the `{verb}:{domain}[:{object}]` form — two or more colon-separated segments.
+
+The canonical authorization action is the **composite name**. Policy scoping and audit forensics require the domain; a bare verb cannot be scoped to a resource category and is therefore not a valid authorization action.
+
+Protocol adapters today emit only the **verb** (in `action`) and carry the domain/object separately (in `resource_type` / `resource_id`). That is a legitimate *intermediate* normalization product, but it is **not** a canonical authorization action: a bare verb does not satisfy the `{verb}:{domain}[:{object}]` form the policy engine enforces. Producing the canonical composite therefore requires a single, explicitly-owned **composition rule** — verb (from the adapter) combined with domain/object (from the resource mapping). Defining that rule and assigning its owner (the normalization/gateway boundary, ultimately specified by a future `basis-schemas`) is the open structural item tracked in [`action-vocabulary-reconciliation.md`](action-vocabulary-reconciliation.md). Until it exists, adapter output and kernel input remain structurally incompatible even when the verbs agree.
 
 ---
 
@@ -132,11 +157,11 @@ The deprecation period must be long enough to be operationally meaningful in OT 
 
 ## Reserved Prefixes and Namespaces
 
-The following verb and domain combinations are reserved for BASIS ecosystem use and must not be used by protocol adapters or third-party policy consumers for purposes other than those defined here:
+Access to the authorization infrastructure itself is governed through **reserved domains**, not through dedicated verbs. The five canonical verbs are sufficient: infrastructure resources are read, written, and acted upon with the same `read` / `write` / `execute` verbs as operational resources, distinguished by their reserved domain.
 
-**Reserved verbs:** `audit`, `enroll`, `revoke` — these verbs govern access to authorization infrastructure itself (audit records, credential enrollment, permission revocation) and require stricter policy controls than operational actions. They must not be repurposed for operational domain actions.
+**Reserved domains:** `policy`, `audit`, `admin` — these domains refer to the authorization infrastructure's own resources and require stricter policy controls than operational domains. Policies governing access to policy management (`read:policy:rule`, `write:policy:rule`), audit records (`read:audit:log`), and administrative functions must use these domains; operational system actions must not. (Earlier drafts of this document modelled `audit` as a verb; it is a **domain**, consistent with the kernel constant `read:audit:log`.)
 
-**Reserved domains:** `policy`, `audit`, `admin` — these domains refer to the authorization infrastructure's own resources. Policies governing access to policy management, audit records, and administrative functions must use these domains; operational system actions must not.
+**Credential lifecycle operations** — enrolling and revoking devices, subjects, or credentials — are identity-infrastructure concerns and are **not** part of this operational action vocabulary. They previously appeared here as the verbs `enroll` and `revoke`; they have been removed. If a contract for them is required, it belongs to a separate identity/administration vocabulary owned alongside the future `basis-schemas` (see [Future Shared Contract Ownership](#future-shared-contract-ownership)).
 
 Third-party adapter implementations that need to represent operations not covered by the current vocabulary should use the form `{verb}:{vendor-domain}:{object}` where `{vendor-domain}` is prefixed with a reverse-DNS-style identifier (e.g., `vendor.acme:device:point`). This prevents collision with the canonical vocabulary while the operational need is evaluated for inclusion in the standard vocabulary.
 
@@ -173,3 +198,25 @@ The action vocabulary is one half of the semantic contract that policies express
 The policy model specification (defined in the basis-core implementation repository) governs how action names are matched against policy rules. This document governs what action names exist and what they mean. The two must be consistent: the policy model must support the action naming structure defined here, and this document must not define action names that the policy model cannot represent.
 
 Policy authors should treat the action vocabulary as a fixed external reference, not as a namespace they can extend locally. Locally invented action names — used in one deployment's policies without being defined in the vocabulary — create normalization mapping obligations that adapters must satisfy consistently. A local action name that a deployment relies on but that is not defined in the canonical vocabulary is a fragile operational dependency that cannot be validated by shared tooling or tested against shared conformance expectations.
+
+---
+
+## Future Shared Contract Ownership
+
+This document is the **authoritative source of truth for the action vocabulary today**. It is, however, only one of several cross-component contracts that are currently defined, mirrored, or re-derived independently across repositories — `basis-core` owns the action *format* regex and the policy-model matching, `basis-adapters` owns the normalized-request schema and the verb enum, `basis-gateway` owns the evaluate request/response shape, and `basis-console` carried a provisional local vocabulary copy during its Phase 6. When the same contract is expressed in several places, the components drift apart; the inconsistencies catalogued in [`action-vocabulary-reconciliation.md`](action-vocabulary-reconciliation.md) are the direct result of that drift.
+
+The intended resolution is a dedicated **`basis-schemas`** repository that becomes the single shared home for the contracts every component must agree on. This document does **not** create `basis-schemas` and does not define schemas; it records the ownership model so that, when the repository is created, the boundaries are already clear.
+
+`basis-schemas` should eventually own:
+
+- **The action vocabulary** — the canonical verbs, the `{verb}:{domain}[:{object}]` structure, the domain conventions, reserved domains, and the deprecation register. This governance document would become the human-readable companion to the machine-readable definitions `basis-schemas` publishes.
+- **Request schemas** — the normalized authorization request (today: `basis-adapters/schemas/normalized-authorization-request.schema.json`) and the gateway evaluate request (today: `basis-gateway` `EvaluateRequest`), including the **composition rule** that turns an adapter's bare verb plus its resource mapping into a canonical composite action (the open structural item in the reconciliation report).
+- **Response schemas** — the decision/evaluate response shape (outcome, reason, policy version, correlation id) shared by `basis-core` and `basis-gateway`.
+- **Audit and event schemas** — the audit record shape and its **action-vocabulary version field**, so audit consumers can interpret historical records across vocabulary evolution.
+- **Compatibility contracts** — the cross-component versioning and deprecation rules (today described in [`compatibility-philosophy.md`](compatibility-philosophy.md)) that keep adapters, the gateway, the kernel, and the console mutually consistent over time.
+
+Ownership principles for the transition:
+
+1. **One definition, many consumers.** Each contract is defined once in `basis-schemas` and imported elsewhere; no component re-declares a contract it does not own.
+2. **No component is the de-facto authority by accident.** In particular, neither `basis-console` nor any single adapter should be the place a vocabulary or schema is effectively decided. `basis-console.vocabulary` is explicitly provisional and should be deleted once `basis-schemas` exists.
+3. **Governance stays human-readable here; definitions become machine-readable there.** This document continues to explain *why*; `basis-schemas` publishes the *what* in a form tooling and tests can consume.
