@@ -349,6 +349,8 @@ The gateway is protocol-agnostic. It processes `DecisionRequest` objects; it doe
 
 `basis-gateway` may serve as the authorization backend for multiple concurrent adapter instances. The gateway does not couple to specific adapter implementations; the adapter does not couple to specific gateway configuration. The interface between them is the `DecisionRequest` / `DecisionResponse` contract.
 
+Adapters emit `resource_type` and a *local* `resource_id` as separate fields; the gateway is the recommended boundary that composes these into the kernel's single typed `resource_id` (`ahu` + `rooftop-1` → `ahu:rooftop-1`), parallel to action composition. Adapters do not perform kernel-specific identifier composition. See [`docs/architecture/resource-identifier-reconciliation.md`](resource-identifier-reconciliation.md).
+
 In the embedded model, the adapter invokes `basis-core` directly and the gateway is not present in the authorization path. In that case, the adapter host assumes the responsibilities the gateway would otherwise carry. This does not change the semantics of the authorization decision — it changes where enforcement responsibility resides.
 
 ---
@@ -390,4 +392,5 @@ Both the gateway-mediated and embedded integration models are explicitly support
 - [`docs/kernel-boundary-rules.md`](../kernel-boundary-rules.md) — the rules that protect `basis-core` as an isolated kernel, including the prohibition on protocol logic entering the kernel
 - [`docs/architecture/compatibility-philosophy.md`](compatibility-philosophy.md) — compatibility commitments that govern the schema contracts adapters must satisfy
 - [`docs/architecture/action-vocabulary.md`](action-vocabulary.md) — the action naming conventions that adapter normalization must produce
+- [`docs/architecture/resource-identifier-reconciliation.md`](resource-identifier-reconciliation.md) — how the adapter's separate `resource_type` + local `resource_id` becomes the kernel's canonical typed `resource_id`
 - [`docs/glossary.md`](../glossary.md) — definitions for Protocol Adapter, Protocol Normalization, Trusted Adapter Boundary, and related terms
