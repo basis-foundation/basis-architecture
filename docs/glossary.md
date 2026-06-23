@@ -192,7 +192,37 @@ A security model in which access control and trust decisions are based primarily
 
 ## Resource
 
-The target of an authorization request — the system object, device point, data stream, configuration parameter, or service endpoint to which a subject is requesting access. Resources are described by structured identifiers that capture the information necessary for policy evaluation, such as the resource type, owning system, physical location, or sensitivity classification. Resource descriptors must be consistent and unambiguous across the systems that reference them.
+The target of an authorization request — the system object, device point, data stream, configuration parameter, or service endpoint to which a subject is requesting access. Resources are described by structured identifiers that capture the information necessary for policy evaluation, such as the resource type, owning system, physical location, or sensitivity classification. Resource descriptors must be consistent and unambiguous across the systems that reference them. See also: **Resource Identifier**, **Resource Type**, **Canonical Resource Identifier**, **Resource Identifier Composition**.
+
+---
+
+## Resource Identifier
+
+The string that names the **Resource** a request targets. In the BASIS authorization kernel, the canonical resource identifier is a single typed, structured value in `{type}:{qualifier[:{subqualifier}...]}` form (e.g. `hvac:zone-a`, `sensor:co2:lobby`). The kernel derives the resource type from the identifier's prefix rather than from a separate field. A resource identifier may be absent for resource-independent requests. See also: **Canonical Resource Identifier**, **Local Resource Identifier**, **Resource Type**, [`docs/architecture/resource-identifier-reconciliation.md`](architecture/resource-identifier-reconciliation.md).
+
+---
+
+## Resource Type
+
+The classification of a **Resource** by operational category — for example `hvac`, `sensor`, `zone`, `device`, or `gateway`. In the canonical kernel form, the resource type is carried as the prefix of the **Canonical Resource Identifier** and is derived from it during policy evaluation and audit; it is not supplied as an independent input to kernel evaluation. Upstream components (protocol adapters, and the console form) may carry resource type as a separate `resource_type` field as a normalization input, which the composition boundary folds into the canonical identifier. The resource-type vocabulary is not yet unified across components and is expected to be governed by a future `basis-schemas`. See also: **Resource Identifier**, **Resource Identifier Composition**.
+
+---
+
+## Local Resource Identifier
+
+A resource identifier as produced upstream of the composition boundary, before the resource type has been folded into it — for example the `rooftop-1` rendered by a protocol adapter's `resource_id_template`, carried alongside a separate `resource_type` of `ahu`. A local resource identifier is a normalization input, not a canonical authorization artifact; on its own it does not satisfy the kernel's resource-identifier format. See also: **Canonical Resource Identifier**, **Resource Identifier Composition**.
+
+---
+
+## Canonical Resource Identifier
+
+The single typed, structured **Resource Identifier** that the policy engine evaluates and the audit record stores: `{type}:{qualifier[:{subqualifier}...]}` (e.g. `ahu:rooftop-1`). It is "canonical" in that it is the one form the kernel accepts and the form that is stable across policy and audit over time. A **Local Resource Identifier** plus a separate `resource_type` becomes a canonical resource identifier through **Resource Identifier Composition**. See also: **Resource Identifier**, **Resource Identifier Composition**.
+
+---
+
+## Resource Identifier Composition
+
+The operation that combines a separate `resource_type` and a **Local Resource Identifier** into a **Canonical Resource Identifier** (`ahu` + `rooftop-1` → `ahu:rooftop-1`). The recommended owner of this operation is `basis-gateway`, the same boundary that composes the canonical action — so that the action's domain and the resource's type prefix are produced from the same input and remain consistent. Adapters do not perform kernel-specific identifier composition; the kernel does not infer resource type from a separate supplied field. See [`docs/architecture/resource-identifier-reconciliation.md`](architecture/resource-identifier-reconciliation.md). See also: **Action** (whose composite name is composed at the same boundary), **Canonical Resource Identifier**.
 
 ---
 

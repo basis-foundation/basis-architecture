@@ -98,6 +98,8 @@ The canonical authorization action is the **composite name**. Policy scoping and
 
 Protocol adapters today emit only the **verb** (in `action`) and carry the domain/object separately (in `resource_type` / `resource_id`). That is a legitimate *intermediate* normalization product, but it is **not** a canonical authorization action: a bare verb does not satisfy the `{verb}:{domain}[:{object}]` form the policy engine enforces. Producing the canonical composite therefore requires a single, explicitly-owned **composition rule** — verb (from the adapter) combined with domain/object (from the resource mapping). Defining that rule and assigning its owner (the normalization/gateway boundary, ultimately specified by a future `basis-schemas`) is the open structural item tracked in [`action-vocabulary-reconciliation.md`](action-vocabulary-reconciliation.md). Until it exists, adapter output and kernel input remain structurally incompatible even when the verbs agree.
 
+The same `resource_type` field is also the input to **resource identifier** composition: the gateway folds it into the kernel's typed `resource_id` (`ahu` + `rooftop-1` → `ahu:rooftop-1`) at the same boundary it composes the action. The resource-side reconciliation, and the open question of whether the action's `{domain}` and the resource's `{type}` are the same token, are tracked in [`resource-identifier-reconciliation.md`](resource-identifier-reconciliation.md).
+
 ---
 
 ## Protocol-Independent Semantics

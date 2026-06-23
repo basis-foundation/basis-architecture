@@ -424,6 +424,7 @@ Both models are architecturally supported. The gateway should not assume it is t
 - [`docs/kernel-boundary-rules.md`](../kernel-boundary-rules.md) — what belongs in basis-core and what must stay outside it
 - [`docs/architecture/compatibility-philosophy.md`](compatibility-philosophy.md) — compatibility commitments that govern the gateway's API surface and audit schema usage
 - [`docs/architecture/action-vocabulary.md`](action-vocabulary.md) — action naming conventions that gateway-level request validation should enforce
+- [`docs/architecture/resource-identifier-reconciliation.md`](resource-identifier-reconciliation.md) — recommends the gateway as the resource-identifier composition boundary (`resource_type` + local `resource_id` → canonical typed `resource_id`), parallel to action composition
 - [`docs/architecture/reference-vs-implementation.md`](reference-vs-implementation.md) — the distinction between basis-poc (historical reference) and basis-gateway (the designed component)
 - `docs/adr/ADR-0005-move-jwt-normalization-outside-kernel.md` in `basis-core` — the boundary decision on `subject_from_jwt()` and JWT/OIDC normalization ownership
 - `docs/public-api.md` in `basis-core` — the stable public API surface the gateway calls into
