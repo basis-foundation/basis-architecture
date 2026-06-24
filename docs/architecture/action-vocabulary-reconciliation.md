@@ -2,7 +2,7 @@
 
 **Status:** Investigation report and recommendation. Not yet ratified.
 **Scope:** Architecture-level review of the action vocabulary as it actually exists across `basis-core`, `basis-gateway`, `basis-adapters`, `basis-console`, and `basis-architecture`.
-**Companion document:** [`action-vocabulary.md`](action-vocabulary.md) — the governance document, updated to reflect the recommendation in this report.
+**Companion document:** [`action-vocabulary.md`](action-vocabulary.md) — the governance document, updated to reflect the recommendation in this report. The action vocabulary and action composition contracts discussed here are also recorded, alongside the rest of the ecosystem's contracts, in [`ecosystem-contract-inventory.md`](ecosystem-contract-inventory.md).
 
 This report does not assume any single repository is correct. It inventories what each component actually does, identifies where the components disagree, and recommends a canonical contract for the ecosystem to converge on. A formal ADR (provisionally `docs/adr/0003-action-vocabulary-naming-structure.md`) should be opened to ratify the recommendation in [§5](#5-recommended-canonical-vocabulary).
 
