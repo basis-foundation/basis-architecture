@@ -2,7 +2,7 @@
 
 **Status:** Investigation report and recommendation. Not yet ratified.
 **Scope:** Architecture-level review of how resource identity is represented across `basis-core`, `basis-gateway`, `basis-adapters`, `basis-console`, and `basis-architecture`, and a recommendation for where canonical resource-identifier composition belongs.
-**Companion work:** [`action-vocabulary-reconciliation.md`](action-vocabulary-reconciliation.md) settled the parallel question for the `action` field. This report applies the same method to the resource fields and arrives at a structurally identical boundary decision.
+**Companion work:** [`action-vocabulary-reconciliation.md`](action-vocabulary-reconciliation.md) settled the parallel question for the `action` field. This report applies the same method to the resource fields and arrives at a structurally identical boundary decision. The resource-identifier and composition contracts discussed here are also recorded, alongside the rest of the ecosystem's contracts, in [`ecosystem-contract-inventory.md`](ecosystem-contract-inventory.md).
 
 This report does not assume any single repository is correct. It inventories what each component actually does with `resource_type` and `resource_id`, identifies where the components disagree, compares candidate models, and recommends a canonical contract for the ecosystem to converge on. A formal ADR (provisionally `docs/adr/0004-gateway-owned-resource-identifier-composition.md`) should be opened to ratify the recommendation in [§5](#5-recommended-canonical-model).
 
