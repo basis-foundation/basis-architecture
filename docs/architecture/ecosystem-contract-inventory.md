@@ -385,7 +385,7 @@ Schema versioning rules
 Compatibility snapshots
 ```
 
-Each of these is already implemented in at least one repository today (§3), which is precisely why it is a candidate: `basis-schemas` would consolidate the single definition and let the other repositories import rather than re-derive it. Which of these `basis-schemas` should own *first*, and how versioning and compatibility snapshots are structured, are open questions (§7), not decisions made here.
+Each of these is already implemented in at least one repository today (§3), which is precisely why it is a candidate: `basis-schemas` would consolidate the single definition and let the other repositories import rather than re-derive it. Which of these `basis-schemas` should own *first*, and how versioning and compatibility snapshots are structured, are open questions (§7), not decisions made here. The charter for that future repository — its scope, non-scope, ownership model, and a suggested migration order — is developed in [`basis-schemas.md`](basis-schemas.md).
 
 ---
 
