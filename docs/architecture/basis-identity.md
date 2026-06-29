@@ -12,7 +12,9 @@ It does not decide what a subject is allowed to do. It does not store policy, ev
 
 ## What basis-identity Is — and Is Not
 
-`basis-identity` is **not an authoritative enterprise identity provider**. It is not, and is not intended to replace, Keycloak, Okta, Microsoft Entra ID, Auth0, Ping, ADFS, LDAP, or any other enterprise identity source. Those systems remain the authoritative origin of user accounts, credentials, multi-factor enrollment, directory membership, and the lifecycle of enterprise identity. `basis-identity` does not own the enterprise user directory, and a deployment's source of truth for *who exists* stays where the organization already keeps it.
+`basis-identity` is **not an authoritative enterprise identity provider by default**. It is not, and is not intended to replace, Keycloak, Okta, Microsoft Entra ID, Auth0, Ping, ADFS, LDAP, or any other enterprise identity source. In the default and primary deployment posture those systems remain the authoritative origin of user accounts, credentials, multi-factor enrollment, directory membership, and the lifecycle of enterprise identity; `basis-identity` does not own the enterprise user directory, and a deployment's source of truth for *who exists* stays where the organization already keeps it.
+
+The one bounded exception is an explicitly configured standalone or air-gapped deployment, where no external IdP is reachable and `basis-identity` is deliberately made the deployment-local identity authority. This is a constrained, opt-in operating mode — not a general-purpose enterprise IdP replacement — and it is defined precisely in [`docs/architecture/identity-authority-modes.md`](identity-authority-modes.md). The accurate statement of the boundary is therefore: `basis-identity` is not an authoritative enterprise IdP by default, but it may act as the local identity authority for explicitly configured standalone or air-gapped BASIS deployments.
 
 What `basis-identity` *is* is the BASIS-side identity engine that sits in front of those authoritative providers and integrates them into the BASIS ecosystem. It:
 
@@ -112,7 +114,7 @@ The dashed line is an architectural invariant: `basis-identity` establishes iden
 `basis-identity` does not own, and must not acquire:
 
 - **Enterprise user directory authority** — the authoritative source of user accounts, credentials, group membership, and identity lifecycle remains the external enterprise IdP. `basis-identity` integrates that authority; it does not become it.
-- **Password storage** — credentials live in the external IdP. The only exception is an explicitly configured **local development/demo mode**, which exists to make the system runnable without an upstream provider and is never the model for production authority.
+- **Password storage** — in federated and synchronized deployments, credentials live in the external IdP, not in `basis-identity`. There are two bounded exceptions where local credential verification is legitimate: an explicitly configured **standalone / air-gapped local authority mode**, in which `basis-identity` is the deployment-local identity authority because no external IdP is reachable; and a **local development/demo mode** that exists only to make the system runnable without an upstream provider. The first is a constrained production mode for isolated OT environments; the second is never a model for production authority. Both are defined in [`docs/architecture/identity-authority-modes.md`](identity-authority-modes.md).
 - **Authorization evaluation** — deciding whether a subject may perform an action is `basis-core`'s responsibility.
 - **Policy decisions** — policy definition, evaluation semantics, and decision outcomes belong to `basis-core`.
 - **OT protocol normalization** — translating BACnet, Modbus, MQTT, OPC UA, or any field protocol into the authorization vocabulary belongs to `basis-adapters`.
@@ -145,13 +147,26 @@ This separation is what allows each component to remain stable. `basis-core` sta
 
 ---
 
+## Identity Authority Modes
+
+Where the *authoritative* record of identity lives is a separate question from how much federation machinery `basis-identity` runs. `basis-identity` may support multiple identity authority modes, but **each deployment chooses one primary identity authority model**. The supported modes are:
+
+- **Federated mode** — an external IdP (Okta, Entra ID, Keycloak, Auth0, Ping, ADFS, other SAML/OIDC sources) is authoritative; `basis-identity` brokers and normalizes identity from it and may keep shadow/profile records for diagnostics, mapping, access review, and audit context. This is the primary, default enterprise mode.
+- **Synchronized registry mode** — an external IdP remains authoritative, but `basis-identity` maintains a local synchronized registry (via SCIM push, periodic import, or controlled offline bundle import) for diagnostics, access review, mapping, and limited offline resilience. The registry must not silently diverge from the authoritative source.
+- **Standalone / air-gapped local authority mode** — for OT environments where no external IdP is reachable, `basis-identity` is deliberately made the *deployment-local* identity authority and may own local users, groups, credential verification, sessions, token issuance, and lifecycle state. This authority is deployment-local only and is not a general-purpose enterprise IdP replacement.
+
+These modes, the login-experience principle, the rules for mixing modes (one primary mode plus explicit, bounded exceptions such as break-glass admins), and the convergence of all modes into one canonical identity context are defined in full in [`docs/architecture/identity-authority-modes.md`](identity-authority-modes.md).
+
+---
+
 ## Deployment Models
 
-`basis-identity` is an architectural role, and deployments may instantiate it to different degrees:
+The authority modes above describe *where identity originates*; the deployment models below describe *how much of the federation and session surface* `basis-identity` operates. The two are complementary: a deployment selects an authority mode and instantiates a federation surface to match it. `basis-identity` is an architectural role, and deployments may instantiate it to different degrees:
 
 - **Full federation deployment** — `basis-identity` acts as a SAML SP and/or OIDC relying party in front of one or more enterprise IdPs, owns the login/logout/callback flows and BASIS-local sessions, normalizes claims, and issues BASIS-local tokens that `basis-gateway` validates. This is the broker pattern described above and is the primary intended model.
 - **Normalization-only deployment** — an existing broker or gateway already terminates federation, and `basis-identity` is used for claim mapping, subject resolution, and canonical identity context production without owning the login flow. The canonical-context contract is the same; the federation surface is narrower.
-- **Local development / demo mode** — `basis-identity` is explicitly configured with local credentials so the ecosystem can run end-to-end without an upstream provider. This mode exists for development and demonstration only and is never a model for production identity authority.
+- **Standalone / air-gapped deployment** — no external IdP is reachable, so `basis-identity` operates in local authority mode and owns the local accounts, sessions, and (where configured) tokens itself. This is a constrained but legitimate production mode for isolated OT environments, and is the deployment realization of the standalone / air-gapped authority mode above.
+- **Local development / demo mode** — `basis-identity` is explicitly configured with local credentials so the ecosystem can run end-to-end without an upstream provider. Unlike standalone / air-gapped deployments, this mode exists for development and demonstration only and is never a model for production identity authority.
 
 In every model, the canonical identity context that `basis-identity` produces is the stable contract the rest of the ecosystem depends on. What varies is how much of the federation and session surface `basis-identity` operates in that deployment.
 
@@ -161,10 +176,10 @@ In every model, the canonical identity context that `basis-identity` produces is
 
 A recurring source of confusion in identity architectures is conflating *integration authority* with *directory authority*. `basis-identity` holds the former and never the latter.
 
-- **Directory authority** — who exists, what their credentials are, how they authenticate, and how their accounts are provisioned and deprovisioned — remains with the external enterprise IdP. `basis-identity` defers to it.
+- **Directory authority** — who exists, what their credentials are, how they authenticate, and how their accounts are provisioned and deprovisioned — remains with the external enterprise IdP in federated and synchronized modes. `basis-identity` defers to it. The deliberate exception is standalone / air-gapped local authority mode, where there is no external IdP to defer to and `basis-identity` holds directory authority for that one isolated deployment.
 - **Integration authority** — how that externally-authenticated identity is brokered, normalized, sessioned, and represented inside BASIS — is `basis-identity`'s. Within BASIS, `basis-identity` is the authority on what the canonical identity context for a federated subject is.
 
-Keeping these distinct is what makes the Keycloak-as-broker analogy precise: a broker is authoritative over *its own normalized representation and session*, while remaining a downstream consumer of the *upstream IdP's authoritative accounts*. `basis-identity` is authoritative in exactly that bounded sense and no further.
+Keeping these distinct is what makes the Keycloak-as-broker analogy precise: a broker is authoritative over *its own normalized representation and session*, while remaining a downstream consumer of the *upstream IdP's authoritative accounts*. In federated and synchronized modes `basis-identity` is authoritative in exactly that bounded sense and no further; in standalone / air-gapped mode it additionally — and only for that deployment — holds the directory authority that no reachable external IdP can provide. The authority modes are defined in [`docs/architecture/identity-authority-modes.md`](identity-authority-modes.md).
 
 ---
 
@@ -176,4 +191,4 @@ The canonical identity context that `basis-identity` produces is a cross-compone
 
 ## Summary
 
-`basis-identity` is the BASIS identity engine and federation boundary. It integrates external, authoritative identity providers — without replacing them — and brokers, normalizes, sessions, and (when configured) tokenizes identity into the single canonical form the rest of the ecosystem consumes. Its architectural role mirrors how an identity broker such as Keycloak is deployed in front of applications: authoritative IdPs upstream, normalized identity downstream. It owns federation, login/logout/callback, sessions, token exchange, claim mapping, subject resolution, canonical identity context, identity diagnostics, and BASIS-local token issuance when appropriate. It does not own enterprise directory authority, authorization evaluation, policy, OT protocol normalization, gateway enforcement, audit storage, console workflows, or deployment orchestration. `basis-gateway` validates the trusted identity context it produces and enforces decisions at the runtime boundary; `basis-core` evaluates policy while remaining identity-provider, token, and session agnostic.
+`basis-identity` is the BASIS identity engine and federation boundary. It integrates external, authoritative identity providers — without replacing them — and brokers, normalizes, sessions, and (when configured) tokenizes identity into the single canonical form the rest of the ecosystem consumes. Its architectural role mirrors how an identity broker such as Keycloak is deployed in front of applications: authoritative IdPs upstream, normalized identity downstream. It owns federation, login/logout/callback, sessions, token exchange, claim mapping, subject resolution, canonical identity context, identity diagnostics, and BASIS-local token issuance when appropriate. A deployment chooses one primary identity authority mode — federated, synchronized registry, or standalone / air-gapped local authority — as defined in [`docs/architecture/identity-authority-modes.md`](identity-authority-modes.md); only in the explicitly configured standalone / air-gapped mode does `basis-identity` hold deployment-local directory authority. By default it does not own enterprise directory authority, and in no mode does it own authorization evaluation, policy, OT protocol normalization, gateway enforcement, audit storage, console workflows, or deployment orchestration. `basis-gateway` validates the trusted identity context it produces and enforces decisions at the runtime boundary; `basis-core` evaluates policy while remaining identity-provider, token, and session agnostic.
