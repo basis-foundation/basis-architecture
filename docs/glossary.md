@@ -42,7 +42,7 @@ The isolated authorization kernel in the BASIS Core Services Distribution. basis
 
 ## basis-identity
 
-The identity engine and federation boundary in the BASIS Core Services Distribution. basis-identity integrates external, authoritative identity providers — Keycloak, Okta, Entra ID, Auth0, Ping, ADFS, LDAP, and other SAML/OIDC sources — without replacing them, and brokers their identities into the ecosystem. Depending on deployment configuration it may act as a SAML Service Provider or OIDC relying party, own login/logout/callback flows, manage BASIS-local sessions, exchange tokens, map provider claims, resolve subjects, produce canonical BASIS identity context, and issue BASIS-local tokens for downstream components. Its architectural role mirrors an identity broker (such as Keycloak) deployed in front of applications: external IdPs remain authoritative; basis-identity presents a single normalized identity context downstream. basis-identity is not an authoritative enterprise identity provider, does not own the enterprise user directory, and does not evaluate authorization, store policy, or normalize OT protocols. See also: **Identity Engine**, **Identity Federation**, **Canonical Identity Context**, **BASIS Core Services Distribution**.
+The identity engine and federation boundary in the BASIS Core Services Distribution. basis-identity integrates external, authoritative identity providers — Keycloak, Okta, Entra ID, Auth0, Ping, ADFS, LDAP, and other SAML/OIDC sources — without replacing them, and brokers their identities into the ecosystem. Depending on deployment configuration it may act as a SAML Service Provider or OIDC relying party, own login/logout/callback flows, manage BASIS-local sessions, exchange tokens, map provider claims, resolve subjects, produce canonical BASIS identity context, and issue BASIS-local tokens for downstream components. Its architectural role mirrors an identity broker (such as Keycloak) deployed in front of applications: external IdPs remain authoritative; basis-identity presents a single normalized identity context downstream. A deployment chooses one primary identity authority mode — federated, synchronized registry, or standalone / air-gapped local authority. basis-identity is not an authoritative enterprise identity provider by default and does not own the enterprise user directory, except in the explicitly configured standalone / air-gapped mode where it acts as the deployment-local identity authority; in no mode does it evaluate authorization, store policy, or normalize OT protocols. See also: **Identity Engine**, **Identity Federation**, **Identity Authority Mode**, **Canonical Identity Context**, **BASIS Core Services Distribution**.
 
 ---
 
@@ -145,6 +145,30 @@ The arrangement in which a system accepts identities authenticated by one or mor
 ## Canonical Identity Context
 
 The normalized, provider-independent representation of a subject's identity that BASIS components evaluate and propagate — principally the `Subject` and `IdentityContext` inputs to `basis-core`. Canonical identity context is the single internal form of identity in the ecosystem: external provider claims and assertions are mapped into it by `basis-identity`, and `basis-gateway` validates and carries it into kernel evaluation. The kernel depends on this normalized form and never on identity-provider-specific artifacts. The shape of the canonical identity context is expected to be formalized under a future `basis-schemas`. See also: **Identity Engine**, **Identity Propagation**, **basis-identity**.
+
+---
+
+## Identity Authority Mode
+
+The deployment-level choice of *where the authoritative record of identity lives* for a BASIS deployment. `basis-identity` may support multiple authority modes, but each deployment selects one primary mode: **Federated Mode**, **Synchronized Registry Mode**, or **Local Identity Authority** (standalone / air-gapped). The authority mode is distinct from the federation surface a deployment operates — it concerns who originates accounts, not how much login and session machinery `basis-identity` runs — and all modes converge into the same canonical identity context downstream. Defined in [`docs/architecture/identity-authority-modes.md`](architecture/identity-authority-modes.md). See also: **Federated Mode**, **Synchronized Registry Mode**, **Local Identity Authority**, **Canonical Identity Context**.
+
+---
+
+## Federated Mode
+
+The identity authority mode in which an external IdP (Okta, Entra ID, Keycloak, Auth0, Ping, ADFS, or other SAML/OIDC source) is authoritative for accounts, credentials, MFA, and lifecycle, and `basis-identity` brokers and normalizes identity from it without originating accounts. `basis-identity` may keep shadow/profile records derived from the authoritative provider for diagnostics, mapping, access review, and audit context. This is the primary, default enterprise mode. See also: **Identity Authority Mode**, **Identity Federation**, **Synchronized Registry Mode**.
+
+---
+
+## Synchronized Registry Mode
+
+The identity authority mode in which an external IdP remains authoritative but `basis-identity` maintains a local synchronized registry — a maintained local copy of users, groups, external identifiers, mapped roles, lifecycle state, and sync metadata — kept in step with the authoritative source via SCIM push, periodic import, or controlled offline bundle import. The registry supports diagnostics, access review, mapping, and limited offline resilience, and must not silently diverge from the authoritative source. See also: **Identity Authority Mode**, **Federated Mode**, **Local Identity Authority**.
+
+---
+
+## Local Identity Authority
+
+The identity authority mode (also called standalone or air-gapped mode) in which `basis-identity` is the *deployment-local* authoritative source of identity, owning local users, groups, credential verification, sessions, token issuance, and lifecycle state. It exists for OT environments where no external IdP is reachable. This authority is deployment-local only and is an explicit, constrained operating mode — not a general-purpose enterprise IdP replacement and not the default. See also: **Identity Authority Mode**, **Federated Mode**, **Synchronized Registry Mode**.
 
 ---
 
