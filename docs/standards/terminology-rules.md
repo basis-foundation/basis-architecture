@@ -26,7 +26,7 @@ The most consequential terminology requirement in this repository is the correct
 - Incorrect: "BASIS governs the open-source project."
 - Incorrect: "The Foundation operates the authorization service."
 
-**BASIS Core Services Distribution** — the set of open-source, deployable software components maintained under Foundation governance: basis-core, basis-gateway, basis-console, basis-adapters, basis-deploy, and basis-schemas. Together these components constitute a functional, deployable identity-aware authorization system.
+**BASIS Core Services Distribution** — the set of open-source, deployable software components maintained under Foundation governance: basis-core, basis-gateway, basis-console, basis-adapters, basis-identity, basis-deploy, and basis-schemas. Together these components constitute a functional, deployable identity-aware authorization system.
 
 - Correct: "The BASIS Core Services Distribution provides a complete authorization system for self-hosted deployments."
 - Incorrect: "BASIS provides managed hosting." (That is BASAuth.)
@@ -58,7 +58,7 @@ When all five entities are referenced in a single document, the hierarchy is: Ba
 
 Repository and component names in the BASIS ecosystem follow consistent conventions that must be preserved across all documentation:
 
-- Component names are always lowercase and hyphenated: `basis-core`, `basis-gateway`, `basis-console`, `basis-adapters`, `basis-deploy`, `basis-schemas`
+- Component names are always lowercase and hyphenated: `basis-core`, `basis-gateway`, `basis-console`, `basis-adapters`, `basis-identity`, `basis-deploy`, `basis-schemas`
 - Component names are never capitalized or spaced: not `Basis Core`, not `Basis-Core`, not `BasisCore`
 - `basis-architecture` refers to this documentation repository, not to the architecture itself
 - "the kernel" is an acceptable shorthand for basis-core in contexts where the referent is unambiguous; "the authorization kernel" is the full form

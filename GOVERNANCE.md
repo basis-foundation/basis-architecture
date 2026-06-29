@@ -86,7 +86,7 @@ The ADR directory is located at `docs/adr/` and follows the format established t
 
 The isolation boundary of `basis-core` is a governance concern, not merely a coding convention. This bears emphasis because the boundary will face pressure over time — from convenience, from a desire to avoid architectural complexity, and from the natural tendency to solve problems by adding capabilities to shared components.
 
-The boundary rule is stated clearly in [`docs/architecture/basis-ecosystem.md`](docs/architecture/basis-ecosystem.md): basis-core must not depend on basis-gateway, basis-console, basis-adapters, basis-deploy, any BASAuth component, cloud platform SDKs, specific identity providers, database runtimes, UI frameworks, or protocol stacks.
+The boundary rule is stated clearly in [`docs/architecture/basis-ecosystem.md`](docs/architecture/basis-ecosystem.md): basis-core must not depend on basis-gateway, basis-console, basis-adapters, basis-identity, basis-deploy, any BASAuth component, cloud platform SDKs, specific identity providers, database runtimes, UI frameworks, or protocol stacks.
 
 Any proposed contribution that adds such a dependency to basis-core requires:
 

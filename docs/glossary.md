@@ -12,7 +12,7 @@ The isolated, minimal component responsible for policy evaluation semantics, enf
 
 ## BASIS Core Services Distribution
 
-The open-source, deployable set of components maintained under Basis Foundation governance. The distribution includes basis-core (the authorization kernel), basis-gateway (the API and runtime wrapper), basis-console (the operator and administrative UI), basis-adapters (protocol normalization adapters), basis-deploy (deployment and distribution tooling), and basis-schemas (shared schemas and compatibility definitions). The distribution is designed to be complete enough for real deployments without requiring commercial services from BASAuth. See also: **Basis Foundation**, **BASAuth**.
+The open-source, deployable set of components maintained under Basis Foundation governance. The distribution includes basis-core (the authorization kernel), basis-gateway (the API and runtime wrapper), basis-console (the operator and administrative UI), basis-adapters (protocol normalization adapters), basis-identity (the identity engine and federation boundary), basis-deploy (deployment and distribution tooling), and basis-schemas (shared schemas and compatibility definitions). The distribution is designed to be complete enough for real deployments without requiring commercial services from BASAuth. See also: **Basis Foundation**, **BASAuth**.
 
 ---
 
@@ -36,7 +36,13 @@ A human-facing surface for submitting configuration changes, reviewing system st
 
 ## basis-core
 
-The isolated authorization kernel in the BASIS Core Services Distribution. basis-core implements the policy evaluation logic, enforcement semantics, failure mode contracts, and audit event schema that all other distribution components depend on. basis-core must not depend on basis-gateway, basis-console, basis-adapters, basis-deploy, identity providers, cloud platform SDKs, or UI frameworks. See also: **Authorization Kernel**, **BASIS Core Services Distribution**.
+The isolated authorization kernel in the BASIS Core Services Distribution. basis-core implements the policy evaluation logic, enforcement semantics, failure mode contracts, and audit event schema that all other distribution components depend on. basis-core must not depend on basis-gateway, basis-console, basis-adapters, basis-identity, basis-deploy, identity providers, cloud platform SDKs, or UI frameworks. See also: **Authorization Kernel**, **BASIS Core Services Distribution**, **basis-identity**.
+
+---
+
+## basis-identity
+
+The identity engine and federation boundary in the BASIS Core Services Distribution. basis-identity integrates external, authoritative identity providers — Keycloak, Okta, Entra ID, Auth0, Ping, ADFS, LDAP, and other SAML/OIDC sources — without replacing them, and brokers their identities into the ecosystem. Depending on deployment configuration it may act as a SAML Service Provider or OIDC relying party, own login/logout/callback flows, manage BASIS-local sessions, exchange tokens, map provider claims, resolve subjects, produce canonical BASIS identity context, and issue BASIS-local tokens for downstream components. Its architectural role mirrors an identity broker (such as Keycloak) deployed in front of applications: external IdPs remain authoritative; basis-identity presents a single normalized identity context downstream. basis-identity is not an authoritative enterprise identity provider, does not own the enterprise user directory, and does not evaluate authorization, store policy, or normalize OT protocols. See also: **Identity Engine**, **Identity Federation**, **Canonical Identity Context**, **BASIS Core Services Distribution**.
 
 ---
 
@@ -121,6 +127,24 @@ An authorization approach in which access decisions are conditioned on verified 
 ## Identity Propagation
 
 The mechanism by which a subject's verified identity is carried through a multi-component request chain, so that intermediate and downstream services can make authorization decisions based on the original requester's identity rather than assuming trust from the previous hop. Identity propagation may be implemented through signed tokens, attested headers, or mutual TLS with forwarding semantics. Maintaining identity context across system boundaries is necessary for end-to-end auditability.
+
+---
+
+## Identity Engine
+
+The component that integrates external identity providers and normalizes externally-authenticated identity into the single canonical form a system's downstream components consume. In the BASIS ecosystem, `basis-identity` is the identity engine: it brokers external IdPs, owns the federation-related login/session surface, maps claims, resolves subjects, and produces canonical BASIS identity context. An identity engine is distinct from an authoritative identity provider — it integrates and normalizes identity rather than originating accounts or credentials. See also: **Identity Federation**, **Canonical Identity Context**, **basis-identity**.
+
+---
+
+## Identity Federation
+
+The arrangement in which a system accepts identities authenticated by one or more external, authoritative identity providers rather than maintaining its own authoritative directory, typically by acting as a SAML Service Provider or OIDC relying party toward those providers. A federation boundary brokers external identities into a normalized internal representation and may own the login, logout, and callback flows federation requires. In the BASIS ecosystem, federation is owned by `basis-identity`; the external enterprise IdPs (Keycloak, Okta, Entra ID, Auth0, Ping, ADFS, LDAP, and others) remain authoritative. See also: **Identity Engine**, **basis-identity**.
+
+---
+
+## Canonical Identity Context
+
+The normalized, provider-independent representation of a subject's identity that BASIS components evaluate and propagate — principally the `Subject` and `IdentityContext` inputs to `basis-core`. Canonical identity context is the single internal form of identity in the ecosystem: external provider claims and assertions are mapped into it by `basis-identity`, and `basis-gateway` validates and carries it into kernel evaluation. The kernel depends on this normalized form and never on identity-provider-specific artifacts. The shape of the canonical identity context is expected to be formalized under a future `basis-schemas`. See also: **Identity Engine**, **Identity Propagation**, **basis-identity**.
 
 ---
 

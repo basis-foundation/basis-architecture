@@ -7,7 +7,7 @@ BASIS is an open-source core services distribution for identity-aware authorizat
 The BASIS ecosystem consists of three distinct layers:
 
 - **Basis Foundation** — the nonprofit body that governs the open-source work, maintains architectural standards, and stewards the core services distribution
-- **BASIS Core Services Distribution** — the open-source, deployable set of components (basis-core, basis-gateway, basis-console, basis-adapters, basis-deploy, basis-schemas) that together provide a functional identity-aware authorization system
+- **BASIS Core Services Distribution** — the open-source, deployable set of components (basis-core, basis-gateway, basis-console, basis-adapters, basis-identity, basis-deploy, basis-schemas) that together provide a functional identity-aware authorization system
 - **BASAuth** — the future for-profit commercial company that builds enterprise products and managed services on top of the open-source distribution
 
 The architectural center of the distribution is **basis-core**, the isolated authorization kernel. basis-core owns the stable policy evaluation semantics, enforcement contracts, and audit event definitions that all other components in the distribution depend on. It does not depend on higher-level services, cloud infrastructure, identity providers, protocol stacks, or UI components.
@@ -168,7 +168,7 @@ The master document at [`paper.md`](whitepapers/identity-aware-authorization-for
 
 [`docs/architecture/basis-ecosystem.md`](docs/architecture/basis-ecosystem.md)
 
-Describes the three layers of the BASIS ecosystem — the Basis Foundation, the BASIS Core Services Distribution, and BASAuth — along with the component structure of the distribution (basis-core, basis-gateway, basis-console, basis-adapters, basis-deploy, basis-schemas), the dependency rules that govern relationships between them, and the boundaries that define what belongs in basis-core and what must stay outside it.
+Describes the three layers of the BASIS ecosystem — the Basis Foundation, the BASIS Core Services Distribution, and BASAuth — along with the component structure of the distribution (basis-core, basis-gateway, basis-console, basis-adapters, basis-identity, basis-deploy, basis-schemas), the dependency rules that govern relationships between them, and the boundaries that define what belongs in basis-core and what must stay outside it.
 
 ### Kernel Boundary Rules
 

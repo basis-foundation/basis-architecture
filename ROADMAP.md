@@ -62,7 +62,7 @@ This phase addresses the step from validated research implementation to a separa
 | ADR process for kernel boundary decisions | **In architecture** |
 | Compatibility versioning strategy for basis-schemas | **Research direction** |
 
-**Design constraint:** basis-core must not acquire dependencies on basis-gateway, basis-console, basis-adapters, basis-deploy, cloud SDKs, identity providers, database runtimes, UI frameworks, or protocol stacks. This constraint is a governance requirement, not a coding convention. See [`GOVERNANCE.md`](GOVERNANCE.md) for the basis-core boundary protection policy.
+**Design constraint:** basis-core must not acquire dependencies on basis-gateway, basis-console, basis-adapters, basis-identity, basis-deploy, cloud SDKs, identity providers, database runtimes, UI frameworks, or protocol stacks. This constraint is a governance requirement, not a coding convention. See [`GOVERNANCE.md`](GOVERNANCE.md) for the basis-core boundary protection policy.
 
 ---
 
