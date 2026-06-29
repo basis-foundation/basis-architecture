@@ -94,7 +94,7 @@ For any proposed addition to basis-core, answer these questions:
 
 1. Does this change alter or extend authorization evaluation semantics, or define a stable contract that multiple higher-level components must implement?
 2. Can it be tested in-process, in isolation, without a database, network service, identity provider, protocol stack, or running container?
-3. Would basis-gateway, basis-console, basis-adapters, or basis-deploy be a more appropriate owner?
+3. Would basis-gateway, basis-console, basis-adapters, basis-identity, or basis-deploy be a more appropriate owner?
 4. Does this introduce network I/O, file I/O, runtime orchestration, or deployment assumptions?
 5. Does this make basis-core harder to embed in a constrained environment, air-gapped deployment, or test harness?
 6. Does this require a specific OT protocol, cloud provider, or identity system to be useful?

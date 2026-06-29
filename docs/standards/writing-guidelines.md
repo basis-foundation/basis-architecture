@@ -142,7 +142,7 @@ When referring to the components:
 
 - "the BASIS proof-of-concept" or "the BASIS PoC" or "basis-poc" refers specifically to the research implementation that validated the core architectural mechanisms. It is a research artifact, not a production system.
 - "basis-core" refers to the isolated authorization kernel — the stable evaluation component that the other distribution services depend on. It is distinct from the PoC.
-- "the BASIS Core Services Distribution" refers to the full set of open-source components (basis-core, basis-gateway, basis-console, basis-adapters, basis-deploy, basis-schemas).
+- "the BASIS Core Services Distribution" refers to the full set of open-source components (basis-core, basis-gateway, basis-console, basis-adapters, basis-identity, basis-deploy, basis-schemas).
 - "BASAuth" refers to the future for-profit commercial entity that builds enterprise services on top of the open-source distribution. Do not describe BASAuth capabilities as part of the open-source distribution, and do not describe open-source distribution capabilities as if they require BASAuth.
 
 Do not conflate the PoC with basis-core. The PoC demonstrated architectural feasibility in a monolithic, research-scope form. basis-core is the isolated kernel direction that emerged from the lessons the PoC surfaced. They are related but distinct things.

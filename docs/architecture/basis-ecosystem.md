@@ -51,6 +51,10 @@ The console provides an operator and administrator interface for the authorizati
 
 The adapter library provides the normalization layer between field-level OT protocols and the subject-resource-action representation that basis-core evaluates. Each adapter handles a specific protocol family (BACnet, Modbus, MQTT, and others) and is responsible for translating protocol-specific messages into the shared authorization vocabulary and for delivering authorized commands back to the protocol layer. basis-adapters depends on basis-core for its authorization contracts and event schemas. See [`docs/architecture/basis-adapters.md`](basis-adapters.md) for the canonical adapter architecture reference.
 
+**basis-identity** — identity engine and federation boundary
+
+The identity engine is the federation and normalization boundary between external identity systems and the BASIS authorization runtime. It integrates external, authoritative identity providers — Keycloak, Okta, Entra ID, Auth0, Ping, ADFS, LDAP, and other SAML/OIDC sources — without replacing them, and brokers their identities into the ecosystem. Depending on deployment configuration it may act as a SAML Service Provider or OIDC relying party, own the login/logout/callback flows, manage BASIS-local sessions, normalize provider claims into canonical BASIS identity context, and issue BASIS-local tokens that downstream components can trust. Its architectural role mirrors how an identity broker such as Keycloak is deployed in front of applications: external enterprise IdPs remain authoritative, while basis-identity presents downstream BASIS components — principally basis-gateway — with a single normalized identity context. basis-identity is not an authoritative enterprise identity provider, does not own the enterprise user directory, and does not evaluate authorization. See [`docs/architecture/basis-identity.md`](basis-identity.md) for the canonical identity engine architecture reference.
+
 **basis-deploy** — deployment and distribution tooling
 
 The deployment component provides tooling for packaging, configuring, and distributing the BASIS Core Services Distribution in OT environments. This includes container definitions, configuration management tooling, and deployment validation scripts. basis-deploy is not part of the authorization runtime — it is the tooling used to stand one up.
@@ -87,7 +91,7 @@ BASAuth's commercial offerings address the production engineering challenges tha
 - **Fleet management** — tooling and services for managing large, distributed deployments of BASIS components across many sites
 - **Advanced policy workflows** — policy authoring, review, approval, and rollback tooling appropriate for enterprise governance processes
 - **Advanced audit and compliance tooling** — audit aggregation, retention management, compliance reporting, and forensic query interfaces beyond what the open-source console provides
-- **Managed identity federation** — operated federation services for connecting enterprise identity providers and vendor identity systems to BASIS-governed enforcement infrastructure
+- **Managed identity federation** — operated, SLA-backed federation services that build on the open-source basis-identity engine: hosted federation for connecting enterprise identity providers and vendor identity systems to BASIS-governed enforcement infrastructure, beyond what self-hosted basis-identity provides
 - **Adapter certification** — tested, validated, and supported adapter implementations for specific device manufacturers and firmware versions
 - **Enterprise integrations** — integrations with enterprise asset management systems, ITSM platforms, CMDB systems, and operational data historians
 - **Multi-site operations** — services for managing policy distribution, consistency monitoring, and synchronization state across large numbers of geographically distributed sites
@@ -105,20 +109,22 @@ The dependency relationships between components in the ecosystem follow a single
 ```text
 Commercial services (BASAuth)
     depends on
-Open-source services (basis-gateway, basis-console, basis-adapters, basis-deploy)
+Open-source services (basis-gateway, basis-console, basis-adapters, basis-identity, basis-deploy)
     depends on
 Authorization kernel (basis-core)
     depends on
 Shared schemas (basis-schemas)
 ```
 
+`basis-identity` is an exception to the "depends on basis-core" arrow: it sits upstream of evaluation and does not depend on the kernel. It produces the canonical identity context that `basis-gateway` validates before invoking `basis-core`; identity integration and normalization happen before, not inside, authorization. It depends on `basis-schemas` for the shape of that canonical identity context.
+
 The rules that enforce this structure:
 
 1. **Commercial services may depend on open-source BASIS services.** BASAuth products may integrate with basis-core, basis-gateway, basis-adapters, and other open-source components. They must not be required for the open-source distribution to function.
 
-2. **Open-source services may depend on basis-core.** basis-gateway, basis-console, basis-adapters, and basis-deploy may call into basis-core, reference its contracts, and extend its behavior at defined extension points. They must not modify core evaluation semantics or bypass its enforcement contracts.
+2. **Open-source services may depend on basis-core.** basis-gateway, basis-console, basis-adapters, and basis-deploy may call into basis-core, reference its contracts, and extend its behavior at defined extension points. They must not modify core evaluation semantics or bypass its enforcement contracts. basis-identity is upstream of evaluation and does not depend on basis-core; it produces canonical identity context that basis-gateway consumes.
 
-3. **basis-core must not depend on commercial services or higher-level runtime services.** basis-core must not import from basis-gateway, basis-console, basis-adapters, basis-deploy, or any BASAuth component. It must not depend on cloud platform SDKs, specific identity providers, database runtimes, UI frameworks, or protocol stacks.
+3. **basis-core must not depend on commercial services or higher-level runtime services.** basis-core must not import from basis-gateway, basis-console, basis-adapters, basis-identity, basis-deploy, or any BASAuth component. It must not depend on cloud platform SDKs, specific identity providers, database runtimes, UI frameworks, or protocol stacks.
 
 This rule is not a convention — it is a structural property of the kernel. Any dependency that crosses upward from basis-core toward higher-level services violates the isolation that makes the kernel stable, testable, and portable.
 
@@ -140,7 +146,7 @@ basis-core owns the stable, protocol-agnostic authorization semantics that all h
 
 The following concerns belong in higher-level components or commercial services, not in basis-core:
 
-- **Identity provider operation** — operating, configuring, or federating identity providers is the responsibility of deployment operators or commercial managed services, not the kernel
+- **Identity provider operation and federation** — integrating external identity providers, brokering and federating identity, owning login/logout/callback flows, managing sessions, mapping claims, and issuing BASIS-local tokens belong to basis-identity (and to the external IdPs that remain authoritative); the kernel stays identity-provider, token, and session agnostic and never participates in federation
 - **Protocol adapter implementation** — the logic for normalizing BACnet, Modbus, MQTT, or any other field protocol belongs in basis-adapters, not in the kernel
 - **Runtime API hosting** — the HTTP API surface, request routing, and session management belong in basis-gateway
 - **User interface** — operator consoles, administrative dashboards, and policy authoring interfaces belong in basis-console or commercial tooling
@@ -163,6 +169,7 @@ Each component in the BASIS Core Services Distribution is expected to be maintai
 | `basis-gateway` | API and runtime wrapper | Request handling, decision dispatch, policy distribution |
 | `basis-console` | Operator/admin UI | Policy inspection, audit review, operational management |
 | `basis-adapters` | Protocol adapters | Field-protocol normalization and command delivery |
+| `basis-identity` | Identity engine and federation boundary | External IdP integration, federation, login/session, claim mapping, canonical identity context |
 | `basis-deploy` | Deployment tooling | Packaging, configuration, deployment validation |
 | `basis-schemas` | Shared schemas | Authorization contracts, audit schemas, compatibility definitions |
 | `basis-architecture` | Architecture documentation | White papers, ADRs, standards, and design reference |

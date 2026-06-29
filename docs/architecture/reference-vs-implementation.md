@@ -14,7 +14,7 @@ The white papers in this repository operate at the conceptual architecture level
 
 **Reference architecture** describes one specific realization of the conceptual architecture: a coherent set of component choices, deployment patterns, and integration approaches that satisfies the conceptual requirements. A reference architecture is not the only valid realization — it is a concrete example that implementation teams can use as a starting point. It is more specific than conceptual architecture and less authoritative: a conceptual requirement is binding; a reference architecture pattern is a suggestion.
 
-The BASIS Core Services Distribution (basis-core, basis-gateway, basis-console, basis-adapters, basis-deploy, basis-schemas) represents the reference architecture for the BASIS ecosystem — a specific, deployable realization of the conceptual model described in the white papers. It is not the only possible realization, but it is the one maintained under Foundation governance.
+The BASIS Core Services Distribution (basis-core, basis-gateway, basis-console, basis-adapters, basis-identity, basis-deploy, basis-schemas) represents the reference architecture for the BASIS ecosystem — a specific, deployable realization of the conceptual model described in the white papers. It is not the only possible realization, but it is the one maintained under Foundation governance.
 
 **Implementation** describes what has actually been built in a specific repository, deployment, or production context. An implementation is specific, observed, and operational. It may satisfy the conceptual requirements in ways that differ from the reference architecture patterns without violating the architecture, as long as the contracts and constraints are preserved.
 
