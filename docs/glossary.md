@@ -178,6 +178,12 @@ A logging discipline in which records of system events — particularly authoriz
 
 ---
 
+## Operation-Aware Authorization Model
+
+The conceptual expansion of `basis-core` from a basic subject/action/resource authorization kernel into a kernel that evaluates richer OT operation context — subject attributes, resource type, site/zone, device identity and class, protocol operation evidence, operation intent, safety/risk/environment/time context, and correlation metadata — while remaining protocol-agnostic, identity-provider-agnostic, and enforcement-agnostic. The model is defined in [`docs/architecture/operation-aware-authorization-model.md`](architecture/operation-aware-authorization-model.md) and adopted in ADR-0001. It defines conceptual categories for a future, richer `DecisionRequest`/`DecisionResponse`, not a final schema or a policy language. See also: **Authorization Kernel**, **Policy Evaluation**, **basis-core**.
+
+---
+
 ## Operator Workflow
 
 A structured sequence of human-initiated actions through which an operator interacts with the authorization system to accomplish a defined operational objective — reviewing policy state, examining audit records, submitting a configuration change, or investigating a denial. In the BASIS ecosystem, operator workflows are mediated by `basis-console` and flow through `basis-gateway`; they do not bypass enforcement boundaries or reach `basis-core` directly in production deployments. See also: **Console**, **Administrative Interface**.

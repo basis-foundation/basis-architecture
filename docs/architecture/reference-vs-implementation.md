@@ -28,7 +28,7 @@ Architecture documents in this repository express conceptual requirements and de
 
 When a white paper section states that "the policy engine receives a structured request and produces a deterministic authorization decision," that is a conceptual requirement. It constrains every implementation that calls itself an authorization kernel: the evaluation must be deterministic, the input must be structured, and the output must be an authorization decision. It does not specify the data format, the evaluation algorithm, the programming language, or the deployment topology.
 
-When `docs/architecture/kernel-boundary-rules.md` states that "basis-core must not include database clients, ORMs, or runtime persistence backends," that is a design constraint. It is enforceable: a proposed implementation of basis-core that imports SQLAlchemy violates this constraint, regardless of how the import is framed.
+When `docs/kernel-boundary-rules.md` states that "basis-core must not include database clients, ORMs, or runtime persistence backends," that is a design constraint. It is enforceable: a proposed implementation of basis-core that imports SQLAlchemy violates this constraint, regardless of how the import is framed.
 
 When `docs/architecture-principles.md` states that "the authorization infrastructure must be designed to support continued safe operation during partial failures," that is an architecture principle. It constrains the design choices of any component that participates in the authorization infrastructure.
 
