@@ -4,7 +4,7 @@ This document defines the long-term compatibility philosophy for the BASIS ecosy
 
 This is an architectural document, not an operational specification. The policies described here are not yet fully operationalized. They reflect the compatibility commitments the ecosystem is designed to be governed by as components mature and stabilize.
 
-Cross-references: [`docs/architecture/basis-ecosystem.md`](basis-ecosystem.md) describes component responsibilities and dependency direction. [`docs/architecture/kernel-boundary-rules.md`](kernel-boundary-rules.md) defines the stability boundaries of the authorization kernel. [`docs/architecture-principles.md`](../architecture-principles.md) — Principles 3, 5, 9, and 14 — establishes the architectural commitments that compatibility protects.
+Cross-references: [`docs/architecture/basis-ecosystem.md`](basis-ecosystem.md) describes component responsibilities and dependency direction. [`docs/kernel-boundary-rules.md`](../kernel-boundary-rules.md) defines the stability boundaries of the authorization kernel. [`docs/architecture-principles.md`](../architecture-principles.md) — Principles 3, 5, 9, and 14 — establishes the architectural commitments that compatibility protects.
 
 ---
 
