@@ -43,6 +43,7 @@ If you are new to this repository, start with the white paper abstract and the e
 - [`docs/architecture/operation-aware-authorization-model.md`](docs/architecture/operation-aware-authorization-model.md) — the conceptual model for expanding basis-core into an operation-aware OT authorization kernel
 - [`docs/architecture/operation-aware-evaluation-semantics.md`](docs/architecture/operation-aware-evaluation-semantics.md) — deterministic evaluation semantics for the operation-aware model: default deny, `NOT_APPLICABLE`, deny precedence, conflict resolution, missing context, and safe error handling
 - [`docs/architecture/operation-aware-trace-audit-evidence.md`](docs/architecture/operation-aware-trace-audit-evidence.md) — the conceptual trace and audit evidence model: trace vs. audit, evidence lifecycle, redaction, reason codes, and evidence assembly ownership
+- [`docs/architecture/operation-aware-policy-rule-model.md`](docs/architecture/operation-aware-policy-rule-model.md) — the conceptual policy bundle and rule model: bundle scope, rule effects and match criteria, conditions, combining semantics, validation, and reason codes
 - [`docs/adr/README.md`](docs/adr/README.md) — the ADR process and when an ADR is required
 
 ### For Contributors
@@ -62,6 +63,7 @@ If you are new to this repository, start with the white paper abstract and the e
 - [`docs/architecture/operation-aware-authorization-model.md`](docs/architecture/operation-aware-authorization-model.md) — conceptual direction for the richer DecisionRequest/DecisionResponse context basis-core v0.2.0 is expected to support
 - [`docs/architecture/operation-aware-evaluation-semantics.md`](docs/architecture/operation-aware-evaluation-semantics.md) — the evaluation semantics basis-core v0.2.0 is expected to implement: default deny, deny precedence, conflict resolution, and safe error handling
 - [`docs/architecture/operation-aware-trace-audit-evidence.md`](docs/architecture/operation-aware-trace-audit-evidence.md) — the trace and audit evidence categories basis-core, basis-gateway, basis-adapters, and basis-identity are each expected to contribute
+- [`docs/architecture/operation-aware-policy-rule-model.md`](docs/architecture/operation-aware-policy-rule-model.md) — the conceptual policy bundle and rule structure basis-schemas is expected to formalize and basis-core v0.2.0 is expected to validate and evaluate
 - [`docs/adr/README.md`](docs/adr/README.md) — when implementation decisions require an ADR in this repository
 
 ---

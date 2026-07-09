@@ -190,6 +190,12 @@ The set of deterministic rules governing how `basis-core` reasons about the rich
 
 ---
 
+## Operation-Aware Policy Bundle and Rule Model
+
+The conceptual model defining how policy is packaged, identified, validated, and evaluated for the **Operation-Aware Authorization Model** — the **Policy Bundle** as the unit of policy distribution, versioning, validation, and compatibility; policy scope; the rule as a deterministic unit of evaluation with an effect, match criteria, conditions, a reason code, and traceable metadata; `ALLOW`/`DENY` rule effects and their relationship to deny precedence; bundle and rule combining semantics; rule ordering; policy validation; and policy metadata and provenance. The model is defined in [`docs/architecture/operation-aware-policy-rule-model.md`](architecture/operation-aware-policy-rule-model.md) and adopted in ADR-0004. It defines conceptual policy model categories and ownership, not a final policy language, JSON Schema, or reason-code vocabulary. See also: **Operation-Aware Authorization Model**, **Operation-Aware Evaluation Semantics**, **Policy Bundle**, **Policy Engine**, **Policy Evaluation**.
+
+---
+
 ## Operation-Aware Trace and Audit Evidence
 
 The conceptual model defining what evidence must exist to make an operation-aware decision explainable, auditable, testable, and safe to visualize — including the distinction between kernel-produced **evaluation trace**, durable **audit evidence**, and the runtime **gateway audit event**; the evidence lifecycle from identity context through console visualization; conceptual categories for trace, rule-level evidence, request evidence, adapter evidence references, and identity evidence references; redaction tiers; and reason codes. The model is defined in [`docs/architecture/operation-aware-trace-audit-evidence.md`](architecture/operation-aware-trace-audit-evidence.md) and adopted in ADR-0003. It defines conceptual evidence categories and ownership, not a final trace schema, audit event schema, or reason-code vocabulary. See also: **Operation-Aware Authorization Model**, **Operation-Aware Evaluation Semantics**, **Immutable Audit Logging**.
@@ -217,6 +223,12 @@ Hardware and software systems that monitor and control physical processes, devic
 ## Operator Identity
 
 A verifiable credential that uniquely identifies a human operator interacting with a system. Operator identity is distinct from device identity and typically involves stronger authentication mechanisms (e.g., multi-factor authentication) appropriate for human principals. In an OT context, operator identities must account for shift-based access patterns, break-glass emergency procedures, and role assignments that may vary by site, system, or operational state.
+
+---
+
+## Policy Bundle
+
+The conceptual unit of policy distribution, versioning, validation, and compatibility in the **Operation-Aware Policy Bundle and Rule Model** — the thing `basis-core` evaluates a `DecisionRequest` against and the thing `basis-gateway` loads and selects at runtime. A policy bundle carries a bundle identifier, bundle version, schema version, policy owner/authority, target scope, rule set, metadata, compatibility metadata, validation status, provenance, and optional deprecation/replacement metadata. A policy bundle is not necessarily a file format; concrete serializations are a future `basis-schemas` decision. Defined in [`docs/architecture/operation-aware-policy-rule-model.md`](architecture/operation-aware-policy-rule-model.md) and adopted in ADR-0004. See also: **Operation-Aware Policy Bundle and Rule Model**, **Policy Engine**, **Policy Evaluation**.
 
 ---
 
