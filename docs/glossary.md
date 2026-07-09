@@ -184,6 +184,12 @@ The conceptual expansion of `basis-core` from a basic subject/action/resource au
 
 ---
 
+## Operation-Aware Evaluation Semantics
+
+The set of deterministic rules governing how `basis-core` reasons about the richer context described by the **Operation-Aware Authorization Model** — default deny, `NOT_APPLICABLE` behavior, deny precedence, conflict resolution, rule ordering, condition evaluation, missing context behavior, unknown action/resource behavior, schema version compatibility, deterministic trace output, and safe error handling. These semantics are defined in [`docs/architecture/operation-aware-evaluation-semantics.md`](architecture/operation-aware-evaluation-semantics.md) and adopted in ADR-0002. They define conceptual evaluation behavior, not a final policy language, JSON Schema, or trace schema. See also: **Operation-Aware Authorization Model**, **Policy Evaluation**, **Authorization Decision**.
+
+---
+
 ## Operator Workflow
 
 A structured sequence of human-initiated actions through which an operator interacts with the authorization system to accomplish a defined operational objective — reviewing policy state, examining audit records, submitting a configuration change, or investigating a denial. In the BASIS ecosystem, operator workflows are mediated by `basis-console` and flow through `basis-gateway`; they do not bypass enforcement boundaries or reach `basis-core` directly in production deployments. See also: **Console**, **Administrative Interface**.

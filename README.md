@@ -41,6 +41,7 @@ If you are new to this repository, start with the white paper abstract and the e
 - [`docs/architecture/compatibility-philosophy.md`](docs/architecture/compatibility-philosophy.md) — compatibility and stability commitments for shared contracts
 - [`docs/architecture/reference-vs-implementation.md`](docs/architecture/reference-vs-implementation.md) — the distinction between conceptual architecture, reference architecture, and implementation
 - [`docs/architecture/operation-aware-authorization-model.md`](docs/architecture/operation-aware-authorization-model.md) — the conceptual model for expanding basis-core into an operation-aware OT authorization kernel
+- [`docs/architecture/operation-aware-evaluation-semantics.md`](docs/architecture/operation-aware-evaluation-semantics.md) — deterministic evaluation semantics for the operation-aware model: default deny, `NOT_APPLICABLE`, deny precedence, conflict resolution, missing context, and safe error handling
 - [`docs/adr/README.md`](docs/adr/README.md) — the ADR process and when an ADR is required
 
 ### For Contributors
@@ -58,6 +59,7 @@ If you are new to this repository, start with the white paper abstract and the e
 - [`docs/architecture/action-vocabulary.md`](docs/architecture/action-vocabulary.md) — action naming structure, conventions, and stability expectations
 - [`docs/architecture/compatibility-philosophy.md`](docs/architecture/compatibility-philosophy.md) — breaking change expectations and schema evolution philosophy
 - [`docs/architecture/operation-aware-authorization-model.md`](docs/architecture/operation-aware-authorization-model.md) — conceptual direction for the richer DecisionRequest/DecisionResponse context basis-core v0.2.0 is expected to support
+- [`docs/architecture/operation-aware-evaluation-semantics.md`](docs/architecture/operation-aware-evaluation-semantics.md) — the evaluation semantics basis-core v0.2.0 is expected to implement: default deny, deny precedence, conflict resolution, and safe error handling
 - [`docs/adr/README.md`](docs/adr/README.md) — when implementation decisions require an ADR in this repository
 
 ---
