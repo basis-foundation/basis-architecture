@@ -196,6 +196,12 @@ The conceptual model defining how policy is packaged, identified, validated, and
 
 ---
 
+## Operation-Aware Schema Readiness
+
+The architecture handoff plan defining how the **Operation-Aware Authorization Model**, **Operation-Aware Evaluation Semantics**, **Operation-Aware Trace and Audit Evidence**, and **Operation-Aware Policy Bundle and Rule Model** should move into `basis-schemas` as machine-readable contracts — which contract surfaces should be published, in what order, under what compatibility rules, with what examples and test vectors, and what must remain deferred. Also referred to as the Schema Readiness Plan. The plan is defined in [`docs/architecture/operation-aware-schema-readiness-plan.md`](architecture/operation-aware-schema-readiness-plan.md) and adopted in ADR-0005. It defines a publication sequence and compatibility expectations, not final JSON Schema, a policy language, or implementation code. See also: **Operation-Aware Authorization Model**, **Operation-Aware Evaluation Semantics**, **Operation-Aware Policy Bundle and Rule Model**, **Operation-Aware Trace and Audit Evidence**.
+
+---
+
 ## Operation-Aware Trace and Audit Evidence
 
 The conceptual model defining what evidence must exist to make an operation-aware decision explainable, auditable, testable, and safe to visualize — including the distinction between kernel-produced **evaluation trace**, durable **audit evidence**, and the runtime **gateway audit event**; the evidence lifecycle from identity context through console visualization; conceptual categories for trace, rule-level evidence, request evidence, adapter evidence references, and identity evidence references; redaction tiers; and reason codes. The model is defined in [`docs/architecture/operation-aware-trace-audit-evidence.md`](architecture/operation-aware-trace-audit-evidence.md) and adopted in ADR-0003. It defines conceptual evidence categories and ownership, not a final trace schema, audit event schema, or reason-code vocabulary. See also: **Operation-Aware Authorization Model**, **Operation-Aware Evaluation Semantics**, **Immutable Audit Logging**.
