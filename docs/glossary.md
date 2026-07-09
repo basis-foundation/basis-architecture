@@ -190,6 +190,12 @@ The set of deterministic rules governing how `basis-core` reasons about the rich
 
 ---
 
+## Operation-Aware Trace and Audit Evidence
+
+The conceptual model defining what evidence must exist to make an operation-aware decision explainable, auditable, testable, and safe to visualize — including the distinction between kernel-produced **evaluation trace**, durable **audit evidence**, and the runtime **gateway audit event**; the evidence lifecycle from identity context through console visualization; conceptual categories for trace, rule-level evidence, request evidence, adapter evidence references, and identity evidence references; redaction tiers; and reason codes. The model is defined in [`docs/architecture/operation-aware-trace-audit-evidence.md`](architecture/operation-aware-trace-audit-evidence.md) and adopted in ADR-0003. It defines conceptual evidence categories and ownership, not a final trace schema, audit event schema, or reason-code vocabulary. See also: **Operation-Aware Authorization Model**, **Operation-Aware Evaluation Semantics**, **Immutable Audit Logging**.
+
+---
+
 ## Operator Workflow
 
 A structured sequence of human-initiated actions through which an operator interacts with the authorization system to accomplish a defined operational objective — reviewing policy state, examining audit records, submitting a configuration change, or investigating a denial. In the BASIS ecosystem, operator workflows are mediated by `basis-console` and flow through `basis-gateway`; they do not bypass enforcement boundaries or reach `basis-core` directly in production deployments. See also: **Console**, **Administrative Interface**.
