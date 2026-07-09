@@ -64,6 +64,7 @@ This phase addresses the step from validated research implementation to a separa
 | Operation-aware evaluation semantics: default deny, `NOT_APPLICABLE`, deny precedence, conflict resolution, missing context, and safe error handling (ADR-0002) | **In architecture** |
 | Operation-aware trace and audit evidence model: trace vs. audit distinction, evidence lifecycle, redaction rules, reason codes, and evidence assembly ownership (ADR-0003) | **In architecture** |
 | Operation-aware policy bundle and rule model: bundle scope, rule effects and match criteria, conditions, combining semantics, validation, and reason codes (ADR-0004) | **In architecture** |
+| Operation-aware schema readiness and migration plan: contract surfaces, publication order, dependency relationships, compatibility rules, and ownership for the next basis-schemas expansion (ADR-0005) | **In architecture** |
 | Compatibility versioning strategy for basis-schemas | **Research direction** |
 
 **Design constraint:** basis-core must not acquire dependencies on basis-gateway, basis-console, basis-adapters, basis-identity, basis-deploy, cloud SDKs, identity providers, database runtimes, UI frameworks, or protocol stacks. This constraint is a governance requirement, not a coding convention. See [`GOVERNANCE.md`](GOVERNANCE.md) for the basis-core boundary protection policy.
