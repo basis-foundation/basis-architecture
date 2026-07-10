@@ -14,6 +14,8 @@ The architectural center of the distribution is **basis-core**, the isolated aut
 
 For a complete description of the ecosystem structure, component responsibilities, and dependency rules, see [`docs/architecture/basis-ecosystem.md`](docs/architecture/basis-ecosystem.md).
 
+`basis-schemas` v0.2.0 has published the operation-aware contract suite: twenty contracts in total (six first-wave, fourteen operation-aware), plus five canonical compatibility scenarios connecting request, policy, trace, response, and audit contracts. `basis-core` v0.2.0 is the implementation program that consumes those published contracts; it is planned and beginning incrementally, and condition-operator semantics — what a policy condition's `operator` actually evaluates at runtime — remain an open architectural decision gate. See [`docs/glossary.md`](docs/glossary.md) and the operation-aware architecture documents linked under **For Architecture Reviewers** below for the conceptual model those contracts publish.
+
 ---
 
 ## Repository Purpose
@@ -64,8 +66,8 @@ If you are new to this repository, start with the white paper abstract and the e
 - [`docs/architecture/operation-aware-authorization-model.md`](docs/architecture/operation-aware-authorization-model.md) — conceptual direction for the richer DecisionRequest/DecisionResponse context basis-core v0.2.0 is expected to support
 - [`docs/architecture/operation-aware-evaluation-semantics.md`](docs/architecture/operation-aware-evaluation-semantics.md) — the evaluation semantics basis-core v0.2.0 is expected to implement: default deny, deny precedence, conflict resolution, and safe error handling
 - [`docs/architecture/operation-aware-trace-audit-evidence.md`](docs/architecture/operation-aware-trace-audit-evidence.md) — the trace and audit evidence categories basis-core, basis-gateway, basis-adapters, and basis-identity are each expected to contribute
-- [`docs/architecture/operation-aware-policy-rule-model.md`](docs/architecture/operation-aware-policy-rule-model.md) — the conceptual policy bundle and rule structure basis-schemas is expected to formalize and basis-core v0.2.0 is expected to validate and evaluate
-- [`docs/architecture/operation-aware-schema-readiness-plan.md`](docs/architecture/operation-aware-schema-readiness-plan.md) — the ordered publication sequence and compatibility expectations the next basis-schemas expansion is expected to follow
+- [`docs/architecture/operation-aware-policy-rule-model.md`](docs/architecture/operation-aware-policy-rule-model.md) — the conceptual policy bundle and rule structure `basis-schemas` v0.2.0 has formalized (`policy-condition`, `policy-rule`, `policy-bundle`) and `basis-core` v0.2.0 is expected to validate and evaluate
+- [`docs/architecture/operation-aware-schema-readiness-plan.md`](docs/architecture/operation-aware-schema-readiness-plan.md) — the ordered publication sequence and compatibility expectations `basis-schemas` v0.2.0 followed to publish the operation-aware contract suite
 - [`docs/adr/README.md`](docs/adr/README.md) — when implementation decisions require an ADR in this repository
 
 ---

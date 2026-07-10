@@ -37,7 +37,7 @@ The canonical sources for architectural consistency are:
 
 ### Compatibility Protection
 
-The schemas, contracts, and interfaces defined in `basis-schemas` are compatibility surfaces — they determine whether components built against one version of the distribution can interoperate with other components built against the same version. Changes to these surfaces require review that considers not only functional correctness but the impact on deployed systems and on components that implement the contracts.
+The schemas, contracts, and interfaces defined in `basis-schemas` are compatibility surfaces — they determine whether components built against one version of the distribution can interoperate with other components built against the same version. Changes to these surfaces require review that considers not only functional correctness but the impact on deployed systems and on components that implement the contracts. As of `basis-schemas` v0.2.0, twenty such contracts are published and versioned, each carrying an explicit lifecycle state; the review requirement in this section applies to all of them.
 
 Changes to `basis-core` evaluation semantics carry the same protection. The kernel's behavior is a contract: enforcement points and gateways depend on it. A change to evaluation behavior that is not explicitly versioned and documented breaks that contract in ways that may not be immediately visible.
 
@@ -122,13 +122,14 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md) for contribution terms. The Apache 2.0 
 
 ## Current Governance Maturity
 
-This governance model is appropriate for the current stage of the project: a small number of contributors, an architecture that is substantially defined but not yet fully implemented, and an organizational structure that is still being determined.
+This governance model is appropriate for the current stage of the project: a small number of contributors, an architecture that is substantially defined and whose implementation is now underway across separate repositories, and an organizational structure that is still being determined.
 
-The governance model is expected to evolve as:
+Implementation repositories are now established alongside this architecture repository: `basis-core`, `basis-gateway`, `basis-adapters`, `basis-console`, `basis-identity`, and `basis-schemas` each exist as separately maintained, versioned repositories. `basis-schemas` publishes released, versioned contracts (`v0.2.0`) that the implementation repositories consume, and compatibility/versioning policies for those contracts already exist at the repository level — `basis-schemas`'s `docs/contract-governance.md` and `basis-core`'s `docs/breaking-change-discipline.md` — though they are not yet restated or cross-referenced from this document. `basis-deploy` remains the one distribution component not yet established as a repository.
 
-- implementation repositories are established alongside the architecture repository
+The governance model is expected to continue to evolve as:
+
 - the contributor base grows and contributions from new parties require clearer processes
 - the Foundation takes formal organizational shape
-- the ecosystem reaches a maturity level where compatibility commitments require versioning policies
+- `basis-deploy` and any further ecosystem components are established
 
-Future additions to this document may include: formal contribution roles, RFC or proposal processes for significant changes, versioning and compatibility policies for stable interfaces, and organizational membership structures for the Foundation. None of these are described here because they do not yet exist in a form that would be accurate to document.
+Future additions to this document may include: formal contribution roles, an RFC or proposal process for significant changes, a cross-repository index of the versioning and compatibility policies each implementation repository already maintains, and organizational membership structures for the Foundation. None of these are described here because they do not yet exist in a form that would be accurate to document at the Foundation level.
