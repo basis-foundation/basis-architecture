@@ -45,7 +45,7 @@ The BASIS ecosystem has moved from an architecture-only research project into a 
 
 - `basis-deploy`: deployment and distribution tooling. No repository exists yet.
 - The production engineering and ecosystem-maturity work described in Phases 4 and 5 below.
-- Condition-operator semantics for the operation-aware policy model — see the **Architecture decision required** item in Phase 2.
+- Condition-operator semantics for the operation-aware policy model — a clarification proposal now exists (see the **In architecture** item in Phase 2); it is not yet reviewed or approved, and `basis-core` v0.2.0 condition-evaluation code (Milestone 7, PRs 22-23) remains blocked until it is.
 
 This roadmap does not claim that runtime operation-aware authorization support exists merely because the contracts are published. `basis-schemas` v0.2.0 publishes the shapes; `basis-core` v0.2.0 has not yet implemented evaluation against them.
 
@@ -100,7 +100,7 @@ This phase addresses the step from validated research implementation to a separa
 | Five canonical compatibility scenarios connecting operation-aware request, policy, trace, response, and audit contracts | **Released** (`basis-schemas` `v0.2.0`) |
 | `basis-core` v0.2.0 operation-aware implementation program (44-PR, 15-milestone plan) | **Planned** |
 | `basis-core` v0.2.0 operation-aware evaluation, implemented against the published contracts | **In progress** |
-| Condition-operator semantics: what a `policy-condition`'s `operator` field evaluates at runtime | **Architecture decision required** |
+| Condition-operator semantics: what a `policy-condition`'s `operator` field evaluates at runtime | **In architecture** (clarification proposed, not yet reviewed or approved — see [`docs/architecture/condition-operator-semantics.md`](docs/architecture/condition-operator-semantics.md)) |
 
 **Design constraint:** basis-core must not acquire dependencies on basis-gateway, basis-console, basis-adapters, basis-identity, basis-deploy, cloud SDKs, identity providers, database runtimes, UI frameworks, or protocol stacks. This constraint is a governance requirement, not a coding convention. See [`GOVERNANCE.md`](GOVERNANCE.md) for the basis-core boundary protection policy.
 
