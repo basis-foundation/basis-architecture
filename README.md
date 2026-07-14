@@ -14,7 +14,7 @@ The architectural center of the distribution is **basis-core**, the isolated aut
 
 For a complete description of the ecosystem structure, component responsibilities, and dependency rules, see [`docs/architecture/basis-ecosystem.md`](docs/architecture/basis-ecosystem.md).
 
-`basis-schemas` v0.2.0 has published the operation-aware contract suite: twenty contracts in total (six first-wave, fourteen operation-aware), plus five canonical compatibility scenarios connecting request, policy, trace, response, and audit contracts. `basis-core` v0.2.0 is the implementation program that consumes those published contracts; it is planned and beginning incrementally, and condition-operator semantics — what a policy condition's `operator` actually evaluates at runtime — remain an open architectural decision gate. See [`docs/glossary.md`](docs/glossary.md) and the operation-aware architecture documents linked under **For Architecture Reviewers** below for the conceptual model those contracts publish.
+`basis-schemas` v0.2.0 has published the operation-aware contract suite: twenty contracts in total (six first-wave, fourteen operation-aware), plus five canonical compatibility scenarios connecting request, policy, trace, response, and audit contracts. `basis-core` v0.2.0 is the implementation program that consumes those published contracts; it is planned and beginning incrementally, and condition-operator semantics — what a policy condition's `operator` actually evaluates at runtime — are the subject of a proposed clarification ([`docs/architecture/condition-operator-semantics.md`](docs/architecture/condition-operator-semantics.md)) not yet reviewed or approved. See [`docs/glossary.md`](docs/glossary.md) and the operation-aware architecture documents linked under **For Architecture Reviewers** below for the conceptual model those contracts publish.
 
 ---
 
@@ -47,6 +47,7 @@ If you are new to this repository, start with the white paper abstract and the e
 - [`docs/architecture/operation-aware-trace-audit-evidence.md`](docs/architecture/operation-aware-trace-audit-evidence.md) — the conceptual trace and audit evidence model: trace vs. audit, evidence lifecycle, redaction, reason codes, and evidence assembly ownership
 - [`docs/architecture/operation-aware-policy-rule-model.md`](docs/architecture/operation-aware-policy-rule-model.md) — the conceptual policy bundle and rule model: bundle scope, rule effects and match criteria, conditions, combining semantics, validation, and reason codes
 - [`docs/architecture/operation-aware-schema-readiness-plan.md`](docs/architecture/operation-aware-schema-readiness-plan.md) — the schema readiness and migration plan for moving the operation-aware architecture into basis-schemas: contract surfaces, publication order, compatibility rules, and ownership
+- [`docs/architecture/condition-operator-semantics.md`](docs/architecture/condition-operator-semantics.md) — proposed clarification defining the first implementable `policy-condition` operator subset for `basis-core` v0.2.0: operator registry, field-path resolution, absent/null/type-mismatch handling, and condition evaluation order
 - [`docs/adr/README.md`](docs/adr/README.md) — the ADR process and when an ADR is required
 
 ### For Contributors
@@ -68,6 +69,7 @@ If you are new to this repository, start with the white paper abstract and the e
 - [`docs/architecture/operation-aware-trace-audit-evidence.md`](docs/architecture/operation-aware-trace-audit-evidence.md) — the trace and audit evidence categories basis-core, basis-gateway, basis-adapters, and basis-identity are each expected to contribute
 - [`docs/architecture/operation-aware-policy-rule-model.md`](docs/architecture/operation-aware-policy-rule-model.md) — the conceptual policy bundle and rule structure `basis-schemas` v0.2.0 has formalized (`policy-condition`, `policy-rule`, `policy-bundle`) and `basis-core` v0.2.0 is expected to validate and evaluate
 - [`docs/architecture/operation-aware-schema-readiness-plan.md`](docs/architecture/operation-aware-schema-readiness-plan.md) — the ordered publication sequence and compatibility expectations `basis-schemas` v0.2.0 followed to publish the operation-aware contract suite
+- [`docs/architecture/condition-operator-semantics.md`](docs/architecture/condition-operator-semantics.md) — the operator table `basis-core` v0.2.0's Milestone 7 (PRs 21-23) must implement without inventing condition-evaluation semantics
 - [`docs/adr/README.md`](docs/adr/README.md) — when implementation decisions require an ADR in this repository
 
 ---
