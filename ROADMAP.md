@@ -95,6 +95,7 @@ This phase addresses the step from validated research implementation to a separa
 | Operation-aware trace and audit evidence model: trace vs. audit distinction, evidence lifecycle, redaction rules, reason codes, and evidence assembly ownership (ADR-0003) | **Completed** |
 | Operation-aware policy bundle and rule model: bundle scope, rule effects and match criteria, conditions, combining semantics, validation, and reason codes (ADR-0004) | **Completed** |
 | Operation-aware schema readiness and migration plan: contract surfaces, publication order, dependency relationships, compatibility rules, and ownership for the basis-schemas expansion (ADR-0005) | **Completed** |
+| Pure evaluation orchestration layer: `evaluation` kernel subpackage resolving the policy-owned-facts / audit-owned-trace composition conflict without weakening `policy` ↔ `audit` isolation (ADR-0006) | **In architecture** (proposed, not yet reviewed or approved — see [`docs/architecture/operation-aware-evaluation-orchestration.md`](docs/architecture/operation-aware-evaluation-orchestration.md)) |
 | Compatibility versioning strategy for basis-schemas | **Released** (`basis-schemas` `docs/contract-governance.md`: experimental/stable lifecycle states) |
 | Operation-aware contract publication: fourteen contracts published across ADR-0005's plan | **Released** (`basis-schemas` `v0.2.0`) |
 | Five canonical compatibility scenarios connecting operation-aware request, policy, trace, response, and audit contracts | **Released** (`basis-schemas` `v0.2.0`) |

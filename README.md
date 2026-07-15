@@ -48,6 +48,7 @@ If you are new to this repository, start with the white paper abstract and the e
 - [`docs/architecture/operation-aware-policy-rule-model.md`](docs/architecture/operation-aware-policy-rule-model.md) — the conceptual policy bundle and rule model: bundle scope, rule effects and match criteria, conditions, combining semantics, validation, and reason codes
 - [`docs/architecture/operation-aware-schema-readiness-plan.md`](docs/architecture/operation-aware-schema-readiness-plan.md) — the schema readiness and migration plan for moving the operation-aware architecture into basis-schemas: contract surfaces, publication order, compatibility rules, and ownership
 - [`docs/architecture/condition-operator-semantics.md`](docs/architecture/condition-operator-semantics.md) — proposed clarification defining the first implementable `policy-condition` operator subset for `basis-core` v0.2.0: operator registry, field-path resolution, absent/null/type-mismatch handling, and condition evaluation order
+- [`docs/architecture/operation-aware-evaluation-orchestration.md`](docs/architecture/operation-aware-evaluation-orchestration.md) — the pure evaluation orchestration layer that composes policy-owned evaluation facts and audit-owned trace models without weakening `policy` ↔ `audit` isolation: dependency rules, layer ownership, kernel purity requirements, and rejected alternatives
 - [`docs/adr/README.md`](docs/adr/README.md) — the ADR process and when an ADR is required
 
 ### For Contributors
@@ -70,6 +71,7 @@ If you are new to this repository, start with the white paper abstract and the e
 - [`docs/architecture/operation-aware-policy-rule-model.md`](docs/architecture/operation-aware-policy-rule-model.md) — the conceptual policy bundle and rule structure `basis-schemas` v0.2.0 has formalized (`policy-condition`, `policy-rule`, `policy-bundle`) and `basis-core` v0.2.0 is expected to validate and evaluate
 - [`docs/architecture/operation-aware-schema-readiness-plan.md`](docs/architecture/operation-aware-schema-readiness-plan.md) — the ordered publication sequence and compatibility expectations `basis-schemas` v0.2.0 followed to publish the operation-aware contract suite
 - [`docs/architecture/condition-operator-semantics.md`](docs/architecture/condition-operator-semantics.md) — the operator table `basis-core` v0.2.0's Milestone 7 (PRs 21-23) must implement without inventing condition-evaluation semantics
+- [`docs/architecture/operation-aware-evaluation-orchestration.md`](docs/architecture/operation-aware-evaluation-orchestration.md) — the `evaluation` kernel subpackage `basis-core` v0.2.0 is expected to introduce at `src/basis_core/evaluation/`: its dependency rules, its three future modules (`trace_assembly`, `engine`, `response_assembly`), and the recursive import-boundary tests it requires
 - [`docs/adr/README.md`](docs/adr/README.md) — when implementation decisions require an ADR in this repository
 
 ---

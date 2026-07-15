@@ -112,6 +112,12 @@ A computing node deployed close to operational infrastructure — at the field l
 
 ---
 
+## Evaluation Layer
+
+The pure, deterministic `basis-core` kernel layer that orchestrates policy-owned authorization semantics and composes **domain**, decision, **Policy Bundle**, and audit contracts into complete evaluation results, traces, responses, and bounded kernel audit evidence. It performs no external I/O, persistence, protocol adaptation, or runtime enforcement. The evaluation layer may import from `domain`, `decisions`, `policy`, and `audit`; it must not import from `adapters` or `enforcement`; no lower kernel subpackage may import it; and `enforcement` may invoke it. It owns orchestration — sequencing evaluation stages, invoking policy-owned semantic operations, and assembling bounded artifacts — not authorization semantics themselves, which remain owned and implemented by **Policy Evaluation**. The evaluation layer is the legal composition boundary between policy-owned evaluation facts and audit-owned trace contracts, resolving that composition without weakening the isolation between them. Defined in [`docs/architecture/operation-aware-evaluation-orchestration.md`](architecture/operation-aware-evaluation-orchestration.md) and adopted in ADR-0006. See also: **Authorization Kernel**, **Policy Engine**, **Policy Evaluation**, **Operation-Aware Policy Bundle and Rule Model**, **Operation-Aware Trace and Audit Evidence**.
+
+---
+
 ## Gateway
 
 A system component that mediates communication between two or more network segments or protocol domains. In OT environments, gateways commonly bridge field-level device protocols (e.g., BACnet, Modbus) to higher-level infrastructure. A gateway may also serve as a policy enforcement point, applying authorization decisions to traffic passing through it. The gateway's position at a network boundary makes it a critical control point and a natural site for trust boundary enforcement.
