@@ -8,7 +8,7 @@ For the governance rationale — why ADRs exist, when they are required, and how
 
 ## What This Directory Contains
 
-At this stage of the project, no ADRs have yet been formally recorded. This README establishes the process so that when ADRs are created, they are consistent and useful.
+ADRs are recorded in this directory using the numbering and lifecycle conventions below. ADRs are recorded in this directory using the numbering and lifecycle conventions below. An ADR’s status is authoritative for its lifecycle state; merging an ADR into the repository does not by itself change that status to `Accepted`. See [Lifecycle States](#lifecycle-states) for the meaning of each status.
 
 ---
 

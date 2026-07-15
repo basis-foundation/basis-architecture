@@ -36,7 +36,9 @@ These rules are not defaults or preferences. They are invariants. A proposed cha
 
 ### Import discipline
 
-- Lower layers must not import higher layers. The dependency direction within the kernel package is strictly downward: `domain` → `decisions` → `policy` → `audit` → `adapters` → `enforcement`.
+- The kernel's subpackage dependencies form a directed acyclic import graph, not a single linear chain. The narrative ordering `domain` → `decisions` → `policy` / `audit` → `evaluation` → `enforcement`, with `adapters` importing `domain`, `decisions`, and `policy` independently of `evaluation`, is a simplified reading aid only. It does not claim that every layer imports the layer immediately below it, and it must not be read as permission for any import the [Import Boundary Summary](#import-boundary-summary) does not state. That per-layer permission matrix — not this narrative line — is the authoritative rule, and lower layers must never import higher layers under it.
+- `policy` and `audit` are mutually isolated siblings, not a chain: `policy` must not import `audit`, and `audit` must not import `policy`. Neither may import `evaluation` or `enforcement`. This isolation is a non-negotiable invariant, not a default that a future composition need may relax; see [ADR-0006](adr/0006-evaluation-orchestration-layer.md) for the legal composition boundary that resolves the need to read facts from both without weakening this rule.
+- `evaluation` composes `policy` and `audit` contracts without collapsing the isolation between them. It may import `domain`, `decisions`, `policy`, and `audit`. It must not import `adapters` or `enforcement`, and nothing in `domain`, `decisions`, `policy`, or `audit` may import `evaluation`.
 - Nothing outside the application or runtime layer may import from `basis_core.enforcement`. Lower-layer kernel subpackages must not import from `enforcement`.
 
 ### The separation principle
@@ -53,6 +55,7 @@ basis-core owns exactly the following concerns:
 - Decision contracts: `DecisionRequest`, `DecisionResponse`, `FailureReason`
 - Policy evaluation semantics: the logic that maps a request to an authorization decision
 - Policy rule contracts and the policy format that the evaluation engine consumes
+- Evaluation orchestration: pure, deterministic composition of `domain`, `decisions`, `policy`, and `audit` contracts into trace assembly, evaluation-engine coordination, and response assembly, owned by the `evaluation` subpackage defined in [ADR-0006](adr/0006-evaluation-orchestration-layer.md) — not policy definition, not audit persistence, not enforcement
 - Enforcement boundary semantics: the contracts that enforcement points must satisfy
 - Failure mode contracts: defined behavior for evaluation failures, including fail-closed and fail-open semantics and the conditions under which each applies
 - Audit event contracts: the canonical schema for authorization events, required fields, semantic definitions, and emission conditions
@@ -114,17 +117,23 @@ The intended subpackage structure for basis-core is:
 - `decisions` — contracts: DecisionRequest, DecisionResponse, FailureReason
 - `policy` — evaluation semantics and rule contracts
 - `audit` — event contracts, emission conditions, audit writer protocol
+- `evaluation` — pure, deterministic orchestration that composes `domain`, `decisions`, `policy`, and `audit` contracts into trace assembly, evaluation-engine coordination, and response assembly; performs no external I/O; see [ADR-0006](adr/0006-evaluation-orchestration-layer.md) and its companion document, [`docs/architecture/operation-aware-evaluation-orchestration.md`](architecture/operation-aware-evaluation-orchestration.md)
 - `adapters` — adapter interface contracts (not implementations)
 - `enforcement` — top-level orchestration: coordinates evaluation, enforces decisions, emits audit events
 
+These subpackage dependencies form a directed acyclic import graph: every import rule below points toward `domain`, no rule creates a cycle, and no layer may be reached by both following and reversing the same import path. The import rules are the authoritative permission matrix; the narrative ordering in [Import discipline](#import-discipline) above is a reading aid derived from this matrix, not a separate or looser rule.
+
 Import rules:
 
-- `enforcement` is the top layer. Lower layers must not import from it.
-- `adapters` may import from `domain`, `decisions`, and `policy` contracts.
-- `audit` may import from `domain` and `decisions`.
-- `policy` may import from `domain` and `decisions`.
-- `decisions` may import from `domain`.
+- `enforcement` is the top layer. Lower layers must not import from it. `enforcement` may import from `domain`, `decisions`, `policy`, `audit`, `evaluation`, and `adapters`.
+- `evaluation` may import from `domain`, `decisions`, `policy`, and `audit`. `evaluation` must not import from `adapters` or `enforcement`. Nothing in `domain`, `decisions`, `policy`, or `audit` may import from `evaluation`.
+- `adapters` may import from `domain`, `decisions`, and `policy` contracts. `adapters` must not import from `audit`, `evaluation`, or `enforcement`.
+- `audit` may import from `domain` and `decisions`. `audit` must not import from `policy`, `evaluation`, or `enforcement`.
+- `policy` may import from `domain` and `decisions`. `policy` must not import from `audit`, `evaluation`, or `enforcement`.
+- `decisions` may import from `domain`. `decisions` must not import from `policy`, `audit`, `evaluation`, `adapters`, or `enforcement`.
 - `domain` imports nothing from within basis-core.
+
+`policy` and `audit` remain mutually isolated: neither may import the other, and the introduction of `evaluation` does not create a direct or transitive path between them. A concern that requires facts from both `policy` and `audit` belongs in `evaluation`, not in an exception to either rule above — see [ADR-0006](adr/0006-evaluation-orchestration-layer.md) for the composition problem this resolves and the alternatives rejected in favor of it.
 
 The full import boundary specification, including enforcement via static analysis tooling, belongs in the basis-core implementation repository at `docs/import-boundaries.md`. That document is the authoritative detail reference. This summary establishes the architectural intent.
 
@@ -162,6 +171,7 @@ Import boundary enforcement should be covered by dedicated tests that verify the
 ## Cross-References
 
 - [`docs/architecture/basis-ecosystem.md`](architecture/basis-ecosystem.md) — component responsibilities, what belongs in basis-core, what must stay outside, dependency direction
+- [ADR-0006](adr/0006-evaluation-orchestration-layer.md) and [`docs/architecture/operation-aware-evaluation-orchestration.md`](architecture/operation-aware-evaluation-orchestration.md) — the `evaluation` subpackage's dependency rules, responsibilities, and the composition problem it resolves without weakening `policy` ↔ `audit` isolation
 - [`GOVERNANCE.md`](../GOVERNANCE.md) — basis-core boundary protection as a governance concern; what a boundary exception requires
 - [`CONTRIBUTING.md`](../CONTRIBUTING.md) — contribution scope and terminology requirements for this repository
 - [`docs/architecture-principles.md`](architecture-principles.md) — Principles 5, 6, 10, and 12, which motivate protocol-agnosticism, operational resilience, protocol abstraction, and operational constraint respect
