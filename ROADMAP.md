@@ -180,6 +180,18 @@ This phase addresses the longer-term engineering and organizational questions th
 
 ---
 
+## Identity and Fine-Grained Authorization Expansion
+
+A dedicated roadmap document, [`docs/roadmaps/identity-and-fine-grained-authorization-expansion.md`](docs/roadmaps/identity-and-fine-grained-authorization-expansion.md), elaborates selected work already represented, at a summary level, across Phases 4 and 5 above — multi-tenant identity and trust isolation, tenant-isolated caching, token exchange and delegation, workload and non-human identity, distributed session revocation, SCIM-synchronized registries, relationship-based authorization, fine-grained authorization query APIs, gateway/core runtime integration of relationship sub-decisions, external authorization-technology evaluation, signed policy and configuration distribution, and performance/failure/isolation validation — into a named, twelve-phase capability program with a more detailed dependency sequence than the phase tables above provide.
+
+| Item | Status |
+| - | - |
+| Identity and fine-grained authorization expansion roadmap (twelve capability phases, architectural invariants, cross-phase security concerns, console education matrix) | **Planned** — implementation begins after completion of the current `basis-core` operation-aware roadmap |
+
+This expansion is architecture only at this stage. No implementation work in `basis-identity`, `basis-core`, `basis-gateway`, or `basis-console` has begun against it, and the twelve phases it defines are not a committed schedule. The roadmap is gated solely on completion of the current `basis-core` operation-aware roadmap; it does not require every unrelated Phase 4 or Phase 5 item above to be completed first, and it does not replace or supersede Phases 4 and 5 — several of their open questions (for example, identity federation and distributed policy coordination in Phase 5) are exactly what the dedicated roadmap develops in more architectural detail. See the roadmap document itself for phase-by-phase prerequisites, decision gates, and deferred decisions.
+
+---
+
 ## What This Roadmap Does Not Say
 
 This roadmap does not specify dates, release schedules, or version numbers. It does not commit to building any item in Phase 3, 4, or 5. It does not imply that items listed as "In architecture" or "Research direction" will be implemented in the form or sequence described here.
