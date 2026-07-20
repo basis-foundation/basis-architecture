@@ -49,6 +49,7 @@ If you are new to this repository, start with the white paper abstract and the e
 - [`docs/architecture/operation-aware-schema-readiness-plan.md`](docs/architecture/operation-aware-schema-readiness-plan.md) — the schema readiness and migration plan for moving the operation-aware architecture into basis-schemas: contract surfaces, publication order, compatibility rules, and ownership
 - [`docs/architecture/condition-operator-semantics.md`](docs/architecture/condition-operator-semantics.md) — proposed clarification defining the first implementable `policy-condition` operator subset for `basis-core` v0.2.0: operator registry, field-path resolution, absent/null/type-mismatch handling, and condition evaluation order
 - [`docs/architecture/operation-aware-evaluation-orchestration.md`](docs/architecture/operation-aware-evaluation-orchestration.md) — the pure evaluation orchestration layer that composes policy-owned evaluation facts and audit-owned trace models without weakening `policy` ↔ `audit` isolation: dependency rules, layer ownership, kernel purity requirements, and rejected alternatives
+- [`docs/roadmaps/identity-and-fine-grained-authorization-expansion.md`](docs/roadmaps/identity-and-fine-grained-authorization-expansion.md) — the architecture-first roadmap for the next major expansion: multi-tenant identity, distributed session lifecycle, relationship-based authorization, fine-grained authorization queries, and signed policy distribution. Planned; implementation begins only after the current `basis-core` operation-aware roadmap is complete
 - [`docs/adr/README.md`](docs/adr/README.md) — the ADR process and when an ADR is required
 
 ### For Contributors
@@ -116,10 +117,12 @@ basis-architecture/
 │   ├── architecture-principles.md    # Guiding architectural principles
 │   ├── architecture/
 │   │   └── basis-ecosystem.md        # Ecosystem structure: Foundation, distribution, BASAuth, component boundaries
-│   └── standards/
-│       ├── diagram-standards.md      # Diagram conventions, categories, and visual style
-│       ├── terminology-guidelines.md # Controlled terminology and usage rules
-│       └── writing-guidelines.md     # Writing tone, prohibited language, and style guidance
+│   ├── standards/
+│   │   ├── diagram-standards.md      # Diagram conventions, categories, and visual style
+│   │   ├── terminology-guidelines.md # Controlled terminology and usage rules
+│   │   └── writing-guidelines.md     # Writing tone, prohibited language, and style guidance
+│   └── roadmaps/
+│       └── identity-and-fine-grained-authorization-expansion.md  # Identity/FGA expansion roadmap (Planned)
 │
 └── whitepapers/
     └── identity-aware-authorization-for-operational-technology/
