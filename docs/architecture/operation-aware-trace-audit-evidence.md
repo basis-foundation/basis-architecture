@@ -4,6 +4,8 @@ This document defines the conceptual trace and audit evidence model for the oper
 
 This is an architecture document, not an implementation specification. It defines conceptual evidence categories, lifecycle, and ownership — not JSON Schema, Python types, database schemas, storage mechanisms, or logging code. The corresponding decision to define this model before publishing trace/audit contracts is recorded in [ADR-0003](../adr/0003-operation-aware-trace-audit-evidence.md). Cross-references: [`docs/kernel-boundary-rules.md`](../kernel-boundary-rules.md), [`docs/architecture/basis-ecosystem.md`](basis-ecosystem.md), [`docs/architecture/compatibility-philosophy.md`](compatibility-philosophy.md), [`docs/architecture/action-vocabulary.md`](action-vocabulary.md), [`docs/architecture/identity-authority-modes.md`](identity-authority-modes.md), [`docs/architecture/operation-aware-evaluation-orchestration.md`](operation-aware-evaluation-orchestration.md), [`docs/glossary.md`](../glossary.md).
 
+See [`operation-aware-evidence-provenance-semantics.md`](operation-aware-evidence-provenance-semantics.md) for the narrower clarification governing optional top-level explanation provenance, per-rule reason/explanation projection, and bundle identity treatment in trace and audit artifacts.
+
 ---
 
 ## 1. Purpose

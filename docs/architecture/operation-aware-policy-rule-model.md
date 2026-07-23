@@ -4,6 +4,8 @@ This document defines the conceptual policy bundle and rule model for the operat
 
 This document defines policy model concepts, not final policy syntax. It is an architecture document, not an implementation specification. It defines conceptual bundle structure, rule structure, match criteria, conditions, combining semantics, validation, metadata, and compatibility expectations — not JSON Schema, Python types, database schemas, implementation-specific parser behavior, or a complete policy language. The corresponding decision to define this model before publishing policy contracts is recorded in [ADR-0004](../adr/0004-operation-aware-policy-rule-model.md). Cross-references: [`docs/kernel-boundary-rules.md`](../kernel-boundary-rules.md), [`docs/architecture/basis-ecosystem.md`](basis-ecosystem.md), [`docs/architecture/compatibility-philosophy.md`](compatibility-philosophy.md), [`docs/architecture/action-vocabulary.md`](action-vocabulary.md), [`docs/architecture/operation-aware-evaluation-semantics.md`](operation-aware-evaluation-semantics.md), [`docs/architecture/operation-aware-trace-audit-evidence.md`](operation-aware-trace-audit-evidence.md), [`docs/architecture/operation-aware-evaluation-orchestration.md`](operation-aware-evaluation-orchestration.md), [`docs/glossary.md`](../glossary.md).
 
+See [`operation-aware-evidence-provenance-semantics.md`](operation-aware-evidence-provenance-semantics.md) for the narrower clarification governing when authored rule `reason_code` and `explanation` are projected into rule evidence, and how `matched` rules are treated differently from `not_matched`, `skipped`, and `error` rules.
+
 ---
 
 ## 1. Purpose
