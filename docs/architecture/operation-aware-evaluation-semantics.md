@@ -4,6 +4,8 @@ This document defines the evaluation semantics for the operation-aware authoriza
 
 This is an architecture document, not an implementation specification. It defines conceptual evaluation semantics — decision principles, precedence rules, and behavior categories — not Python types, JSON Schema, or a policy language. The corresponding decision to define these semantics before publishing richer contracts is recorded in [ADR-0002](../adr/0002-operation-aware-evaluation-semantics.md). Cross-references: [`docs/kernel-boundary-rules.md`](../kernel-boundary-rules.md), [`docs/architecture/basis-ecosystem.md`](basis-ecosystem.md), [`docs/architecture/compatibility-philosophy.md`](compatibility-philosophy.md), [`docs/architecture/action-vocabulary.md`](action-vocabulary.md), [`docs/architecture/ecosystem-contract-inventory.md`](ecosystem-contract-inventory.md), [`docs/architecture/operation-aware-evaluation-orchestration.md`](operation-aware-evaluation-orchestration.md), [`docs/glossary.md`](../glossary.md).
 
+See [`operation-aware-evidence-provenance-semantics.md`](operation-aware-evidence-provenance-semantics.md) for the narrower clarification governing whether policy bundle identity is preserved on a `NOT_APPLICABLE` outcome ([Section 5](#5-not_applicable-semantics)) and on a typed semantic policy-validation failure ([Section 14](#14-safe-error-handling)), and when a null bundle identity remains correct because no trustworthy typed bundle exists.
+
 ---
 
 ## 1. Purpose
