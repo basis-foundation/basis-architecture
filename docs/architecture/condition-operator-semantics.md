@@ -1,6 +1,6 @@
 # Condition Operator Semantics
 
-**Status:** Proposed. Architecture clarification, narrower than an ADR, opened to satisfy the implementation-blocking gate `basis-core`'s v0.2.0 roadmap names in Section 8, "Condition-operator decision gate," of `basis-core`'s `docs/implementation/basis-core-v0.2-operation-aware-plan.md` (a document in the separate `basis-core` repository, not this one — referenced by path, not hyperlinked, per this repository's cross-repository citation convention). This document does not claim that condition evaluation is implemented anywhere in `basis-core`, does not claim runtime conformance against the table below exists, and does not claim `basis-schemas` publishes a closed operator vocabulary. It proposes the first implementable operator subset for `basis-core` v0.2.0 and is subject to `basis-architecture` review before Milestone 7's PR 22 may begin.
+**Status:** Approved and implemented. Architecture clarification, narrower than an ADR, opened to satisfy the implementation-blocking gate `basis-core`'s v0.2.0 roadmap names in Section 8, "Condition-operator decision gate," of `basis-core`'s `docs/implementation/basis-core-v0.2-operation-aware-plan.md` (a document in the separate `basis-core` repository, not this one — referenced by path, not hyperlinked, per this repository's cross-repository citation convention). This document's approved first implementation contains the ten governed operators implemented by `basis-core` v0.2.0 (`src/basis_core/policy/operation_aware/operators.py`); it does not claim that `basis-schemas` publishes a closed operator vocabulary beyond this first implementable subset.
 
 **Scope:** The initial, `basis-core`-v0.2.0-scoped operator subset and its complete evaluation semantics: which operators are supported, what each means, field-path resolution, absent/null handling, type compatibility, coercion, ordering, condition-array evaluation order, and the match/no-match/error outcome for every case PR 22 and PR 23 must implement. It does not design a general policy language, does not change the published `policy-condition` shape, and does not resolve the operator vocabulary as a permanently closed, ecosystem-wide enum.
 
@@ -16,8 +16,8 @@ The boundary today is:
 
 ```text
 PolicyCondition shape:              published (basis-schemas v0.2.0)
-condition execution semantics:      intentionally unresolved until this clarification
-basis-core condition implementation: blocked (Milestone 7, PRs 22-23)
+condition execution semantics:      approved by this clarification
+basis-core condition implementation: implemented (basis-core v0.2.0, Milestone 7, PRs 22-23)
 ```
 
 This document establishes the minimum deterministic operator semantics required by the first operation-aware kernel implementation. It is scoped as the "first implementable subset for `basis-core` v0.2.0," per the roadmap's own recommendation, not a permanent, ecosystem-wide closed vocabulary decision. A structurally valid `operator` string that is not in the table below remains structurally valid under the published schema; it is simply not implemented by this kernel version, and this document defines exactly what that produces (§6).

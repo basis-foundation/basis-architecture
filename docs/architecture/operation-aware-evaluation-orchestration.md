@@ -33,7 +33,7 @@ This is a missing architectural responsibility, not a misplaced file. No documen
 
 ## 3. The Evaluation Layer
 
-`basis-core` introduces `evaluation` as a first-class kernel subpackage, implemented in the future at `src/basis_core/evaluation/`.
+`basis-core` introduces `evaluation` as a first-class kernel subpackage, implemented by `basis-core` v0.2.0 at `src/basis_core/evaluation/`.
 
 Its responsibility is pure, deterministic orchestration of already-defined `domain`, `decisions`, `policy`, and `audit` contracts into complete kernel evaluation behavior. It is the composition boundary [Section 2](#2-the-composition-problem) shows is currently missing.
 
@@ -93,9 +93,9 @@ Three properties of this table matter more than any individual line:
 
 ## 5. Evaluation Layer Responsibilities
 
-The future implementation package is `src/basis_core/evaluation/`, with an `operation_aware/` subpackage holding three future modules. These are architectural placements, not implementation in this document or in [ADR-0006](../adr/0006-evaluation-orchestration-layer.md); no function signatures, class hierarchies, or data structures are specified here.
+The implementation package is `src/basis_core/evaluation/`, with an `operation_aware/` subpackage holding three modules, implemented by `basis-core` v0.2.0. These are architectural placements, not implementation in this document or in [ADR-0006](../adr/0006-evaluation-orchestration-layer.md); no function signatures, class hierarchies, or data structures are specified here.
 
-**`trace_assembly`** — future responsibility:
+**`trace_assembly`** — responsibility:
 
 - translate already-evaluated policy facts into bounded trace evidence
 - construct `TraceRuleEvidence`, per [Section 5 of the trace and audit evidence model](operation-aware-trace-audit-evidence.md#5-rule-evaluation-evidence)
@@ -105,7 +105,7 @@ The future implementation package is `src/basis_core/evaluation/`, with an `oper
 - perform no policy evaluation of its own
 - derive no authorization result of its own
 
-**`engine`** — future responsibility:
+**`engine`** — responsibility:
 
 - choose and preserve the documented stage sequence named in [Section 3 of the evaluation semantics document](operation-aware-evaluation-semantics.md#3-evaluation-phases) — request/policy validation, candidate rule identification, condition evaluation, outcome combination, and reason/trace production — by invoking, in that order, the policy-owned operations that implement each phase
 - invoke policy-owned evaluators for selector matching, condition evaluation, and condition-result aggregation, carrying their typed results forward; it does not reimplement them
@@ -116,7 +116,7 @@ The future implementation package is `src/basis_core/evaluation/`, with an `oper
 - perform no audit persistence
 - contain no second implementation of deny precedence, default deny, effect aggregation, selector semantics, condition semantics, operator semantics, or applicability semantics — where any of these appears to be missing from `policy`, the correct response is to extend `policy`, not to implement it in `engine`
 
-**`response_assembly`** — future responsibility:
+**`response_assembly`** — responsibility:
 
 - construct operation-aware `DecisionResponse` objects, per [Section 4 of the authorization model](operation-aware-authorization-model.md#4-rich-decisionresponse-conceptual-fields)
 - maintain agreement between the assembled response and the trace `trace_assembly` produces for the same evaluation
@@ -296,7 +296,7 @@ evaluation   composes them
 **Mitigations:**
 
 - The allowed/forbidden import lists in [Section 4](#4-dependency-rules) are explicit and narrow.
-- [Section 5](#5-evaluation-layer-responsibilities) names exactly three future modules and their responsibilities; anything outside that scope is not automatically an `evaluation` concern merely because `evaluation` could technically import what it needs.
+- [Section 5](#5-evaluation-layer-responsibilities) names exactly three modules and their responsibilities; anything outside that scope is not automatically an `evaluation` concern merely because `evaluation` could technically import what it needs.
 - Recursive import-boundary tests, per [Section 12](#12-implementation-guidance-for-basis-core), make violations of [Section 4](#4-dependency-rules) mechanically detectable rather than dependent on reviewer memory.
 - Any future expansion of `evaluation`'s responsibilities beyond [Section 5](#5-evaluation-layer-responsibilities) requires its own ADR, consistent with [`docs/adr/README.md`](../adr/README.md#when-an-adr-is-required).
 
@@ -304,9 +304,9 @@ evaluation   composes them
 
 ## 12. Implementation Guidance for basis-core
 
-This section is guidance for the future `basis-core` implementation. It is not implementation in this repository, and it does not schedule or reorder any milestone in `basis-core`'s existing v0.2.0 implementation roadmap; that sequencing decision belongs to a separate `basis-core` roadmap-alignment change.
+This section records the implementation guidance `basis-core` v0.2.0 followed. It is not implementation in this repository; the sequencing decision belonged to `basis-core`'s own v0.2.0 implementation roadmap.
 
-`basis-core` should eventually create:
+`basis-core` v0.2.0 created:
 
 ```text
 src/basis_core/evaluation/__init__.py
@@ -316,7 +316,7 @@ src/basis_core/evaluation/operation_aware/engine.py
 src/basis_core/evaluation/operation_aware/response_assembly.py
 ```
 
-`basis-core` should add recursive import-boundary tests covering:
+`basis-core` v0.2.0 added recursive import-boundary tests covering:
 
 ```text
 policy/operation_aware/
@@ -324,7 +324,7 @@ audit/operation_aware/
 evaluation/operation_aware/
 ```
 
-The expected `evaluation` boundary those tests should assert:
+The `evaluation` boundary those tests assert:
 
 ```text
 allowed:    domain, decisions, policy, audit
