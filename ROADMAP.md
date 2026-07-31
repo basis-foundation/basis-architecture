@@ -21,33 +21,35 @@ Status markers used throughout this document:
 
 ## Current State
 
-The BASIS ecosystem has moved from an architecture-only research project into a set of separately maintained implementation repositories that consume published, versioned contracts. The architecture remains the authority for what those repositories build; the repositories are now doing the building.
+The BASIS ecosystem has moved from an architecture-only research project into a set of separately maintained implementation repositories that consume published, versioned contracts. The architecture remains the authority for what those repositories build; the repositories are now doing the building. `basis-core`'s operation-aware implementation program is complete and released as `v0.2.0`; the ecosystem's next major implementation phase is deliberate downstream adoption of that released kernel surface, beginning with `basis-gateway`. See the **Downstream Rollout Sequence** below.
 
 **Completed or established:**
 
-- `basis-core` exists as a separate public repository; `v0.1.0` is released.
+- `basis-core` exists as a separate public repository; `v0.1.0` and `v0.2.0` are both released. `v0.2.0` is additive to `v0.1.0`; the `v0.1.0` public surface remains fully supported and unchanged.
 - `basis-gateway` exists as a separate public repository and is released (`v0.1.0`); active development continues on top of that release.
 - `basis-adapters` exists as a separate public repository, is released (`v0.1.0`), and supports nine OT protocols and platforms (REST, BACnet, Modbus, OPC UA, MQTT, DNP3, IEC 61850, KNX, and Niagara), each normalization-complete.
 - `basis-console` exists as a separate public repository and is released (`v0.1.1`).
-- `basis-schemas` exists as a separate public repository and is released (`v0.2.0`), publishing 20 contracts — the six first-wave contracts from `v0.1.0` plus fourteen operation-aware contracts published across ADR-0005's schema readiness plan — and five canonical compatibility scenarios connecting them.
-- The operation-aware architecture is defined: ADR-0001 through ADR-0005 (authorization model, evaluation semantics, trace/audit evidence, policy bundle/rule model, schema readiness plan) are complete.
+- `basis-schemas` exists as a separate public repository and is released (`v0.2.0`), publishing 20 contracts — the six first-wave contracts from `v0.1.0` plus fourteen operation-aware contracts published across ADR-0005's schema readiness plan — and five canonical compatibility scenarios connecting them. `v0.2.0` introduced the operation-aware contract suite; `v0.2.1` and `v0.2.2` are subsequent corrective releases that fix compatibility-fixture defects without changing any schema, field, reason-code vocabulary, or authorization outcome. `basis-core` v0.2.0 conforms to the corrected `v0.2.2` snapshot.
+- The operation-aware architecture is defined: ADR-0001 through ADR-0006 (authorization model, evaluation semantics, trace/audit evidence, policy bundle/rule model, schema readiness plan, and the evaluation orchestration layer) are complete.
 - The operation-aware contract suite is published, fulfilling the schema readiness plan above.
 - Canonical compatibility scenarios exist, connecting the operation-aware request, policy, trace, response, and audit contracts under one executable set of examples.
 - Architecture and compatibility governance are established: this repository's ADR process and compatibility-philosophy documentation, plus repository-level compatibility policies now in place in `basis-schemas` (`docs/contract-governance.md`) and `basis-core` (`docs/breaking-change-discipline.md`).
-- The `basis-core` v0.2.0 implementation roadmap is defined: a 44-PR, 15-milestone plan describing how the kernel will consume the published operation-aware contracts without breaking `v0.1.0` compatibility.
+- The `basis-core` v0.2.0 operation-aware implementation program — a 44-PR, 15-milestone plan — is complete. Operation-aware typed models; deterministic policy validation and evaluation; bundle applicability and candidate selection; selector and condition evaluation; deny precedence; default deny; a `NOT_APPLICABLE` outcome kept distinct from both; deterministic trace assembly; bounded `AuditEvidence`; and the separate, fail-closed `OperationAwareEnforcementPoint` are all implemented. Canonical conformance passes through the real `OperationAwareEnforcementPoint.evaluate()` path against the vendored `basis-schemas` `v0.2.2` snapshot. `v0.1.0` compatibility is preserved and unmodified. Release-readiness review and packaging validation are complete.
+- Condition-operator semantics — what a `policy-condition`'s `operator` field evaluates at runtime — are approved and implemented: the closed, ten-operator registry defined in [`docs/architecture/condition-operator-semantics.md`](docs/architecture/condition-operator-semantics.md) is the operator set `basis-core` v0.2.0's condition evaluator implements.
+- The pure evaluation orchestration layer (ADR-0006) is approved and implemented: `basis-core` v0.2.0's `evaluation` kernel subpackage (`trace_assembly`, `engine`, `response_assembly`, at `src/basis_core/evaluation/`) sequences policy-owned evaluation facts and audit-owned trace models without weakening `policy` ↔ `audit` isolation, per [`docs/architecture/operation-aware-evaluation-orchestration.md`](docs/architecture/operation-aware-evaluation-orchestration.md).
 
-**In progress:**
+**Next implementation phase:**
 
-- Incremental `basis-core` v0.2.0 implementation, against the roadmap above. No operation-aware evaluation behavior has shipped yet; the `v0.1.0` kernel remains the released, supported surface, unchanged.
+- `basis-gateway` operation-aware integration — Planned. `basis-gateway` remains released at `v0.1.0` against the v0.1 `EnforcementPoint`; no operation-aware request handling exists in it yet. Subject to its own implementation plan, this phase is expected to cover: operation-aware request ingestion; trusted identity-context composition; structured policy-bundle loading; invocation of the released `OperationAwareEnforcementPoint`; fail-closed enforcement; kernel `AuditEvidence` handling; gateway-owned enforcement facts; `GatewayAuditEvent` generation; readiness and diagnostics; and `v0.1.0` compatibility. This list describes expected integration responsibilities, not completed features — see **The Next Gateway Boundary** below.
 - `basis-identity`: active implementation of the identity engine and federation boundary (OIDC discovery, JWKS, token verification, login/callback composition, sessions). Release preparation is underway, but `basis-identity` has not yet been tagged or published.
 
 **Not yet implemented:**
 
 - `basis-deploy`: deployment and distribution tooling. No repository exists yet.
 - The production engineering and ecosystem-maturity work described in Phases 4 and 5 below.
-- Condition-operator semantics for the operation-aware policy model — a clarification proposal now exists (see the **In architecture** item in Phase 2); it is not yet reviewed or approved, and `basis-core` v0.2.0 condition-evaluation code (Milestone 7, PRs 22-23) remains blocked until it is.
+- `basis-gateway` operation-aware integration, and the downstream phases that follow it in sequence (`basis-console` operation-aware explanation and training, `basis-identity` evidence alignment, `basis-adapters` context and evidence alignment) — see the **Downstream Rollout Sequence** below. None of this downstream work has begun.
 
-This roadmap does not claim that runtime operation-aware authorization support exists merely because the contracts are published. `basis-schemas` v0.2.0 publishes the shapes; `basis-core` v0.2.0 has not yet implemented evaluation against them.
+This roadmap does not claim that ecosystem-wide operation-aware authorization support exists merely because `basis-core` v0.2.0 is released. `basis-core` v0.2.0 implements operation-aware evaluation at the kernel boundary; `basis-gateway`, `basis-console`, `basis-identity`, and `basis-adapters` have not yet integrated against it.
 
 ---
 
@@ -95,15 +97,59 @@ This phase addresses the step from validated research implementation to a separa
 | Operation-aware trace and audit evidence model: trace vs. audit distinction, evidence lifecycle, redaction rules, reason codes, and evidence assembly ownership (ADR-0003) | **Completed** |
 | Operation-aware policy bundle and rule model: bundle scope, rule effects and match criteria, conditions, combining semantics, validation, and reason codes (ADR-0004) | **Completed** |
 | Operation-aware schema readiness and migration plan: contract surfaces, publication order, dependency relationships, compatibility rules, and ownership for the basis-schemas expansion (ADR-0005) | **Completed** |
-| Pure evaluation orchestration layer: `evaluation` kernel subpackage resolving the policy-owned-facts / audit-owned-trace composition conflict without weakening `policy` ↔ `audit` isolation (ADR-0006) | **In architecture** (proposed, not yet reviewed or approved — see [`docs/architecture/operation-aware-evaluation-orchestration.md`](docs/architecture/operation-aware-evaluation-orchestration.md)) |
+| Pure evaluation orchestration layer: `evaluation` kernel subpackage resolving the policy-owned-facts / audit-owned-trace composition conflict without weakening `policy` ↔ `audit` isolation (ADR-0006) | **Completed and implemented** — approved, and implemented by `basis-core` `v0.2.0` at `src/basis_core/evaluation/` (`trace_assembly`, `engine`, `response_assembly`) — see [`docs/architecture/operation-aware-evaluation-orchestration.md`](docs/architecture/operation-aware-evaluation-orchestration.md) |
 | Compatibility versioning strategy for basis-schemas | **Released** (`basis-schemas` `docs/contract-governance.md`: experimental/stable lifecycle states) |
 | Operation-aware contract publication: fourteen contracts published across ADR-0005's plan | **Released** (`basis-schemas` `v0.2.0`) |
-| Five canonical compatibility scenarios connecting operation-aware request, policy, trace, response, and audit contracts | **Released** (`basis-schemas` `v0.2.0`) |
-| `basis-core` v0.2.0 operation-aware implementation program (44-PR, 15-milestone plan) | **Planned** |
-| `basis-core` v0.2.0 operation-aware evaluation, implemented against the published contracts | **In progress** |
-| Condition-operator semantics: what a `policy-condition`'s `operator` field evaluates at runtime | **In architecture** (clarification proposed, not yet reviewed or approved — see [`docs/architecture/condition-operator-semantics.md`](docs/architecture/condition-operator-semantics.md)) |
+| Five canonical compatibility scenarios connecting operation-aware request, policy, trace, response, and audit contracts | **Released** (`basis-schemas` `v0.2.0`; corrected by `v0.2.1` and `v0.2.2`) |
+| `basis-core` v0.2.0 operation-aware implementation program (44-PR, 15-milestone plan) | **Completed** — all 44 PRs and 15 milestones landed; see `basis-core`'s `docs/v0.2-readiness-review.md` |
+| `basis-core` v0.2.0 operation-aware evaluation, implemented against the published contracts | **Released** (`v0.2.0`) — canonical conformance passes through the real `OperationAwareEnforcementPoint.evaluate()` path against the vendored `basis-schemas` `v0.2.2` snapshot |
+| Condition-operator semantics: what a `policy-condition`'s `operator` field evaluates at runtime | **Completed and implemented** — the clarification is approved, and its ten-operator registry (`equals`, `not_equals`, `in`, `not_in`, `greater_than`, `greater_than_or_equal`, `less_than`, `less_than_or_equal`, `exists`, `not_exists`) is implemented by `basis-core` `v0.2.0` — see [`docs/architecture/condition-operator-semantics.md`](docs/architecture/condition-operator-semantics.md) |
 
 **Design constraint:** basis-core must not acquire dependencies on basis-gateway, basis-console, basis-adapters, basis-identity, basis-deploy, cloud SDKs, identity providers, database runtimes, UI frameworks, or protocol stacks. This constraint is a governance requirement, not a coding convention. See [`GOVERNANCE.md`](GOVERNANCE.md) for the basis-core boundary protection policy.
+
+---
+
+## Downstream Rollout Sequence
+
+`basis-core` v0.2.0's release completes the kernel implementation phase described above. What follows is a governed, incremental adoption sequence, not a simultaneous rewrite of every repository in the distribution:
+
+```text
+basis-core v0.2.0 release
+        ↓
+basis-gateway operation-aware integration
+        ↓
+basis-console operation-aware explanation and training
+        ↓
+basis-identity evidence alignment
+        ↓
+basis-adapters context and evidence alignment
+        ↓
+basis-deploy packaging
+        ↓
+basis-demo end-to-end validation
+        ↓
+real OT integration validation
+```
+
+Governing principles for this sequence:
+
+- Downstream repositories adopt the released kernel surface incrementally, one repository at a time, rather than all repositories changing at once.
+- `v0.1.0` compatibility is preserved wherever a downstream repository's own compatibility commitments require it.
+- Gateway integration precedes console UI expansion: the console has nothing operation-aware to explain to operators until the gateway can produce operation-aware decisions and evidence.
+- `basis-adapters` and `basis-identity` should be changed based on real integration needs that gateway work surfaces, not speculative taxonomy work performed ahead of it.
+- `basis-schemas` changes only when downstream integration finds a genuine contract defect or a missing governed concept, not to anticipate hypothetical future needs.
+- Implementation repositories must not invent architecture independently; changes to established contracts or component boundaries still require the ADR process described in [`GOVERNANCE.md`](GOVERNANCE.md).
+
+This sequence does not assign PR counts, milestones, or delivery dates to any downstream phase. Those belong to each repository's own implementation plan, established when that phase of work actually begins.
+
+### The Next Gateway Boundary
+
+With `basis-core` v0.2.0 released, the architectural responsibility split for the next implementation phase is:
+
+- **`basis-core` decides.** It evaluates operation-aware `DecisionRequest`s and produces `OperationAwareDecisionResponse`, `EvaluationTrace`, and bounded `AuditEvidence` through the released `OperationAwareEnforcementPoint`.
+- **`basis-gateway` enforces and records enforcement-boundary facts.** It is expected to combine kernel `AuditEvidence` with gateway-owned authentication, route, transport, correlation, response, timeout, and enforcement facts into `GatewayAuditEvent`.
+
+This is a restatement of the existing ownership model established in ADR-0003 and [`docs/architecture/operation-aware-trace-audit-evidence.md`](docs/architecture/operation-aware-trace-audit-evidence.md), not a new design decision. The gateway integration phase must not: rewrite a kernel decision; convert a kernel `NOT_APPLICABLE` outcome into a kernel `DENY`; invent kernel trace evidence; attribute gateway-produced facts to the kernel; or treat `GatewayAuditEvent` as a kernel-owned artifact. Persistence technology, HTTP response schema, policy-reload mechanics, and disconnected-operation behavior for the gateway integration remain open questions for `basis-gateway`'s own implementation plan — they are not decided here.
 
 ---
 
