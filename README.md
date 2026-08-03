@@ -51,6 +51,7 @@ If you are new to this repository, start with the white paper abstract and the e
 - [`docs/architecture/condition-operator-semantics.md`](docs/architecture/condition-operator-semantics.md) — approved clarification, implemented by `basis-core` v0.2.0, defining the first implementable `policy-condition` operator subset: operator registry, field-path resolution, absent/null/type-mismatch handling, and condition evaluation order
 - [`docs/architecture/operation-aware-evaluation-orchestration.md`](docs/architecture/operation-aware-evaluation-orchestration.md) — the pure evaluation orchestration layer that composes policy-owned evaluation facts and audit-owned trace models without weakening `policy` ↔ `audit` isolation: dependency rules, layer ownership, kernel purity requirements, and rejected alternatives
 - [`docs/roadmaps/identity-and-fine-grained-authorization-expansion.md`](docs/roadmaps/identity-and-fine-grained-authorization-expansion.md) — the architecture-first roadmap for the next major expansion: multi-tenant identity, distributed session lifecycle, relationship-based authorization, fine-grained authorization queries, and signed policy distribution. Planned; implementation begins only after the current `basis-core` operation-aware roadmap is complete
+- [`docs/roadmaps/identity-to-operation-contract-and-interoperability.md`](docs/roadmaps/identity-to-operation-contract-and-interoperability.md) — the long-term architecture-planning roadmap for BASIS as an open identity-to-operation contract and interoperability layer for fragmented OT environments. Planned; implementation is deferred until the current operation-aware gateway, audit-evidence, readiness, conformance, and release-hardening program reaches its intended completion point
 - [`docs/adr/README.md`](docs/adr/README.md) — the ADR process and when an ADR is required
 
 ### For Contributors
@@ -124,7 +125,8 @@ basis-architecture/
 │   │   ├── terminology-guidelines.md # Controlled terminology and usage rules
 │   │   └── writing-guidelines.md     # Writing tone, prohibited language, and style guidance
 │   └── roadmaps/
-│       └── identity-and-fine-grained-authorization-expansion.md  # Identity/FGA expansion roadmap (Planned)
+│       ├── identity-and-fine-grained-authorization-expansion.md  # Identity/FGA expansion roadmap (Planned)
+│       └── identity-to-operation-contract-and-interoperability.md  # Identity-to-operation contract and interoperability roadmap (Planned)
 │
 └── whitepapers/
     └── identity-aware-authorization-for-operational-technology/
