@@ -605,7 +605,7 @@ The two roadmaps intersect at several points, named explicitly so a future imple
 
 Overlapping decisions between the two roadmaps must be reconciled through the ADR process described in [`GOVERNANCE.md`](../../GOVERNANCE.md), not independently redefined by either roadmap or by whichever implementation phase happens to reach the overlap first.
 
-A future identity-activity roadmap — if the ecosystem pursues one, covering the durable historical record of identity and operation activity over time, as distinct from the point-in-time contract this roadmap defines — would depend on the evidence and execution-lifecycle architecture this roadmap establishes. No such roadmap exists today, and this document does not propose one; it records the dependency so that if such a roadmap is later written, it is not designed independently of the evidence model this roadmap develops.
+[`docs/roadmaps/post-authentication-identity-activity-correlation-and-detection.md`](post-authentication-identity-activity-correlation-and-detection.md) is that future identity-activity roadmap: it covers the durable historical record of identity and operation activity over time, as distinct from the point-in-time contract this roadmap defines, and it depends explicitly on the evidence and execution-lifecycle architecture this roadmap establishes rather than defining a competing event model beside it. That roadmap remains planned only, gated on this roadmap's contract and evidence foundations reaching sufficient stability, and does not change this roadmap's own status or sequencing.
 
 ---
 
@@ -689,6 +689,7 @@ This roadmap preserves the long-term architectural direction for BASIS as an ope
 
 - [`ROADMAP.md`](../../ROADMAP.md) — the ecosystem's current phase structure, status, and the active `basis-gateway` operation-aware integration program this roadmap's Status section depends on
 - [`docs/roadmaps/identity-and-fine-grained-authorization-expansion.md`](identity-and-fine-grained-authorization-expansion.md) — the companion roadmap for BASIS-internal identity and authorization platform expansion; see **Relationship to Existing Roadmaps** above for the boundary between the two
+- [`docs/roadmaps/post-authentication-identity-activity-correlation-and-detection.md`](post-authentication-identity-activity-correlation-and-detection.md) — the downstream roadmap for durable identity activity, correlation, detection, investigation, and bounded response that depends on this roadmap's evidence and execution-lifecycle architecture, per **Relationship to Existing Roadmaps** above
 - [`docs/architecture/basis-ecosystem.md`](../architecture/basis-ecosystem.md) — component responsibilities and dependency direction this roadmap's invariants extend
 - [`docs/kernel-boundary-rules.md`](../kernel-boundary-rules.md) — the kernel isolation rules the Kernel invariant above must not violate
 - [`docs/architecture/ecosystem-contract-inventory.md`](../architecture/ecosystem-contract-inventory.md) — the existing cross-repository contract inventory Phase 1 extends

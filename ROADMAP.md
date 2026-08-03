@@ -250,6 +250,18 @@ This roadmap is architecture only. It does not authorize implementation work in 
 
 ---
 
+## Post-Authentication Identity Activity, Correlation, and Detection
+
+A third dedicated roadmap document, [`docs/roadmaps/post-authentication-identity-activity-correlation-and-detection.md`](docs/roadmaps/post-authentication-identity-activity-correlation-and-detection.md), records long-term architectural intent for extending BASIS from deterministic authorization and trustworthy evidence into durable identity activity, correlation, deterministic detection, investigation, behavioral analytics, and bounded response for OT — the roadmap the identity-to-operation contract roadmap above already anticipated in its own "Relationship to Existing Roadmaps" section.
+
+| Item | Status |
+| - | - |
+| Post-authentication identity activity, correlation, and detection roadmap (ten architecture phases, architectural invariants, activity record conceptual requirements, decision gates) | **Planned** — implementation is deferred until the identity-to-operation contract and evidence foundations it depends on are sufficiently stable, and does not begin before the active `basis-gateway` operation-aware integration program above reaches its intended completion point |
+
+This roadmap is architecture only. It does not authorize implementation work in any repository, does not implement storage, a graph, or detections, does not select a database, stream processor, graph technology, or machine-learning platform, and does not change the sequencing or priority of the active `basis-gateway` operation-aware integration program described above. It builds on the identity-to-operation contract roadmap's evidence and execution-lifecycle architecture and does not define a competing event model beside it; deterministic detection precedes behavioral analytics throughout, and automated response remains bounded and human-governed. See the roadmap document itself for phase-by-phase prerequisites, decision gates, and its explicit distinction between the activity-investigation graph it develops and the ReBAC/FGA authorization graph the identity and fine-grained authorization expansion roadmap develops.
+
+---
+
 ## What This Roadmap Does Not Say
 
 This roadmap does not specify dates, release schedules, or version numbers. It does not commit to building any item in Phase 3, 4, or 5. It does not imply that items listed as "In architecture" or "Research direction" will be implemented in the form or sequence described here.
