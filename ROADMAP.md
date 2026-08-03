@@ -238,6 +238,18 @@ This expansion is architecture only at this stage. No implementation work in `ba
 
 ---
 
+## Identity-to-Operation Contract and Interoperability
+
+A second dedicated roadmap document, [`docs/roadmaps/identity-to-operation-contract-and-interoperability.md`](docs/roadmaps/identity-to-operation-contract-and-interoperability.md), records long-term architectural intent for BASIS as an open identity-to-operation contract and interoperability layer connecting fragmented OT identity providers, remote-access and PAM systems, gateways, protocol adapters, field devices, SIEMs, and asset inventories around a shared account of identity, authority, delegation, operation, decision, enforcement, execution, and evidence.
+
+| Item | Status |
+| - | - |
+| Identity-to-operation contract and interoperability roadmap (ten architecture phases, architectural invariants, contract responsibility model, decision gates) | **Planned** — implementation is deferred until the current operation-aware gateway, audit-evidence, readiness, conformance, and release-hardening program reaches its intended completion point |
+
+This roadmap is architecture only. It does not authorize implementation work in any repository, does not define final schemas, and does not change the sequencing or priority of the active `basis-gateway` operation-aware integration program described above. Its relationship to the identity and fine-grained authorization expansion roadmap above — where the two intersect and where each is authoritative — is addressed explicitly in that document's own "Relationship to Existing Roadmaps" section.
+
+---
+
 ## What This Roadmap Does Not Say
 
 This roadmap does not specify dates, release schedules, or version numbers. It does not commit to building any item in Phase 3, 4, or 5. It does not imply that items listed as "In architecture" or "Research direction" will be implemented in the form or sequence described here.
