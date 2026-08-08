@@ -727,6 +727,8 @@ This section records questions the architecture has not yet resolved. They are r
 
 **Long-term key management expectations.** The gateway depends on key material from the identity provider and may present its own credentials. Long-term expectations for key rotation, revocation propagation, and key-management responsibility across the distribution and the eventual deploy and commercial layers are unresolved.
 
+**Adapter-to-gateway producer authentication.** The trusted adapter boundary (§3.3) describes the semantic trust the gateway places in an already-authenticated caller's normalization; it does not yet specify how an `basis-adapters`-produced operation reaches an authenticated caller in the first place. [`docs/architecture/operation-producer-and-execution-boundary.md`](../architecture/operation-producer-and-execution-boundary.md) names this gap and the further gap between gateway enforcement and actual protocol execution, and records open questions — including which authentication mechanism should establish producer workload identity, and whether producer trust should become category-scoped — that this threat model does not resolve.
+
 Recording these as open is itself a security posture. An architecture that claimed to have settled them prematurely would invite reliance on guarantees it had not actually thought through. The honest position is that these are known, they matter, and they will be resolved as the constraints that should govern them come into focus.
 
 ---
@@ -737,6 +739,7 @@ Recording these as open is itself a security posture. An architecture that claim
 - [`docs/kernel-boundary-rules.md`](../kernel-boundary-rules.md) — the enforceable rules that protect `basis-core` as an isolated kernel; read here as a standing security control
 - [`docs/architecture/basis-gateway.md`](../architecture/basis-gateway.md) — the trust-boundary runtime, its authentication and enforcement model, and its fail-closed semantics
 - [`docs/architecture/basis-adapters.md`](../architecture/basis-adapters.md) — the normalization layer, the trusted adapter boundary, and the embedded vs. gateway-mediated models
+- [`docs/architecture/operation-producer-and-execution-boundary.md`](../architecture/operation-producer-and-execution-boundary.md) — extends the §3.3 trusted-adapter boundary and §4.2 rogue-integrator/compromised-adapter adversaries forward across the still-unimplemented operation-producer runtime and protocol-executor roles; records trust-establishment rules and open questions this threat model does not yet resolve
 - [`docs/architecture/basis-console.md`](../architecture/basis-console.md) — the operator interface and the invariants that keep it outside the authorization path
 - [`docs/architecture/action-vocabulary.md`](../architecture/action-vocabulary.md) — action naming as a governed contract; the verb set and composition referenced in §6.2 and §8
 - [`docs/architecture/resource-identifier-reconciliation.md`](../architecture/resource-identifier-reconciliation.md) — gateway-owned resource-identifier composition and the open action-domain/resource-type question

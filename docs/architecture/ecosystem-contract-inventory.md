@@ -2,7 +2,7 @@
 
 **Status:** Inventory. Records contracts that exist in practice today; does not ratify, formalize, or change them.
 **Scope:** A cross-repository inventory of the contracts now implemented across `basis-core`, `basis-gateway`, `basis-adapters`, and `basis-console`, recorded ahead of the future `basis-schemas` repository.
-**Companion documents:** [`action-vocabulary.md`](action-vocabulary.md), [`action-vocabulary-reconciliation.md`](action-vocabulary-reconciliation.md), [`resource-identifier-reconciliation.md`](resource-identifier-reconciliation.md), [`compatibility-philosophy.md`](compatibility-philosophy.md), [`../glossary.md`](../glossary.md).
+**Companion documents:** [`action-vocabulary.md`](action-vocabulary.md), [`action-vocabulary-reconciliation.md`](action-vocabulary-reconciliation.md), [`resource-identifier-reconciliation.md`](resource-identifier-reconciliation.md), [`compatibility-philosophy.md`](compatibility-philosophy.md), [`operation-producer-and-execution-boundary.md`](operation-producer-and-execution-boundary.md) (§12 inventories what this document's twenty published contracts can and cannot yet represent for the adapter-to-gateway handoff and execution-evidence gap, using this inventory's own stability vocabulary rather than a competing one), [`../glossary.md`](../glossary.md).
 
 ---
 
