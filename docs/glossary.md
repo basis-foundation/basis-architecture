@@ -220,6 +220,18 @@ The conceptual model defining what evidence must exist to make an operation-awar
 
 ---
 
+## Operator Mode
+
+The console presentation mode intended for trained operators performing real investigation and operational work. Operator mode is not a privileged authorization mode; mode selection never changes what is authorized, evaluated, or returned. In the current `basis-console` `v0.2.0` implementation, Operator mode shares one identical application with **Training Mode** — the same routes, forms, gateway calls, and rendered result — differing only in presentation, with Training mode adding explanatory content only. The deferred roadmap [`docs/roadmaps/operator-and-training-experience.md`](roadmaps/operator-and-training-experience.md) permits the two modes to diverge more substantially in future interaction and presentation (layout, navigation style, progressive disclosure, and more) while holding a durable, permanent set of runtime invariants fixed regardless of how far that divergence goes — see that document's **Mode Divergence Rules**. See also: **Training Mode**, **Operator Workflow**, **Console**, **basis-console**.
+
+---
+
+## Training Mode
+
+The console presentation mode intended for guided, progressive learning of the BASIS Core Services Distribution by a trainee, layered over the same runtime and evidence **Operator Mode** exposes. Training mode is not a less-authoritative execution mode or a separate authorization path; it uses the same gateway boundary, the same evidence, and the same redaction rules as Operator mode, and must never present simulated data as live. In the current `basis-console` `v0.2.0` implementation, Training mode may only add educational content — banners, per-page teaching callouts, and explanatory panels — and must never alter navigation, controls, or workflows relative to Operator mode. The deferred roadmap [`docs/roadmaps/operator-and-training-experience.md`](roadmaps/operator-and-training-experience.md) permits Training mode to later diverge substantially from Operator mode in layout, navigation style, guided sequencing, progressive disclosure, default panel arrangement, and playbook-driven workflow presentation, while requiring that it always share the same authentication boundary, request/response contracts, gateway path and invocation, authorization semantics, kernel outcome, gateway disposition, trusted evidence, redaction, safety boundaries, and audit integrity as Operator mode — see that document's **Mode Divergence Rules**. See also: **Operator Mode**, **Operator Workflow**, **Console**, **basis-console**.
+
+---
+
 ## Operator Workflow
 
 A structured sequence of human-initiated actions through which an operator interacts with the authorization system to accomplish a defined operational objective — reviewing policy state, examining audit records, submitting a configuration change, or investigating a denial. In the BASIS ecosystem, operator workflows are mediated by `basis-console` and flow through `basis-gateway`; they do not bypass enforcement boundaries or reach `basis-core` directly in production deployments. See also: **Console**, **Administrative Interface**.
