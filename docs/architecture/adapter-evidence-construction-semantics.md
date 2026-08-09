@@ -1,10 +1,12 @@
 # Adapter Evidence Construction and Canonicalization Semantics
 
-**Status:** Architecture-planning. This document defines the authoritative architecture for
-constructing adapter evidence after protocol normalization and before submission to
-`basis-gateway`. It does not implement Python runtime behavior, does not modify a JSON Schema,
-does not create a producer runtime, does not choose a producer-authentication mechanism, and does
-not add protocol execution or execution-result evidence.
+**Status:** Accepted architecture specification, adopted by [ADR-0007](../adr/0007-adapter-evidence-construction.md).
+This document defines the authoritative architecture for constructing adapter evidence after
+protocol normalization and before submission to `basis-gateway`. Acceptance authorizes downstream
+implementation according to this decision; implementation remains separate and decision-gated. This
+document does not itself implement Python runtime behavior, does not modify a JSON Schema, does not
+create a producer runtime, does not choose a producer-authentication mechanism, and does not add
+protocol execution or execution-result evidence.
 
 **Scope:** What constitutes adapter evidence material; how that material is serialized
 deterministically; which component computes its digest; which component mints the evidence
