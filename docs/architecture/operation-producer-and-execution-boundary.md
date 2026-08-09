@@ -186,7 +186,7 @@ At minimum, the following identifiers must remain linkable across the chain, eac
 | Gateway-generated correlation ID | `basis-gateway` | Generated unconditionally per request via `CorrelationMiddleware`; caller-supplied `X-Correlation-ID` headers are ignored by explicit, documented policy — accepting them "would allow external parties to influence the audit trail" |
 | Kernel trace ID | `basis-core` | `trace_id` on `OperationAwareDecisionResponse` / `EvaluationTrace`; gateway-generated per evaluation call today, per `operation-aware-endpoint.md`'s response table, and passed through unmodified into `GatewayAuditEvent` |
 | Kernel audit evidence ID | `basis-core` | `AuditEvidence.evidence_id`; referenced, never embedded, from `GatewayAuditEvent.audit_evidence_id` — the linkage invariant `basis-gateway`'s audit model already states explicitly (`gateway_audit_event.audit_evidence_id == audit_evidence.evidence_id`) |
-| Adapter evidence reference ID | `basis-adapters` (via the operation-producer runtime that constructs the reference) | `AdapterEvidenceReference.reference_id`; carries its own optional `request_id` / `correlation_id` pass-through fields today, unenforced against the gateway's own correlation ID |
+| Adapter evidence reference ID | Operation-producer runtime | `AdapterEvidenceReference.reference_id`; minted by the operation-producer runtime, never by `basis-adapters` itself — see [`docs/architecture/adapter-evidence-construction-semantics.md`](adapter-evidence-construction-semantics.md) §7–§8 for why minting is kept outside the pure, deterministic normalization call. Carries its own optional `request_id` / `correlation_id` pass-through fields today, unenforced against the gateway's own correlation ID |
 | Identity evidence reference ID | `basis-identity` (via whatever composes the request) | `IdentityEvidenceReference.reference_id`; not yet produced by `basis-identity` today (§12) |
 | Future execution evidence ID | Execution-evidence producer | Does not exist yet; §12 records this as a schema gap, not a decision |
 
@@ -195,6 +195,29 @@ Two rules, restated from the components that already implement correlation today
 **No component may overwrite an identifier owned by another component.** This is already `basis-gateway`'s explicit policy for the correlation ID it generates, and it must hold symmetrically in the other direction: a future execution-evidence producer must not overwrite the `request_id`, `correlation_id`, or `trace_id` it receives from the authorization chain — it appends its own identifier and references the ones that came before it, exactly as `GatewayAuditEvent` references `AuditEvidence` rather than absorbing it.
 
 **Correlation creates deterministic linkage; it does not by itself prove authenticity or causation.** A shared correlation ID across an `AuditEvidence` record and a future execution-evidence record proves that the two records claim to describe the same operation. It does not prove that the execution-evidence record is genuine, that the component which wrote it was the component authorized to, or that the execution it describes actually corresponds to the authorized operation rather than a coincidentally similar one. This is the same caution the threat model already applies to replay protection (`docs/security/threat-model.md` §7.6): correlation identifiers "support detection of duplicates in audit," they do not themselves prevent duplication or forgery.
+
+**Adapter evidence construction ownership**, decided in full by [`docs/architecture/adapter-evidence-construction-semantics.md`](adapter-evidence-construction-semantics.md) (proposed by [ADR-0007](../adr/0007-adapter-evidence-construction.md)) and restated here only to keep this document's own correlation-model row (above) consistent with it:
+
+```text
+basis-adapters
+    constructs the governed evidence material
+    canonicalizes it with RFC 8785
+    computes the digest
+
+operation-producer runtime
+    mints reference_id
+    assembles AdapterEvidenceReference
+    supplies adapter_source
+    assigns redaction classification
+    attaches request linkage
+
+basis-gateway
+    authenticates and classifies the producer
+    validates and admits the reference
+    does not regenerate the evidence or digest
+```
+
+This document's own §2 and §4 already assign reference *assembly* to the operation-producer runtime; the correction above is narrower — it is specifically the `reference_id` value that this document's earlier correlation-model table (§6) had mis-stated as generated "by `basis-adapters`," which was inconsistent with this document's own §4 field-ownership table and with `basis-adapters`' own handoff-alignment plan, which confirms `basis-adapters` "generates no identifier of any kind" during normalization. Minting belongs to the operation-producer runtime alone.
 
 ---
 
@@ -358,8 +381,9 @@ This document does not conclude that a new schema is required for any of the abo
 
 1. **Architecture approval** of this document, its role definitions (§2), and its trust rules (§3) — a decision gate in `basis-architecture`, per `GOVERNANCE.md`'s ADR process for changes that affect component boundaries.
 2. **`basis-adapters` operation-aware handoff alignment plan** — a `basis-adapters`-owned planning document assessing what, if anything, its own public surface (`AdapterContext`, `AdapterResult`, per-protocol evidence shapes) needs in order to make constructing an `AdapterEvidenceReference` straightforward for whatever consumes its output. Additive only; does not change `basis-adapters`' non-network, non-authenticating contract.
-   **Decision gate:** does `basis-adapters` need any additive surface at all, or is its current public API already sufficient for a producer runtime to consume?
-3. **Additive adapter-side evidence/reference construction, only if required** by Stage 2's plan. Not scheduled here as a certainty.
+   **Decision gate:** does `basis-adapters` need any additive surface at all, or is its current public API already sufficient for a producer runtime to consume? **Resolved:** mixed, by field — see that plan and the architecture decision in Stage 2a below.
+2a. **Adapter evidence construction and canonicalization architecture** — [`docs/architecture/adapter-evidence-construction-semantics.md`](adapter-evidence-construction-semantics.md), proposed by [ADR-0007](../adr/0007-adapter-evidence-construction.md), answers the construction questions Stage 2's plan could not resolve on its own authority: what constitutes adapter evidence material, how it is canonicalized, which component computes its digest, which component mints `reference_id`, and which component assembles the final `AdapterEvidenceReference`. It fixes a first evidence profile (`basis-adapter-evidence-v1`) canonicalized exactly under RFC 8785 (`rfc8785`) — not a candidate awaiting a future technology evaluation — and assigns material construction, canonicalization, and digest computation to `basis-adapters` through a pure deterministic helper, with reference assembly (`reference_id`, `adapter_source`, `redaction_classification`, request/correlation linkage) to the operation-producer runtime named in §2 above. It does not implement any of this and does not modify `basis-schemas`.
+3. **Additive adapter-side evidence/reference construction, only if required** by Stage 2's plan and specified by Stage 2a's architecture. Not scheduled here as a certainty.
 4. **Gateway producer-authentication and admission refinement** — `basis-gateway`-owned work to move beyond the subject-ID allowlist toward whatever authentication mechanism the architecture eventually selects for the operation-producer runtime, and to resolve or explicitly defer the category-scoped capability question from §3 and §12.
    **Decision gate:** which authentication/transport mechanism (mTLS, SPIFFE, OAuth client-credentials, or another) — explicitly not selected by this document.
 5. **Bounded producer-runtime reference implementation** — a first, narrow implementation of the operation-producer runtime role (§2), scoped to one protocol and one deployment topology (§9), used to validate that the roles and rules this document defines are actually sufficient before generalizing them.
