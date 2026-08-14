@@ -290,6 +290,18 @@ This roadmap is architecture only. It does not authorize implementation work in 
 
 ---
 
+## Identity Provider Integration and Identity Learning Environment
+
+A fourth dedicated roadmap document, [`docs/roadmaps/identity-provider-integration-and-learning-environment.md`](docs/roadmaps/identity-provider-integration-and-learning-environment.md), records long-term architectural intent for a reproducible external-identity-provider reference and learning environment (`basis-demo`) and for the BASIS Training Mode capability that would let an operator or trainee inspect a real identity flow — authentication, normalization, authorization, enforcement, execution, and evidence — as it actually happens. It elaborates the "`basis-demo` end-to-end validation" stage the Downstream Rollout Sequence above already names, specifically for identity-provider integration and identity-systems education, rather than introducing a new or competing future stage.
+
+| Item | Status |
+| - | - |
+| Identity provider integration and identity learning environment roadmap (ten architecture phases, `basis-demo` responsibility model, provider-neutral IdP profile model, sanitized training observability model, decision gates) | **Planned** — architecture only; no phase is in progress and no repository, including `basis-demo`, is created by it |
+
+This roadmap is architecture only. It does not authorize implementation work in any repository, does not create `basis-demo` or any other repository, and does not select an identity-provider vendor as a runtime dependency of the BASIS Core Services Distribution. It depends most directly on the still-unresolved **Next Producer and Execution-Evidence Boundary** above: its own Phase 6 (the full identity-to-operation learning flow) cannot proceed until [ADR-0008](docs/adr/0008-producer-workload-authentication-and-admission.md) is accepted and implemented and a bounded operation-producer reference implementation exists, per [`docs/architecture/operation-producer-and-execution-boundary.md`](docs/architecture/operation-producer-and-execution-boundary.md). A narrower authentication-only reference lab (its Phase 5) is, by contrast, groundable in capability already released today — `basis-identity`'s `v0.1.0` OIDC, JWKS, session, and BASIS-local token surface — and the roadmap document is explicit about that distinction rather than presenting the two as equally available. It reconciles explicitly with the identity and fine-grained authorization expansion roadmap, the identity-to-operation contract and interoperability roadmap, the post-authentication identity activity roadmap, and the operator and training experience roadmap, consuming capability each of them owns rather than redefining any of it. See the roadmap document itself for phase-by-phase prerequisites, decision gates, and its `basis-demo` responsibility and trust-boundary model.
+
+---
+
 ## What This Roadmap Does Not Say
 
 This roadmap does not specify dates, release schedules, or version numbers. It does not commit to building any item in Phase 3, 4, or 5. It does not imply that items listed as "In architecture" or "Research direction" will be implemented in the form or sequence described here.

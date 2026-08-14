@@ -718,6 +718,7 @@ This roadmap preserves the long-term architectural direction for extending BASIS
 - [`docs/architecture/ecosystem-contract-inventory.md`](../architecture/ecosystem-contract-inventory.md) — the existing cross-repository contract inventory this roadmap's evidence dependencies trace back to
 - [`docs/architecture/operation-aware-trace-audit-evidence.md`](../architecture/operation-aware-trace-audit-evidence.md) — the redaction-tier discipline Phase 2 and Phase 9 extend to durable activity and export
 - [`docs/architecture/basis-console.md`](../architecture/basis-console.md) — the console architecture and operator/training-mode invariants this roadmap's console requirements extend
+- [`docs/roadmaps/identity-provider-integration-and-learning-environment.md`](identity-provider-integration-and-learning-environment.md) — the `basis-demo`/Training-Mode identity-learning roadmap whose sanitized training trace must not become a second activity ledger, per its own **Relationship to Existing Roadmaps** section
 - [`docs/security/threat-model.md`](../security/threat-model.md) — the existing threat model that phase-specific work must update as each phase's architecture solidifies
 - [`GOVERNANCE.md`](../../GOVERNANCE.md) — the ADR process this roadmap's decision gates and sequencing changes must follow
 - [`docs/adr/README.md`](../adr/README.md) — when a phase's architecture work requires a new ADR
