@@ -404,4 +404,5 @@ The phrase "operations cockpit" may be used descriptively in future informal dis
 - [`docs/kernel-boundary-rules.md`](../kernel-boundary-rules.md) — the isolation rules that keep `basis-core` free of console or CLI dependencies
 - [`docs/standards/terminology-rules.md`](../standards/terminology-rules.md) — the terminology governance process referenced in **Terminology** above
 - [`docs/glossary.md`](../glossary.md) — canonical definitions, including the Operator Mode and Training Mode entries added alongside this document
+- [`docs/roadmaps/identity-provider-integration-and-learning-environment.md`](identity-provider-integration-and-learning-environment.md) — the `basis-demo`/identity-learning roadmap whose Phase 10 depends on this roadmap's Stage 4 playbook framework and does not redefine Training Mode doctrine
 - [`ROADMAP.md`](../../ROADMAP.md) — ecosystem-wide roadmap; see **Current State**, the Downstream Rollout Sequence, and the "Operator and Training Experience Direction" subsection this roadmap is cross-referenced from
