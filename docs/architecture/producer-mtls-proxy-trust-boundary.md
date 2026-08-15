@@ -1,6 +1,6 @@
 # Producer mTLS Proxy Trust Boundary
 
-**Status:** Proposed architecture, supporting [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md). Not yet accepted. Not implemented in any repository.
+**Status:** Accepted reference architecture, governed by [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md). Not yet implemented. This is a bounded reference topology, not a universal production ingress mandate (§26).
 
 **Companion documents:** [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) (the durable decision this document supports and is normatively referenced by), [ADR-0008](../adr/0008-producer-workload-authentication-and-admission.md) (producer workload authentication and admission — preserved unchanged), [`bounded-operation-producer-reference-implementation-plan.md`](bounded-operation-producer-reference-implementation-plan.md) (Phase 1A/1B implementation planning this document unblocks), [`operation-producer-and-execution-boundary.md`](operation-producer-and-execution-boundary.md), [`docs/kernel-boundary-rules.md`](../kernel-boundary-rules.md), [`docs/security/threat-model.md`](../security/threat-model.md), `basis-gateway`'s `docs/spikes/producer-mtls-certificate-exposure.md` (Phase 1A spike evidence this document is built on).
 
