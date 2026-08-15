@@ -170,7 +170,10 @@ No row below has ambiguous dual ownership.
 | Final `AdapterEvidenceReference` assembly | reference producer (new) |
 | Producer client certificate / private key custody | reference producer (new) |
 | Bearer subject credential custody (separate from the certificate) | reference producer (new) |
-| TLS termination and certificate validation | `basis-gateway` at the topology Phase 1A selects (new) |
+| Producer-facing TLS termination, certificate-chain validation, trust-anchor/CA configuration | trusted NGINX ingress — selected by Proposed [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) for the bounded reference topology; implementation blocked pending that ADR's formal acceptance (§11, corrected) |
+| Authenticated leaf-certificate forwarding | trusted NGINX ingress — same ADR-0009 caveat |
+| Protected ingress-to-gateway channel | deployment configuration (NGINX + Uvicorn `--uds` Unix-socket topology) — same ADR-0009 caveat |
+| Certificate decoding/parsing (of the forwarded leaf certificate) | `basis-gateway` (new) |
 | Producer identity derivation (URI SAN) | `basis-gateway` (new) |
 | Producer admission (exact match) | `basis-gateway` (new) |
 | Producer trust classification (mTLS path) | `basis-gateway` (new, additive to existing) |
@@ -426,58 +429,41 @@ An interface of the form `put(reference_id, bytes)` is **specifically excluded**
 
 `basis-gateway` ships as a FastAPI/Starlette ASGI application (`src/basis_gateway/main.py`), served via `uvicorn[standard]` (a released dependency, confirmed in `pyproject.toml`). No TLS certificate configuration (`ssl_certfile`, `ssl_keyfile`, `ssl_ca_certs`, or equivalent) exists anywhere in `src/basis_gateway/` today — a targeted search found none. `GatewayConfig` (`src/basis_gateway/config.py`) sources all settings from environment variables and defines no TLS-related field. This confirms the current application does not itself terminate TLS in any deployment this repository's own source anticipates; the existing assumption, unstated but consistent with the absence of any TLS configuration surface, is that TLS termination (if any) happens upstream of the ASGI process today. `cryptography>=42.0.0` is **already** a `basis-gateway` runtime dependency (confirmed in `pyproject.toml`), which materially changes the dependency calculus for certificate parsing (§25).
 
-### Option A — Application server directly terminates mTLS
+**The two subsections below (Option A, Option B) are retained as historical planning material describing the two candidate topologies as they were originally evaluated, before Phase 1A ran.** Both are now resolved — Phase 1A determined Option A is not viable (Outcome B, below) and the "Planning decision" and "What the spike answered" subsections that follow are the current, authoritative record. Option A is superseded for the bounded reference implementation by Phase 1A Outcome B; Option B, refined into the specific NGINX/Unix-socket/leaf-certificate topology, is what Proposed ADR-0009 now defines.
 
-The ASGI process itself would need to: (1) be launched with `ssl_cert_reqs=ssl.CERT_REQUIRED` (or the server's equivalent) and a configured CA bundle for producer client certificates, and (2) expose the validated peer certificate to application code so the gateway's own admission logic can read the URI SAN. Item (1) is a well-understood capability of the underlying TLS stack Python's `ssl` module and `uvicorn` build on. Item (2) is the open technical question this plan does not resolve by assertion: whether the currently-selected ASGI server (`uvicorn`) exposes validated client-certificate data to the application layer through a documented, stable mechanism, or whether an ASGI server with more complete TLS-extension support (for example, one implementing the ASGI `tls` scope extension) would be required. This is a genuine implementation-time unknown, not a design decision — resolving it is **Phase 1A** (§26), a blocking spike that must complete before any admission logic is written.
+### Option A — Application server directly terminates mTLS (superseded by Phase 1A Outcome B — see below)
 
-### Option B — Trusted reverse proxy terminates mTLS
+The ASGI process itself would need to: (1) be launched with `ssl_cert_reqs=ssl.CERT_REQUIRED` (or the server's equivalent) and a configured CA bundle for producer client certificates, and (2) expose the validated peer certificate to application code so the gateway's own admission logic can read the URI SAN. Item (1) is a well-understood capability of the underlying TLS stack Python's `ssl` module and `uvicorn` build on. Item (2) was, at the time this section was originally written, an open technical question this plan did not resolve by assertion: whether the currently-selected ASGI server (`uvicorn`) exposes validated client-certificate data to the application layer through a documented, stable mechanism, or whether an ASGI server with more complete TLS-extension support (for example, one implementing the ASGI `tls` scope extension) would be required. That was a genuine implementation-time unknown, not a design decision, at the time — Phase 1A (§26) has since resolved it: item (2) fails (Outcome B, below).
 
-A local proxy (for example `nginx` or `stunnel`, configured to require and validate client certificates) terminates TLS and forwards a verified-identity assertion to the gateway over a channel the gateway can trust independent of the assertion's own content — for example, a loopback-only Unix domain socket the proxy alone can reach, with the gateway configured to reject any connection not arriving over that socket. This avoids depending on uncertain ASGI-server TLS-extension capability, at the cost of requiring the reference implementation to stand up and configure a second local process and to design the proxy→gateway trust channel carefully enough that a spoofed `X-Client-Cert`-style header is structurally impossible, not merely discouraged — the ADR is explicit that this boundary must be defined and protected, not casually assumed.
+### Option B — Trusted reverse proxy terminates mTLS (refined into the topology Proposed ADR-0009 now defines)
+
+A local proxy (for example `nginx` or `stunnel`, configured to require and validate client certificates) terminates TLS and forwards a verified-identity assertion to the gateway over a channel the gateway can trust independent of the assertion's own content — for example, a loopback-only Unix domain socket the proxy alone can reach, with the gateway configured to reject any connection not arriving over that socket. This avoids depending on uncertain ASGI-server TLS-extension capability, at the cost of requiring the reference implementation to stand up and configure a second local process and to design the proxy→gateway trust channel carefully enough that a spoofed `X-Client-Cert`-style header is structurally impossible, not merely discouraged — the ADR is explicit that this boundary must be defined and protected, not casually assumed. [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) and [`producer-mtls-proxy-trust-boundary.md`](producer-mtls-proxy-trust-boundary.md) now select the specific technology (NGINX, not stunnel — stunnel was found to lack the HTTP-layer awareness this handoff requires) and channel (a Unix domain socket) within this option's general shape; ADR-0009 is Proposed, not yet accepted.
 
 ### Planning decision — the topology spike is a hard implementation gate
 
-This is **not** a soft implementation curiosity to be resolved opportunistically while admission code is written. It is Phase 1A (§26), and it gates everything downstream of it:
+This was **not** a soft implementation curiosity to be resolved opportunistically while admission code is written. It was Phase 1A, and it gated everything downstream of it:
 
 > **Technical spike: prove where mTLS terminates and how validated client-certificate identity reaches the gateway admission layer.**
 >
 > **No producer-admission implementation may proceed until this spike resolves the topology.**
 
-**Preferred outcome: Option A**, because it follows directly from ADR-0008's own framing of "gateway-derived identity from authenticated connection state" — the same process that terminates TLS is the process that derives identity, with no intermediate boundary to design and protect. But the preference is contingent, not assumed: it holds only if the spike demonstrably satisfies the criteria below.
+**RESOLVED — Outcome B.** `basis-gateway`'s Phase 1A spike (`docs/spikes/producer-mtls-certificate-exposure.md`, merged to `main` at `07586110b847d2c8fe5dfadd7a3eba027bc74024`) executed the five-question checklist below against the actual pinned server stack and reached Outcome B: direct application termination is not viable. Uvicorn can require and validate client certificates (question 1) and the certificate data is obtainable at the raw `asyncio`/`ssl` transport layer (partial answer to question 2), but no documented, stable interface carries that data into ASGI application code under any of Uvicorn's three shipped HTTP protocol implementations — the standardized ASGI TLS extension that would provide one remains unimplemented in the current Uvicorn release line. The spike additionally demonstrated, empirically, that a caller-supplied certificate-shaped header (`X-Client-Cert`, `X-SSL-Client-Cert`, and similar) reaches the ASGI application unmodified when nothing is responsible for overwriting it — direct evidence for why a bare forwarding header was never a candidate on its own.
 
-#### What the spike must answer
+#### What the spike answered
 
-For the currently used server stack (`uvicorn[standard]>=0.29.0` serving a FastAPI/Starlette ASGI app, confirmed in `pyproject.toml`):
+For the pinned server stack (`uvicorn[standard]>=0.29.0`, installed `0.52.3`, serving a FastAPI/Starlette ASGI app):
 
-1. Can Uvicorn be configured to **require and validate** client certificates?
-2. After validation, can gateway application code obtain the peer certificate through a **documented, stable interface**?
-3. Can it obtain the certificate's **URI SAN without trusting any caller-controlled HTTP field**?
-4. Can tests exercise all four of: a valid client certificate; an invalid/untrusted certificate; a certificate with no URI SAN; a certificate with multiple URI SANs?
-5. Does the working solution require Uvicorn configuration only, an ASGI TLS extension, a different ASGI server, or a trusted reverse proxy?
-
-#### Outcome A — direct application termination works
-
-If validated certificate data reaches gateway code through a documented and acceptable boundary:
-
-- keep direct application mTLS termination;
-- document the exact mechanism (which interface, which server version, which configuration flags) in the gateway's own implementation notes;
-- proceed to Phase 1B: URI SAN extraction and admission implementation.
+1. Can Uvicorn be configured to **require and validate** client certificates? **Yes** — confirmed by 14 executed integration tests against real TLS handshakes.
+2. After validation, can gateway application code obtain the peer certificate through a **documented, stable interface**? **No** — the ASGI `scope` carries no `"extensions"` key for a successfully validated mTLS connection under any of Uvicorn's three shipped protocol implementations.
+3. Can it obtain the certificate's **URI SAN without trusting any caller-controlled HTTP field**? Moot under Outcome B — no application-visible boundary carries certificate identity at all, from any source, so this question does not arise for direct termination.
+4. Can tests exercise all four of: a valid client certificate; an invalid/untrusted certificate; a certificate with no URI SAN; a certificate with multiple URI SANs? **Yes**, all four are exercised, deterministically, at the transport layer; only the "reaches the application" property fails.
+5. Does the working solution require Uvicorn configuration only, an ASGI TLS extension, a different ASGI server, or a trusted reverse proxy? **A trusted reverse proxy** — the ASGI TLS extension path is blocked upstream on unresolved ASGI-specification questions, and no evidence was found that a different ASGI server currently implements it either.
 
 #### Outcome B — direct termination does not provide a safe application identity boundary
 
-**Stop before implementing producer admission.** Do not casually add `X-Client-Cert`, `X-SSL-Client-*`, or any other certificate-identity header as an implementation shortcut — a header the application trusts without a proven, structurally enforced trust channel is exactly the spoofable identity assertion ADR-0008 forbids.
+Per the plan this section already specified, implementation stopped before any producer-admission code was written, and no `X-Client-Cert`/`X-SSL-Client-*`-style header was added as a shortcut. The required architecture/planning follow-up is now complete: [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) and its companion [`producer-mtls-proxy-trust-boundary.md`](producer-mtls-proxy-trust-boundary.md) define which proxy terminates mTLS for the reference environment (NGINX), how the proxy-to-gateway channel is isolated (a Unix domain socket with restrictive permissions), why ordinary callers cannot reach that channel directly (no gateway TCP listener in this mode), how certificate-derived identity is conveyed across it (the authenticated leaf certificate, URL-escaped PEM, in a private internal header unconditionally overwritten by the proxy), how spoofed identity headers are stripped (the same unconditional-overwrite directive), what fact the gateway trusts about the proxy (§16 of the architecture document's trust-fact matrix), how local tests must prove that trust boundary holds (Appendix B of the architecture document), and why the resulting topology still conforms to ADR-0008 (§3 and §10–§13 of the architecture document; ADR-0009's own "relationship to ADR-0008" analysis).
 
-Before any proxy fallback is implemented, **this planning document must first be updated in a small follow-up architecture/planning PR** defining:
-
-- which proxy terminates mTLS for the reference environment;
-- how the proxy-to-gateway channel is isolated;
-- why ordinary callers cannot reach that channel directly;
-- how certificate-derived identity is conveyed across it;
-- how spoofed identity headers are stripped or overwritten;
-- what fact, precisely, the gateway trusts about the proxy;
-- how local tests prove that trust boundary holds;
-- whether the resulting topology still conforms to ADR-0008.
-
-Only after that update is reviewed may proxy-backed producer admission implementation proceed. Option B remains scoped tightly when it is eventually taken (loopback-only or Unix-domain-socket-only proxy-to-gateway channel; no bare HTTP header carrying certificate claims across any network-reachable boundary under any circumstance).
+**Phase 1B remains blocked** until ADR-0009 is formally accepted, per this repository's ADR governance process. Once accepted, Phase 1B implementation may proceed exactly as this document's §26 sequence already describes, using the topology ADR-0009 and its companion architecture document specify rather than inventing one during implementation.
 
 #### Phase 1 completion gate
 
@@ -485,7 +471,7 @@ Phase 1 is **not** complete merely because certificate-parsing code exists. It i
 
 > A validated producer certificate can be mapped to exactly one URI SAN through a trust boundary that does not depend on caller-controlled request data.
 
-Either way, the reference slice does not attempt to support every deployment topology — one topology is selected, proven, and documented as this slice's own, with permanent production ingress architecture left for later.
+Phase 1A itself (proving the topology) is now complete, with Outcome B recorded above. Phase 1B (implementing admission logic against the now-specified trusted-proxy topology) remains not started, gated on ADR-0009's formal acceptance. The reference slice does not attempt to support every deployment topology — one topology is selected, proven, and documented as this slice's own (per ADR-0009 and its companion architecture document), with permanent production ingress architecture left for later.
 
 ### Certificate identity extraction location
 
@@ -500,14 +486,16 @@ Candidate minimal configuration surface, following `GatewayConfig`'s existing `p
 | Concept | Type | Default | Fail-closed behavior | Secret? |
 | - | - | - | - | - |
 | mTLS producer path enabled | bool | `False` | Disabled by default — a deployment that takes no action observes no behavior change, mirroring `OPERATION_AWARE_ENABLED`'s own existing default-off discipline | No |
-| Producer trust-anchor location (CA bundle path) | file path | none (required if enabled) | Startup fails closed if enabled without a configured, readable trust anchor | No (public CA material) — but the *file itself* must never be assumed world-readable by convention; that is a deployment concern, not a schema one |
+| ~~Producer trust-anchor location (CA bundle path)~~ — **superseded, see note below the table** | — | — | — | — |
 | Admitted URI SAN identities | set of exact strings | empty set | Empty set → no producer is admitted (mirrors `OPERATION_PRODUCER_SUBJECT_IDS`'s existing safe-default-empty pattern exactly) | No (identities are not secrets) |
 | Per-identity enabled/disabled flag | bool per entry | n/a | A disabled entry is treated identically to an absent one | No |
-| Server-side TLS material (gateway's own cert/key, if Option A is selected) | file paths | none (required if enabled) | Startup fails closed if enabled without both configured | **Yes** — private key material; must use whatever secret-handling convention the deployment already applies to other private keys (for example, the `basis-identity` RS256 signing key), not a new pattern invented for this slice |
+| Internal certificate-header parsing/trust-boundary flag ("trusted-proxy producer mode") | bool | `False` | Disabled by default; when enabled, the gateway expects the trusted-ingress topology ADR-0009 defines (Unix-socket listener, internal certificate header) rather than any direct TLS termination | No |
+
+**Corrected per [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md):** the Phase 1A spike's Outcome B means `basis-gateway` does not terminate producer TLS directly and therefore owns no producer client-CA/trust-anchor file and no server-side TLS private key material for the producer-mTLS path. Producer client trust-anchor configuration moves to the trusted ingress (NGINX), per [`producer-mtls-proxy-trust-boundary.md`](producer-mtls-proxy-trust-boundary.md) §15. The "Producer trust-anchor location (CA bundle path)" and "Server-side TLS material" rows this table originally carried, written before Phase 1A's outcome was known, are superseded by that document's own configuration-ownership table; `basis-gateway`'s remaining configuration surface for this feature is limited to the trusted-proxy-mode toggle, the admitted-URI-SAN set, and per-identity enable/disable, all shown above.
 
 This configuration governs producer authentication and admission **only**. It neither replaces nor relaxes the gateway's existing bearer-subject authentication configuration (`AUTH_MODE` and its mode-specific settings — §14), which remains required and unchanged: enabling the mTLS producer path never makes subject authentication optional, and a deployment with the producer path enabled but no working bearer configuration is misconfigured, not "producer-only."
 
-Exact environment-variable names are deferred to Phase 1B implementation, which may not begin until the Phase 1A topology spike (§11, §26) resolves; this plan fixes the *shape* of the configuration (bool toggle, trust-anchor path, exact-match admitted-identity set with per-entry enable/disable, distinct from `OPERATION_PRODUCER_SUBJECT_IDS`) without inventing a name that would need to be revisited once the topology question resolves. No wildcard, prefix, or pattern-based admission configuration is permitted, per ADR-0008.
+Exact environment-variable names are deferred to Phase 1B implementation. The Phase 1A topology spike (§11, §26) has already resolved (Outcome B); Phase 1B is instead gated on [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md)'s formal acceptance. This plan fixes the *shape* of the gateway-owned configuration — the trusted-proxy-mode bool toggle, the exact-match admitted-identity set with per-entry enable/disable, distinct from `OPERATION_PRODUCER_SUBJECT_IDS` — without inventing a name that would need to be revisited once ADR-0009 is accepted. A producer trust-anchor/CA-bundle path is **not** part of the gateway's configuration shape under the ADR-0009 topology (§12's corrected table and note, above); that material belongs to the trusted NGINX ingress. No wildcard, prefix, or pattern-based admission configuration is permitted, per ADR-0008.
 
 ---
 
@@ -523,7 +511,11 @@ Legacy/bounded compatibility path
 
 ADR-0008 path (new)
     validated producer client certificate
-        (validated at the TLS boundary the Phase 1A spike selects — §11)
+        (validated by the trusted mTLS ingress Proposed ADR-0009 defines —
+         §11; Phase 1A discovered *why* a proxy is required — Outcome B —
+         it did not itself select the proxy)
+        → authenticated leaf certificate forwarded over the protected
+          Unix-socket backend channel
         → certificate identity handed to gateway trust logic
         → exactly one eligible URI SAN derived
         → exact explicit admission match against §12's configuration
@@ -534,7 +526,7 @@ ADR-0008 path (new)
 
 **Which failures may become `OperationProducerTrust` values, and which may not.** The additive members cover only outcomes the *application* can actually observe — that is, cases where a certificate identity was successfully validated and handed to gateway trust logic, and the remaining question is admission. Candidates: an admitted identity; zero eligible URI SANs; more than one eligible URI SAN; a URI SAN that could not be deterministically extracted; a valid-but-unadmitted identity; an admitted-then-disabled identity. Exact naming is Phase 1B implementation detail, not fixed here.
 
-Certificate-chain and handshake failures are **not** in that list. A certificate rejected by the TLS stack during the handshake produces no HTTP request, therefore no FastAPI route invocation, therefore no `OperationProducerTrust` object at all — there is nothing to classify. A value such as `MTLS_CERTIFICATE_INVALID` would name a state the application, under Option A, generally never reaches, and modelling it invites implementers to believe every certificate failure surfaces as an application-level trust result. It does not. §17's layered failure taxonomy governs which layer owns which failure.
+Certificate-chain and handshake failures are **not** in that list. A certificate rejected by the TLS stack during the handshake produces no HTTP request, therefore no FastAPI route invocation, therefore no `OperationProducerTrust` object at all — there is nothing to classify. This holds under the trusted-ingress topology Proposed ADR-0009 defines exactly as it would have held under direct application termination (Option A, since ruled out by Phase 1A Outcome B): a handshake rejected at the TLS layer — whether that layer is the ingress or, hypothetically, the ASGI process itself — never reaches gateway application code. A value such as `MTLS_CERTIFICATE_INVALID` would name a state the application generally never reaches under either topology, and modelling it invites implementers to believe every certificate failure surfaces as an application-level trust result. It does not. §17's layered failure taxonomy governs which layer owns which failure.
 
 The legacy allowlist is not removed, not reinterpreted as mTLS, and not elevated to normative status by this slice — exactly as ADR-0008 requires. Both paths may be enabled simultaneously in a deployment; a given request is classified by whichever authentication mechanism actually applies to its connection (bearer token → allowlist check; mTLS handshake → certificate-derived admission check). This reference slice exercises only the mTLS path end to end; the legacy path's own existing 23 test functions (`tests/test_operation_producer_trust.py`, confirmed by inspection) continue to cover it unchanged and are not touched by this work beyond the additive enum members above.
 
@@ -645,7 +637,7 @@ A future architecture phase may decide how machine subjects, workload subjects, 
 The reference producer's gateway client requirements, informed by (but not dependent on) `basis-console`'s existing `GatewayClient` (`src/basis_console/gateway/client.py`, confirmed by inspection to use `httpx.Client` with injectable transport for tests — a directly reusable *pattern*, not a shared dependency, since the producer must never depend on `basis-console`):
 
 - gateway base URL (configured, injectable for tests);
-- client certificate + private key (for the Option A/mTLS path — `httpx.Client(cert=(certfile, keyfile))`, an already-supported `httpx` capability requiring no new dependency beyond `httpx` itself, which is not currently a `basis-adapters` dependency but is a reasonable, minimal addition to the new reference-producer repository only — never to `basis-adapters`);
+- client certificate + private key, presented to the trusted NGINX ingress Proposed ADR-0009 defines (`httpx.Client(cert=(certfile, keyfile))`, an already-supported `httpx` capability requiring no new dependency beyond `httpx` itself, which is not currently a `basis-adapters` dependency but is a reasonable, minimal addition to the new reference-producer repository only — never to `basis-adapters`); the producer's own TLS handshake is with the ingress, not directly with `basis-gateway`, under that topology;
 - CA/trust bundle for validating the gateway's own server certificate (`httpx.Client(verify=ca_bundle_path)`);
 - a **separate** bearer credential for the authorization subject (§14.4), supplied as an ordinary `Authorization: Bearer <token>` header on the submission — configured and injected independently of the client-certificate material, never derived from it, and never logged;
 - timeouts (explicit, finite — no indefinite hang on an unreachable gateway);
@@ -784,7 +776,7 @@ This plan does not introduce any security posture beyond what ADR-0008's own "Se
 - The producer also holds a second, pre-existing class of credential: the bearer token establishing the authorization subject (§14.4). It is a token of a kind `basis-gateway` already accepts and already verifies, so it introduces no new verification surface — but it is a secret, is never logged in full (the gateway's own demo redaction convention applies), and is kept configurationally independent of the certificate material so neither can be derived from the other.
 - Certificate parsing happens exactly once, inside `basis-gateway` (§11) — no second, independent parsing implementation is introduced in the reference producer (the producer only *presents* its own certificate via its HTTP client library; it does not need to parse certificates itself).
 - The admission configuration (§12) is exact-match only, with no wildcard, prefix, substring, or case-insensitive matching anywhere in the implementation — this is the single most security-critical implementation requirement in the entire slice and should be the first thing Phase 1B's tests lock down (§23).
-- If Option B (§11) is ultimately required, implementation **stops** and this planning document is updated first (§11, "Outcome B"). Only after that review may the proxy fallback be built, and the proxy-to-gateway trust channel must then be verified, by an explicit test, to be unreachable from anywhere except the proxy itself (loopback-only or Unix-domain-socket-only) before any header-based identity assertion is trusted. No `X-Client-Cert`/`X-SSL-Client-*`-style header exists in the implementation unless that separately reviewed trust boundary authorizes it.
+- **Outcome B occurred** (§11): implementation stopped before any producer-admission code was written, and this planning document was updated first, via [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) and [`producer-mtls-proxy-trust-boundary.md`](producer-mtls-proxy-trust-boundary.md). The proxy fallback may now be built only after ADR-0009 is formally accepted, and the proxy-to-gateway trust channel (a Unix domain socket, per the architecture document's §9) must be verified, by an explicit test, to be unreachable from anywhere except the proxy itself before any header-based identity assertion is trusted (architecture document Appendix B). The internal header this topology uses is `X-BASIS-Producer-Client-Cert`, defined and scoped by that document — not an ad hoc `X-Client-Cert`/`X-SSL-Client-*`-style shortcut.
 - The producer's certificate-derived identity is never accepted from, cross-checked against, or overridable by any request-body field or caller-set header (§20).
 
 No accepted-architecture conflict was discovered during this planning pass. See §29 for what remains open rather than contradictory.
@@ -915,7 +907,7 @@ Each prints a rejection reason naming its own layer (§17.1), so the four failur
 - retained evidence/reference inspection — a small CLI/script step that resolves `reference_id` → binding → digest/storage key, retrieves the stored bytes, recomputes SHA-256 over them, and compares against the digest taken from the binding (and from the assembled reference), demonstrating that the expected digest is never read out of the bytes being verified (§9);
 - gateway audit output for at least one scenario, to make the audit trail's contents visible without a separate audit-query tool.
 
-No Docker or Kubernetes is required — the demo runs the gateway and the reference producer as two local processes (or, if Option A's spike allows, potentially in-process test fixtures for the fastest tests, with the demo itself always using two real processes to prove the network boundary is real) directly in a developer environment or Codespace, consistent with the existing `demo/operation-aware/` precedent. `basis-deploy` is not created or required for this demonstration.
+No Docker or Kubernetes is required — under the trusted-ingress topology Proposed ADR-0009 defines, the demo runs three local processes (the trusted NGINX ingress, `basis-gateway`, and the reference producer), with fast unit-level tests against synthetic certificates able to exercise gateway admission logic in-process without the ingress, and the demo itself always using the full three-process topology to prove the network/socket boundary is real, directly in a developer environment or Codespace, consistent with the existing `demo/operation-aware/` precedent. `basis-deploy` is not created or required for this demonstration.
 
 ---
 
@@ -928,39 +920,39 @@ No Docker or Kubernetes is required — the demo runs the gateway and the refere
 | `basis-adapters` (as a library dependency) | new reference-producer repository | This is the entire point of the slice — reuse, not reimplementation, of normalization and evidence construction | Runtime | Already published/installable; no version-pinning concern beyond the repository's existing compatibility discipline |
 | `cryptography` (test-fixture certificate generation) | new reference-producer repository | Needed to generate the local PKI fixtures (§22) deterministically without external tooling | Test-only | Same library the gateway already depends on; no new maintenance burden ecosystem-wide |
 | `PyJWT` (issue the local BASIS-local identity token for the bearer-subject credential) | new reference-producer repository | The subject credential must be signed offline; the gateway's own `demo/operation-aware/run_demo.py` already uses exactly this library for exactly this purpose | Test/demo-only (or runtime if the reference producer issues its own demo token at run time) | Already an established ecosystem library (`basis-identity` runtime dependency, `basis-gateway` demo dependency); the producer *verifies* nothing — the gateway does |
-| ASGI server with confirmed TLS-extension support (only if the Phase 1A spike finds `uvicorn` insufficient) | `basis-gateway` | Contingent — not committed to in this plan | Runtime, contingent | Explicitly not decided here; §11. If the spike's answer is "a different ASGI server" or "a reverse proxy," Phase 1B does not begin until this document is updated (§11, Outcome B) |
+| NGINX (trusted mTLS ingress, reference deployment/CI dependency) | Deployment/test fixture, not a Python package dependency of any repository | Phase 1A resolved to Outcome B (§11); [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) selects NGINX as the reference ingress | Runtime (reference deployment) and test-only (CI, via the distribution-packaged binary) | Not a Python dependency of `basis-gateway` or any other repository; installed as an external process per [`producer-mtls-proxy-trust-boundary.md`](producer-mtls-proxy-trust-boundary.md) §22 |
 
-No dependency is added by this planning PR. `basis-adapters` gains no new dependency under any branch of this plan. `basis-core` gains no new dependency. License/maintenance profile of every dependency named above is already established ecosystem-wide (`cryptography` and `httpx` are both already in production use in at least one released BASIS component) except the contingent ASGI-server question, which is explicitly deferred pending the Phase 1 spike's outcome.
+No dependency is added by this planning PR. `basis-adapters` gains no new dependency under any branch of this plan. `basis-core` gains no new dependency. License/maintenance profile of every dependency named above is already established ecosystem-wide (`cryptography` and `httpx` are both already in production use in at least one released BASIS component); the previously contingent ASGI-server question is resolved (Outcome B — no different ASGI server is adopted; a trusted ingress proxy is used instead, per ADR-0009).
 
 ---
 
 ## 26. Implementation PR Sequence
 
-### Phase 1A — mTLS topology and certificate-exposure spike (`basis-gateway`)
+### Phase 1A — mTLS topology and certificate-exposure spike (`basis-gateway`) — COMPLETE, Outcome B
 
 **A hard gate. No producer-admission implementation may proceed until this phase resolves the topology (§11).**
 
-1. Prove the TLS termination topology for the reference environment.
-2. Prove client-certificate validation can be required and enforced.
-3. Prove safe, documented, stable access to the validated peer certificate's URI SAN from gateway application code, without trusting any caller-controlled field.
-4. Prove testability across the four certificate cases (valid; invalid/untrusted; zero URI SAN; multiple URI SANs).
-5. Record which of the five mechanisms (§11) the working answer requires.
+1. Prove the TLS termination topology for the reference environment. — Done.
+2. Prove client-certificate validation can be required and enforced. — Done (14 executed tests, real TLS handshakes).
+3. Prove safe, documented, stable access to the validated peer certificate's URI SAN from gateway application code, without trusting any caller-controlled field. — Proven *not achievable* through direct application termination; this is Outcome B, not a failure to test.
+4. Prove testability across the four certificate cases (valid; invalid/untrusted; zero URI SAN; multiple URI SANs). — Done, at the transport layer.
+5. Record which of the five mechanisms (§11) the working answer requires. — A trusted reverse proxy (ADR-0009).
 
-**Exit — Outcome A:** direct application termination works; document the exact mechanism and proceed to Phase 1B.
-**Exit — Outcome B:** direct termination does not provide a safe application identity boundary. **Stop. Do not proceed to Phase 1B.** Update this planning document first, in a small follow-up architecture/planning PR covering the proxy trust boundary questions §11 enumerates, and have it reviewed. Only then may proxy-backed producer admission implementation begin.
+**Exit — Outcome A:** direct application termination works; document the exact mechanism and proceed to Phase 1B. *(Not taken.)*
+**Exit — Outcome B (taken):** direct termination does not provide a safe application identity boundary, per `basis-gateway`'s `docs/spikes/producer-mtls-certificate-exposure.md` (merged to `main` at `07586110b847d2c8fe5dfadd7a3eba027bc74024`). The required follow-up architecture/planning update is complete: [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) and [`producer-mtls-proxy-trust-boundary.md`](producer-mtls-proxy-trust-boundary.md) answer every question §11 enumerated. **Phase 1B remains blocked pending ADR-0009's formal acceptance** — not pending further planning work.
 
 ### Phase 1B — Gateway producer authentication and admission foundation (`basis-gateway`)
 
-Begins only after Phase 1A succeeds (or, under Outcome B, after the follow-up planning PR is reviewed).
+**Blocked on ADR-0009's formal acceptance.** Once accepted, implementation proceeds against the trusted-proxy topology ADR-0009 and its companion architecture document specify, not against Option A (direct termination), which Phase 1A ruled out.
 
-1. Configuration additions (§12), fail-closed at startup.
-2. Certificate identity extraction module (§11), using `cryptography` (already a dependency).
-3. Exact URI SAN derivation and admission logic (§13's ADR-0008 path).
-4. `OperationProducerTrust` additive refinement, scoped per §14.7 (no TLS-handshake failure states).
+1. Configuration additions (§12, corrected), fail-closed at startup — including the trusted-proxy-mode toggle and internal-header parsing configuration, per [`producer-mtls-proxy-trust-boundary.md`](producer-mtls-proxy-trust-boundary.md) §15.
+2. Certificate identity extraction module (§11), using `cryptography` (already a dependency), parsing the certificate as forwarded by the trusted ingress rather than read from the TLS transport directly.
+3. Exact URI SAN derivation and admission logic (§13's ADR-0008 path) — unchanged by the topology decision.
+4. `OperationProducerTrust` additive refinement, scoped per §14.7 (no TLS-handshake failure states; a new Layer 2 proxy/backend-trust-boundary failure class is added per [`producer-mtls-proxy-trust-boundary.md`](producer-mtls-proxy-trust-boundary.md) §18).
 5. Legacy-allowlist coexistence (no removal, no reinterpretation) plus its coexistence tests.
 6. Dual producer + bearer-subject authentication behavior (§14): both credentials required, independently verified, neither derived from the other.
-7. Tests per §23, including the transport-vs-admission-vs-authorization layer separation (§17.1).
-8. No producer runtime exists yet at the end of this phase — it is entirely gateway-internal.
+7. Tests per §23 and per the architecture document's Appendix B, including the transport-vs-admission-vs-authorization layer separation (§17.1) and the header-spoof-resistance regression test the Phase 1A spike's own finding requires.
+8. No producer runtime exists yet at the end of this phase — it is entirely gateway-internal (plus the NGINX reference-ingress configuration, which is deployment/test-fixture configuration, not gateway Python code).
 
 **Phase 1 is not complete when certificate-parsing code exists.** It is complete only when a validated producer certificate can be mapped to exactly one URI SAN through a trust boundary that does not depend on caller-controlled request data (§11).
 
@@ -1055,8 +1047,8 @@ The future implementation is complete when, at minimum:
 Restated from ADR-0008 and this plan's own findings, not resolved here:
 
 - Permanent operation-producer-runtime repository placement (§30).
-- Exact `basis-gateway` environment-variable names for the new configuration surface (§12), pending the Phase 1A spike.
-- Whether Option A (in-process ASGI TLS termination) is technically achievable with the current server stack, or whether a server change or Option B is required (§11). **This is a gate, not an open design question:** Phase 1A must answer it before Phase 1B begins, and Outcome B requires a follow-up planning PR before implementation resumes.
+- Exact `basis-gateway` environment-variable names for the new configuration surface (§12), pending Phase 1B implementation.
+- ~~Whether Option A (in-process ASGI TLS termination) is technically achievable with the current server stack, or whether a server change or Option B is required (§11).~~ **Resolved:** Outcome B — direct termination is not viable; [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) and [`producer-mtls-proxy-trust-boundary.md`](producer-mtls-proxy-trust-boundary.md) define the trusted-proxy topology. Phase 1B remains blocked, now on ADR-0009's formal acceptance rather than on further planning.
 - How machine subjects, workload subjects, subject-less producer operations, delegated identities, and `basis-identity` workload credentials should eventually interact with producer authentication (§14.6). For this slice the model is fixed: mTLS producer + bearer subject.
 - Whether a production deployment would use `AUTH_MODE=oidc` rather than the reference slice's `basis_local_token` subject credential (§14.4) — a deployment choice the gateway already supports, unaffected by this plan.
 - Category-scoped producer capability (unchanged from ADR-0008 — not addressed by this slice).
@@ -1115,7 +1107,7 @@ Permanent producer-runtime repository placement will be reconsidered only after 
 | mTLS client presentation | No | new reference-producer repository | Phase 3 |
 | Separate bearer-subject credential presentation | No | new reference-producer repository | Phase 3 |
 | Gateway submission | No | new reference-producer repository | Phase 3 |
-| **mTLS termination topology proof (certificate exposure to application code)** | No | `basis-gateway` | **Phase 1A (gate)** |
+| **mTLS termination topology proof (certificate exposure to application code)** | **Yes — proven not achievable via direct termination (Outcome B); trusted-proxy topology specified by ADR-0009** | `basis-gateway` (spike) / `basis-architecture` (topology decision) | **Phase 1A (gate) — complete** |
 | mTLS server-side termination / cert validation | No | `basis-gateway` | Phase 1B |
 | URI SAN identity derivation | No | `basis-gateway` | Phase 1B |
 | Exact admission matching | No | `basis-gateway` | Phase 1B |
