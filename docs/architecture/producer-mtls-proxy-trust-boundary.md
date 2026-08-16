@@ -1,6 +1,6 @@
 # Producer mTLS Proxy Trust Boundary
 
-**Status:** Accepted reference architecture, governed by [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md). Not yet implemented. This is a bounded reference topology, not a universal production ingress mandate (§26).
+**Status:** Accepted reference architecture, governed by [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) (Accepted). `basis-gateway` Phase 1B.1 (certificate identity foundation) and Phase 1B.2 (trusted mTLS ingress boundary) are implemented and merged to `main`; Phase 1B.3 (live mTLS producer trust) is implementation in progress, not yet complete or released. This is a bounded reference topology, not a universal production ingress mandate (§26).
 
 **Companion documents:** [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) (the durable decision this document supports and is normatively referenced by), [ADR-0008](../adr/0008-producer-workload-authentication-and-admission.md) (producer workload authentication and admission — preserved unchanged), [`bounded-operation-producer-reference-implementation-plan.md`](bounded-operation-producer-reference-implementation-plan.md) (Phase 1A/1B implementation planning this document unblocks), [`operation-producer-and-execution-boundary.md`](operation-producer-and-execution-boundary.md), [`docs/kernel-boundary-rules.md`](../kernel-boundary-rules.md), [`docs/security/threat-model.md`](../security/threat-model.md), `basis-gateway`'s `docs/spikes/producer-mtls-certificate-exposure.md` (Phase 1A spike evidence this document is built on).
 
@@ -10,7 +10,7 @@
 
 `basis-gateway`'s Phase 1A mTLS certificate-exposure spike, merged to `main` at `07586110b847d2c8fe5dfadd7a3eba027bc74024`, reached **Outcome B: direct application termination is not viable.** Stock Uvicorn, across all three of its shipped HTTP protocol implementations, does not expose a validated peer certificate to ASGI application code through any documented or stable boundary; the one standardized mechanism that would provide it, the ASGI TLS extension, remains unimplemented in the current Uvicorn release line after more than four years. This finding is not a private implementation gap `basis-gateway` can close by itself — it is an acknowledged, long-standing limitation of the Uvicorn/ASGI ecosystem, confirmed by this repository's own direct inspection of Uvicorn `0.52.3`'s protocol implementations and by the still-open, years-stalled upstream PR that would add the extension.
 
-The bounded producer reference implementation plan named this exact outcome in advance and gated on it: "Before any proxy fallback is implemented, this planning document must first be updated in a small follow-up architecture/planning PR." This document, together with [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md), is that follow-up. It defines the trusted mTLS ingress topology precisely enough that Phase 1B of the bounded producer reference implementation can proceed once ADR-0009 is formally accepted, without inventing proxy trust semantics, certificate-forwarding semantics, header trust, backend channel protection, URI SAN ownership, or failure behavior during implementation.
+The bounded producer reference implementation plan named this exact outcome in advance and gated on it: "Before any proxy fallback is implemented, this planning document must first be updated in a small follow-up architecture/planning PR." This document, together with [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md), is that follow-up. It defines the trusted mTLS ingress topology precisely enough that Phase 1B of the bounded producer reference implementation — architecturally unblocked now that ADR-0009 is formally accepted — can proceed without inventing proxy trust semantics, certificate-forwarding semantics, header trust, backend channel protection, URI SAN ownership, or failure behavior during implementation.
 
 This is a bounded **reference implementation topology** for the first producer slice ADR-0008 authorizes. It is not a permanent production ingress mandate for every BASIS deployment (§26).
 
@@ -174,8 +174,22 @@ The reserved internal header name is **`X-BASIS-Producer-Client-Cert`**, followi
 - **Maximum accepted size:** bounded by nginx's `large_client_header_buffers`/`proxy_buffer_size`-class limits on the ingress side and by `basis-gateway`'s own request-header size limits on the gateway side; a reference deployment should set an explicit, small maximum (a single RSA-2048 or typical ECDSA leaf certificate PEM is well under 4 KB before URL-escaping expansion; a generous bound such as 16 KB comfortably covers realistic certificate sizes including reasonable extension data without inviting a header-size denial-of-service surface). Both bounds are ordinary deployment configuration values, not new architecture.
 - **Duplicate-header behavior:** `basis-gateway` must treat more than one occurrence of the header as a malformed assertion and fail closed (Layer 2, §18) — this is a defense-in-depth check; in the selected topology the ingress writes exactly one occurrence, but the gateway does not assume the proxy is the only thing that could ever write to a socket it trusts (§9's residual risk) and validates shape rather than assuming it.
 - **Malformed-value behavior:** a value that does not URL-decode to a well-formed PEM certificate, or that decodes but fails X.509 parsing, is rejected at Layer 2 (fail closed; no producer admission).
-- **Missing-value behavior:** the absence of the header on a request that reached `basis-gateway` through the trusted-proxy producer-mTLS listener is treated as "no producer certificate presented" — the request may proceed only as an ordinary bearer-authenticated caller (subject to the existing `UntrustedOperationProducerContextError` rejection of producer-only fields), never as an admitted producer.
+- **Missing-value behavior:** when trusted-proxy producer-mTLS mode is enabled, absence of `X-BASIS-Producer-Client-Cert` on a request that reached `basis-gateway` is an unexpected **Layer 2 proxy/backend trust-boundary failure** (§18), not an ordinary "no producer certificate presented" condition. The gateway fails the request closed: it does not construct producer trust from the request, does not fall back to the `OPERATION_PRODUCER_SUBJECT_IDS` legacy allowlist, does not invoke `basis-core`, and does not reinterpret the condition as an ordinary bearer-only caller — regardless of whether the request carries an otherwise-valid bearer token. Identity is never inferred from any other header, subject claim, role, attribute, request-body field, or network source. This is deliberately different from the genuine "no producer certificate presented" condition, which occurs earlier and entirely outside the gateway: a producer that supplies no TLS client certificate to the ingress is rejected by NGINX at the TLS handshake (Layer 1, §18), and `basis-gateway` is never reached. Once a request has reached the gateway through the trusted-proxy listener, the internal certificate assertion is mandatory — its absence means a trusted-topology assumption failed (NGINX misconfiguration, a request that did not traverse the intended ingress, or a same-host process reaching the Unix socket directly, §9), not that the producer chose to omit a certificate.
 - **Logging/redaction:** `basis-gateway` does not log the raw header value. Diagnostics and audit record only the derived URI SAN string (itself a non-secret, deployment-registered identity value per ADR-0008) and the admission boolean/reason, consistent with the bounded implementation plan's existing §19 finding (§17 of this document).
+
+**Layer contrast, stated once for clarity:** the two conditions below are easy to conflate and must not be.
+
+| Condition | Layer | Result |
+| - | - | - |
+| No producer client certificate presented to NGINX | Layer 1 | NGINX rejects the TLS handshake; `basis-gateway` is never reached |
+| `X-BASIS-Producer-Client-Cert` missing on a request that reached the gateway while trusted-proxy mode is enabled | Layer 2 | Fail closed; no kernel evaluation; no producer trust established; no legacy-allowlist fallback |
+| Certificate assertion malformed, duplicated, or invalidly encoded | Layer 2 | Fail closed; no kernel evaluation |
+| Certificate cannot produce exactly one eligible URI SAN | Layer 3 | Fail closed; no producer admission |
+| Valid URI SAN but not admitted | Layer 4 | Producer untrusted; an ordinary bearer-only request may continue if it asserts no producer-owned context |
+| Bearer subject invalid | Layer 5 | No authorization evaluation |
+| Valid admitted producer + valid bearer subject | Layer 6 | Existing authorization semantics |
+
+A missing or malformed internal assertion (Layer 2) means the trusted-proxy boundary itself did not hold — evidence of a deployment or process fault, not evidence about the producer's own certificate — and it fails the *entire* request closed, including the bearer-only path. An unadmitted URI SAN (Layer 4) means the trusted boundary worked correctly and produced a genuine, parseable certificate identity that the deployment simply has not admitted; only that condition, never a Layer 2 failure, may fall back to an ordinary bearer-authenticated evaluation.
 
 ---
 
@@ -232,6 +246,8 @@ The bounded implementation plan's existing §11/§12 language, written before Ph
 | Authorization subject | `basis-gateway`'s existing bearer authentication | `basis_local_token` / OIDC, unchanged (§14) |
 | Authorization decision | `basis-core` | Deterministic policy evaluation, unchanged |
 
+This matrix describes facts established on a request that actually carries a valid trusted-proxy certificate assertion. It does not, and must not be read to, imply that an *absent* assertion still represents a successful trusted-proxy producer request reaching any of these rows — a missing assertion never reaches "Producer URI SAN" or later; it fails at the Layer 2 boundary check (§11, §18) before any of these facts are derived.
+
 ---
 
 ## 17. Processing Sequence
@@ -253,21 +269,25 @@ The bounded implementation plan's existing §11/§12 language, written before Ph
  9. the Authorization bearer header is forwarded unchanged
 10. gateway receives the request from the socket; no other path
     reaches it in this mode
-11. gateway validates the internal assertion's shape/encoding (no
-    duplicate header, decodable, parseable X.509)
-12. gateway parses the X.509 leaf certificate
-13. gateway requires exactly one eligible URI SAN
-14. gateway treats the URI SAN verbatim, per ADR-0008
-15. gateway performs exact producer admission
-16. gateway independently authenticates the bearer authorization
+11. gateway requires that exactly one X-BASIS-Producer-Client-Cert
+    assertion is present on the request; absence, or more than one
+    occurrence, fails closed at Layer 2 (§18) before any further
+    parsing is attempted
+12. gateway validates the present assertion's shape/encoding
+    (decodable, parseable X.509)
+13. gateway parses the X.509 leaf certificate
+14. gateway requires exactly one eligible URI SAN
+15. gateway treats the URI SAN verbatim, per ADR-0008
+16. gateway performs exact producer admission
+17. gateway independently authenticates the bearer authorization
     subject via its existing, unchanged dispatch
-17. gateway validates/composes the operation-aware request
-18. basis-core evaluates
-19. gateway enforces the disposition and records GatewayAuditEvent
-20. STOP — no protocol execution occurs in this slice
+18. gateway validates/composes the operation-aware request
+19. basis-core evaluates
+20. gateway enforces the disposition and records GatewayAuditEvent
+21. STOP — no protocol execution occurs in this slice
 ```
 
-The proxy performs no step at or after step 10. It never determines admission, never authenticates the bearer subject, never composes a request, and never calls `basis-core`.
+The proxy performs no step at or after step 10. It never determines admission, never authenticates the bearer subject, never composes a request, and never calls `basis-core`. Step 11's presence requirement is what makes the Layer 2 missing-assertion rule (§11, §18) concrete in the processing sequence: a trusted-proxy-mode request that reaches step 10 without a usable assertion stops at step 11 and never reaches step 12.
 
 ---
 
@@ -275,7 +295,7 @@ The proxy performs no step at or after step 10. It never determines admission, n
 
 **Layer 1 — Producer TLS authentication at the ingress.** Missing client certificate; untrusted CA; expired/not-yet-valid certificate; TLS negotiation failure. Required: the connection is rejected by NGINX before any HTTP request is forwarded; `basis-gateway` is never reached; no `OperationProducerTrust` object exists for the attempt, because no application-level request occurred.
 
-**Layer 2 — Proxy/backend trust boundary.** NGINX cannot reach the Unix socket; the socket is unavailable; the internal certificate header is missing, duplicated, or malformed on a request that otherwise reached the gateway process. Required: fail closed; no kernel evaluation; no producer trust established. A socket-connection failure surfaces to the producer as an ordinary upstream/gateway-unavailable error at the ingress, distinguishable in ingress logs from a TLS-layer rejection.
+**Layer 2 — Proxy/backend trust boundary.** NGINX cannot reach the Unix socket; the socket is unavailable; `X-BASIS-Producer-Client-Cert` is unexpectedly missing on a request that has reached the gateway process while trusted-proxy producer-mTLS mode is enabled; the header is duplicated; or the header's value is malformed or invalidly encoded (does not URL-decode to a well-formed PEM block). "Missing" here means specifically: absent *after* a request reached `basis-gateway` through the trusted-proxy listener — not the ordinary case of a producer that presented no client certificate to NGINX at all, which is a Layer 1 rejection and never reaches the gateway (§11). Required: fail closed; no kernel evaluation; no producer trust established; no fallback to the `OPERATION_PRODUCER_SUBJECT_IDS` legacy allowlist, even when the request's bearer subject is itself allowlisted — allowlist membership authenticates a bearer subject, not the trusted-proxy boundary, and cannot repair a Layer 2 failure. A socket-connection failure surfaces to the producer as an ordinary upstream/gateway-unavailable error at the ingress, distinguishable in ingress logs from a TLS-layer rejection.
 
 **Layer 3 — Gateway certificate identity derivation.** Zero eligible URI SANs; multiple eligible URI SANs; a certificate that fails to parse. Required: fail closed; no producer admission; unchanged from ADR-0008's existing fail-closed list.
 
@@ -309,7 +329,7 @@ Twenty items reviewed; each states mitigation, residual risk, and later work whe
 14. **Valid producer + invalid subject.** Mitigated: Layer 5 fails independently of Layers 1–4 succeeding (§18); unchanged from the implementation plan.
 15. **Invalid producer + valid subject.** Mitigated: the request either never reaches the gateway (Layer 1 TLS rejection) or proceeds only as an ordinary, unadmitted caller whose producer-only context is rejected (Layer 4); unchanged from the implementation plan.
 16. **Replayed HTTP requests.** Not addressed by this document; unchanged from ADR-0008's own explicit deferral of ecosystem-wide replay/idempotency semantics. mTLS's session-bound handshake mitigates simple cross-connection replay of the handshake itself but not replay of a captured, valid request within a session.
-17. **Proxy-to-gateway availability failure.** Mitigated by fail-closed Layer 2 behavior (§18): a socket-connection failure produces no evaluation, never a silent allow.
+17. **Proxy-to-gateway availability and trust-boundary failure.** Mitigated by fail-closed Layer 2 behavior (§18): a socket-connection failure, or an unexpected missing, duplicated, or malformed internal certificate assertion on a request that reached the gateway, produces no evaluation, never a silent allow, and never a fallback to the legacy subject allowlist. An unexpected missing internal certificate assertion is evidence that the trusted-proxy boundary did not establish the required certificate handoff for that request — a deployment/topology fault (misconfiguration, an unexpected request path, or same-host socket access outside the intended process) — and therefore fails closed before authorization evaluation, exactly as a socket-connection failure does. This is distinct from item 3's accepted same-host residual risk: a malicious same-host process with genuine socket access could still forge a syntactically valid, *present* assertion, which this Layer 2 presence check cannot detect by construction. Fail-closed missing-assertion handling closes the "assertion absent" gap; it does not close, and does not claim to close, the "forged-but-present assertion from an already-socket-privileged process" gap item 3 already documents as residual.
 18. **Accidental raw-certificate logging.** Mitigated: `basis-gateway` logs only the derived URI SAN and admission result, never the raw header value (§11, §20).
 19. **Bearer-token leakage through proxy logging.** Mitigated by not enabling default NGINX access-log formats that capture the full `Authorization` header value for this listener; this is a standard, narrow logging-configuration requirement for the reference deployment, not new architecture.
 20. **Air-gapped certificate lifecycle.** Unaffected by this document beyond moving trust-anchor configuration to the ingress (§15); the ingress validates against a locally configured CA bundle with no external connectivity requirement, consistent with §21.
@@ -336,7 +356,7 @@ NGINX is available as a standard, pinned package in GitHub Actions' Ubuntu runne
 
 ## 23. Phase 1B Implementation Requirements
 
-After ADR-0009 is formally accepted, Phase 1B may implement, in the sequence the bounded implementation plan's own §26 already establishes (with this document resolving what that section left open):
+With ADR-0009 formally accepted, Phase 1B implements, in the sequence the bounded implementation plan's own §26 already establishes (with this document resolving what that section left open). Much of this list is already implemented in `basis-gateway` as Phase 1B.1 (certificate identity foundation) and Phase 1B.2 (trusted mTLS ingress boundary); the remainder, including this document's Layer 2 missing-assertion correction (§11, §18), is Phase 1B.3, in progress and not yet complete:
 
 1. trusted-ingress mode configuration (§15) — a new gateway boolean, default off;
 2. protected internal certificate-header parsing (§11) — strict shape/encoding validation;
@@ -407,7 +427,7 @@ This document, together with ADR-0009, is complete when:
 - the bounded implementation plan's own stale Option A/B uncertainty and any stale gateway-owned-TLS-material assumption are corrected (§15, and the implementation-plan update this PR makes);
 - ADR-0008 is preserved unchanged and this document's relationship to it is stated explicitly (§3);
 - no `basis-schemas` change is proposed (§24);
-- the ADR remains `Proposed`, not `Accepted` (formal acceptance is a separate governance action).
+- ADR-0009 is `Accepted` (formal acceptance already completed as a separate governance action, per the ADR's own Status field, and reflected in this document's Status line above); `basis-gateway` Phase 1B.1 and Phase 1B.2 are implemented, and Phase 1B.3 remains implementation in progress, not yet complete.
 
 ---
 
@@ -443,5 +463,9 @@ This document, together with ADR-0009, is complete when:
 **Proxy/backend failure:** NGINX configured with an unreachable or missing Unix-socket path → no evaluation occurs, and the failure is distinguishable in ingress logs from a Layer 1 TLS rejection.
 
 **Malformed/duplicate assertion:** a request crafted to reach the gateway with a malformed or duplicated internal header (constructed via a direct socket-level test harness that bypasses the ingress, simulating what a same-host process with socket access could send) → fails closed, per §18 Layer 2/3.
+
+**Missing assertion, no kernel evaluation:** trusted-proxy mode enabled; a request reaches the gateway (via the same direct socket-level test harness used for the malformed/duplicate case above, since a legitimate NGINX-forwarded request always carries the assertion) with no `X-BASIS-Producer-Client-Cert` header at all, carrying an otherwise-valid bearer subject → fails closed at Layer 2 (§11, §18); `basis-core` is never invoked. This is distinct from the "TLS rejection" tests above, which prove no client certificate ever reaches NGINX in the first place; this test proves that a request which somehow reached the gateway without the mandatory internal assertion is rejected there, not merely that NGINX would have rejected it upstream.
+
+**Missing assertion, no legacy-allowlist bypass:** the same missing-assertion request as above, except the bearer subject is also present in `OPERATION_PRODUCER_SUBJECT_IDS` → still fails closed at Layer 2; `basis-core` is never invoked. Legacy-allowlist membership authenticates a bearer subject, not the trusted-proxy boundary, and must not rescue a request from a Layer 2 trust-boundary failure.
 
 **No execution:** an `ALLOW` disposition still ends at the authorization disposition; no execution code exists or runs anywhere in the test path.
