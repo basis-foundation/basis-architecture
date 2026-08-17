@@ -12,7 +12,7 @@ The isolated, minimal component responsible for policy evaluation semantics, enf
 
 ## BASIS Core Services Distribution
 
-The open-source, deployable set of components maintained under Basis Foundation governance. The distribution includes basis-core (the authorization kernel), basis-gateway (the API and runtime wrapper), basis-console (the operator and administrative UI), basis-adapters (protocol normalization adapters), basis-identity (the identity engine and federation boundary), basis-deploy (deployment and distribution tooling), and basis-schemas (shared schemas and compatibility definitions). The distribution is designed to be complete enough for real deployments without requiring commercial services from BASAuth. See also: **Basis Foundation**, **BASAuth**.
+The open-source, deployable set of components maintained under Basis Foundation governance. The distribution includes basis-core (the authorization kernel), basis-gateway (the API and runtime wrapper), basis-console (the operator and administrative UI), basis-adapters (protocol normalization adapters), basis-producer (the operation-producer runtime), basis-identity (the identity engine and federation boundary), basis-deploy (deployment and distribution tooling), and basis-schemas (shared schemas and compatibility definitions). The distribution is designed to be complete enough for real deployments without requiring commercial services from BASAuth. Distribution membership does not require every deployment to run every component — a deployment may substitute a conforming alternative for a given role where the architecture permits one. See also: **Basis Foundation**, **BASAuth**.
 
 ---
 
@@ -37,6 +37,12 @@ A human-facing surface for submitting configuration changes, reviewing system st
 ## basis-core
 
 The isolated authorization kernel in the BASIS Core Services Distribution. basis-core implements the policy evaluation logic, enforcement semantics, failure mode contracts, and audit event schema that all other distribution components depend on. basis-core must not depend on basis-gateway, basis-console, basis-adapters, basis-identity, basis-deploy, identity providers, cloud platform SDKs, or UI frameworks. See also: **Authorization Kernel**, **BASIS Core Services Distribution**, **basis-identity**.
+
+---
+
+## basis-producer
+
+The operation-producer runtime in the BASIS Core Services Distribution: the Foundation-maintained implementation of the role that turns a `basis-adapters`-normalized operation into a durably referenced, authenticated operation-aware submission to `basis-gateway`. It orchestrates adapter invocation, durably retains the evidence material `basis-adapters` constructs, mints and durably binds an opaque `reference_id` only after retention succeeds (retain-before-mint), assembles the final `AdapterEvidenceReference`, holds a producer mTLS client certificate and private key, independently obtains and presents a credential for the authorization subject whose authority `basis-core` evaluates (never derived from its own producer workload credential), and submits the resulting request to `basis-gateway`. `basis-producer` is a client of `basis-gateway` across the network, never a code dependency of it, and no other component depends on `basis-producer`. It does not evaluate policy, authenticate itself as a trusted producer (that remains `basis-gateway`'s decision), normalize protocols, or execute against a protocol endpoint. Established by [ADR-0010](adr/0010-establish-basis-producer-as-operation-producer-runtime.md) — repository `basis-foundation/basis-producer`, public, Python package `basis_producer` — recorded `Proposed`, not yet `Accepted`; its first implementation is a deliberately bounded, reference-oriented slice that stops at the authorization disposition. `basis-producer` names the Foundation-maintained implementation of the operation-producer runtime role; the role itself remains conceptually distinct and other conforming implementations remain architecturally possible. See also: **BASIS Core Services Distribution**, **Adapter**, **basis-identity** (for the distinct authorization-subject identity `basis-producer` never substitutes for its own workload identity).
 
 ---
 

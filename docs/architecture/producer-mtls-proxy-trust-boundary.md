@@ -1,6 +1,6 @@
 # Producer mTLS Proxy Trust Boundary
 
-**Status:** Accepted reference architecture, governed by [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) (Accepted). `basis-gateway` Phase 1B.1 (certificate identity foundation) and Phase 1B.2 (trusted mTLS ingress boundary) are implemented and merged to `main`; Phase 1B.3 (live mTLS producer trust) is implementation in progress, not yet complete or released. This is a bounded reference topology, not a universal production ingress mandate (§26).
+**Status:** Accepted reference architecture, governed by [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) (Accepted). `basis-gateway` Phase 1B.1 (certificate identity foundation), Phase 1B.2 (trusted mTLS ingress boundary), and Phase 1B.3 (live mTLS producer trust) are all implemented and merged to `main` — Phase 1B is complete for its bounded, approved scope. This is a bounded reference topology, not a universal production ingress mandate (§26).
 
 **Companion documents:** [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) (the durable decision this document supports and is normatively referenced by), [ADR-0008](../adr/0008-producer-workload-authentication-and-admission.md) (producer workload authentication and admission — preserved unchanged), [`bounded-operation-producer-reference-implementation-plan.md`](bounded-operation-producer-reference-implementation-plan.md) (Phase 1A/1B implementation planning this document unblocks), [`operation-producer-and-execution-boundary.md`](operation-producer-and-execution-boundary.md), [`docs/kernel-boundary-rules.md`](../kernel-boundary-rules.md), [`docs/security/threat-model.md`](../security/threat-model.md), `basis-gateway`'s `docs/spikes/producer-mtls-certificate-exposure.md` (Phase 1A spike evidence this document is built on).
 
@@ -356,7 +356,7 @@ NGINX is available as a standard, pinned package in GitHub Actions' Ubuntu runne
 
 ## 23. Phase 1B Implementation Requirements
 
-With ADR-0009 formally accepted, Phase 1B implements, in the sequence the bounded implementation plan's own §26 already establishes (with this document resolving what that section left open). Much of this list is already implemented in `basis-gateway` as Phase 1B.1 (certificate identity foundation) and Phase 1B.2 (trusted mTLS ingress boundary); the remainder, including this document's Layer 2 missing-assertion correction (§11, §18), is Phase 1B.3, in progress and not yet complete:
+With ADR-0009 formally accepted, Phase 1B implements, in the sequence the bounded implementation plan's own §26 already establishes (with this document resolving what that section left open). This list is now fully implemented and merged in `basis-gateway`: Phase 1B.1 (certificate identity foundation) and Phase 1B.2 (trusted mTLS ingress boundary) landed first; Phase 1B.3, including this document's Layer 2 missing-assertion correction (§11, §18), has since merged as well — Phase 1B is complete for its bounded, approved scope:
 
 1. trusted-ingress mode configuration (§15) — a new gateway boolean, default off;
 2. protected internal certificate-header parsing (§11) — strict shape/encoding validation;
@@ -427,7 +427,7 @@ This document, together with ADR-0009, is complete when:
 - the bounded implementation plan's own stale Option A/B uncertainty and any stale gateway-owned-TLS-material assumption are corrected (§15, and the implementation-plan update this PR makes);
 - ADR-0008 is preserved unchanged and this document's relationship to it is stated explicitly (§3);
 - no `basis-schemas` change is proposed (§24);
-- ADR-0009 is `Accepted` (formal acceptance already completed as a separate governance action, per the ADR's own Status field, and reflected in this document's Status line above); `basis-gateway` Phase 1B.1 and Phase 1B.2 are implemented, and Phase 1B.3 remains implementation in progress, not yet complete.
+- ADR-0009 is `Accepted` (formal acceptance already completed as a separate governance action, per the ADR's own Status field, and reflected in this document's Status line above); `basis-gateway` Phase 1B.1, Phase 1B.2, and Phase 1B.3 are all implemented and merged — Phase 1B is complete for its bounded, approved scope.
 
 ---
 
