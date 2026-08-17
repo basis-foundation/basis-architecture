@@ -1,6 +1,6 @@
 # Bounded Operation-Producer Reference Implementation Plan
 
-**Status: Implementation planning. ADR-0008 is Accepted. Phase 1 of the bounded producer reference slice — the `basis-gateway`-side mTLS trust boundary, §26 Phase 1A and Phase 1B (1B.1, 1B.2, 1B.3) — has merged and is complete for its bounded, approved scope. [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) — Accepted — establishes `basis-producer` as the permanent repository and component for the operation-producer runtime this plan's remaining phases target; the `basis-foundation/basis-producer` repository now exists, and its first implementation phase, **Phase 2A — evidence-retention foundation**, is implemented and merged. **Phase 2B — reference lifecycle** is the next producer-runtime implementation phase and has not yet begun. Phase 3 (producer gateway client), Phase 4 (REST vertical slice), and Phase 5 (cross-repository conformance) remain unimplemented; the reference slice as a whole is therefore not yet complete.**
+**Status: Implementation planning. ADR-0008 is Accepted. Phase 1 of the bounded producer reference slice — the `basis-gateway`-side mTLS trust boundary, §26 Phase 1A and Phase 1B (1B.1, 1B.2, 1B.3) — has merged and is complete for its bounded, approved scope. [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) — Accepted — establishes `basis-producer` as the permanent repository and component for the operation-producer runtime this plan's remaining phases target; the `basis-foundation/basis-producer` repository now exists, and its first two implementation phases are both implemented and merged: **Phase 2A — evidence-retention foundation** and **Phase 2B — reference lifecycle**. **Phase 3 — producer gateway client** is the next producer-runtime implementation phase and has not yet begun. Phase 4 (REST vertical slice) and Phase 5 (cross-repository conformance) remain unimplemented; the reference slice as a whole is therefore not yet complete.**
 
 This document is not an ADR and does not reopen any decision ADR-0008 or ADR-0007 already settled. It translates those accepted decisions into a concrete, repository-aware implementation sequence a lead engineer can execute without inventing security-critical behavior during coding. It is the implementation source of truth for the first producer slice until the slice is complete; implementation PRs should refer back to it rather than re-deciding architecture.
 
@@ -13,7 +13,7 @@ This document is not an ADR and does not reopen any decision ADR-0008 or ADR-000
 ADR-0008 authorizes, but does not implement, a bounded operation-producer reference slice: one REST operation, normalized by `basis-adapters`, evidenced deterministically, retained, referenced, submitted to `basis-gateway` over mTLS, evaluated by `basis-core`, audited, and stopped before execution. This document is the implementation plan for that slice. It:
 
 - names the repository each change belongs in;
-- targets the permanently established `basis-producer` repository for the operation-producer runtime, per [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) (Accepted) — the repository now exists, its Phase 2A evidence-retention foundation is implemented and merged, and its placement is no longer provisional;
+- targets the permanently established `basis-producer` repository for the operation-producer runtime, per [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) (Accepted) — the repository now exists, its Phase 2A (evidence-retention foundation) and Phase 2B (reference lifecycle) are both implemented and merged, and its placement is no longer provisional;
 - specifies the minimal evidence-retention mechanism (digest-addressed blob retention plus a post-retention `reference_id` → digest binding), `reference_id` minting, `adapter_source`, and `redaction_classification` behavior for the reference slice;
 - specifies the mTLS termination topology *as a hard Phase 1A implementation gate*, the certificate identity extraction point, and the admission-configuration model;
 - fixes the first slice's dual-authentication model: mTLS authenticates the **producer workload**, the gateway's existing bearer path authenticates the **authorization subject**, and the two are never conflated;
@@ -80,11 +80,11 @@ REST operation (local mapping fixture, no network target)
     → derive storage key from the evidence digest (reference producer; implemented, Phase 2A)
     → durably retain canonical evidence bytes under the digest-derived key (reference producer; implemented, Phase 2A)
     → confirm blob retention succeeded (reference producer; implemented, Phase 2A)
-    → mint opaque reference_id (reference producer; new, Phase 2B)
-    → durably persist reference_id → evidence-digest/storage-key binding (reference producer; new, Phase 2B)
+    → mint opaque reference_id (reference producer; implemented, Phase 2B)
+    → durably persist reference_id → evidence-digest/storage-key binding (reference producer; implemented, Phase 2B)
     → confirm reference binding succeeded
-    → assign adapter_source, redaction_classification (reference producer; new, Phase 2B)
-    → assemble AdapterEvidenceReference (reference producer; new, Phase 2B)
+    → assign adapter_source, redaction_classification (reference producer; implemented, Phase 2B)
+    → assemble AdapterEvidenceReference (reference producer; implemented, Phase 2B)
     → establish mTLS producer connection to basis-gateway (reference producer: new, Phase 3; basis-gateway: implemented and merged, Phase 1B)
     → establish a separate bearer-authenticated authorization subject on the same request (§14)
     → gateway validates the producer certificate at the selected TLS boundary (basis-gateway; implemented and merged, Phase 1B.2)
@@ -100,11 +100,11 @@ REST operation (local mapping fixture, no network target)
 
 Everything left of "derive storage key from the evidence digest" already exists and is not reimplemented. From "derive storage key" through "confirm blob retention succeeded," `basis-producer`'s Phase 2A now implements this segment. Of what sits at and right of "mint opaque reference_id," the remaining segments are in different states:
 
-- **Reference-lifecycle behavior (`reference_id` minting, reference binding, `adapter_source`/`redaction_classification` assignment, `AdapterEvidenceReference` assembly) remains new** — Phase 2B, not yet begun.
+- **Reference-lifecycle behavior (`reference_id` minting, reference binding, `adapter_source`/`redaction_classification` assignment, `AdapterEvidenceReference` assembly) is now implemented** — Phase 2B, merged.
 - **Producer-side gateway-client behavior remains new** — nothing in the ecosystem yet performs it: `basis-producer` → mTLS client presentation → separate authorization-subject credential → gateway submission (Phase 3).
 - **Gateway-side behavior is already implemented and merged** (Phase 1B): trusted NGINX ingress → certificate handoff → URI SAN derivation → exact admission → independent bearer-subject authentication (§13) → operation-aware composition → `basis-core` invocation → enforcement/audit, without alteration to kernel-invocation or audit-emission code.
 
-The end-to-end path this diagram describes is still incomplete — not because the gateway side needs further work, but because `basis-producer` has implemented only evidence retention (Phase 2A) so far; reference lifecycle (Phase 2B) and the gateway client (Phase 3) that would drive the now-implemented gateway boundary remain unimplemented.
+The end-to-end path this diagram describes is still incomplete — not because the gateway side needs further work, but because `basis-producer` has implemented only evidence retention and reference lifecycle (Phase 2A, Phase 2B) so far; the gateway client (Phase 3) that would drive the now-implemented gateway boundary remains unimplemented.
 
 The two authentication facts on that one request answer two different questions and are never substituted for one another (§14):
 
@@ -145,7 +145,7 @@ This section originally evaluated the slice's most consequential open decision �
 
 > **Per [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) (Accepted), `basis-producer` is the permanent repository and component for the operation-producer runtime, not a disposable reference placement. Its first implementation remains a bounded, reference-oriented slice — the phase sequence and scope this document defines are unchanged — but the repository itself is not provisional pending a later placement review. The post-reference-implementation review this document's §30 describes now concerns the repository's maturity and readiness for broader responsibility, not whether it should exist as a permanent, separately named component at all.**
 
-This is a statement about *scope*, not about disposability. The repository is a real, git-tracked, tested reference implementation whose accumulated code and dependency graph remain the primary input to §30's maturity review — it is not scratch work to be discarded on completion, and ADR-0010's acceptance establishes its permanent Core Services Distribution membership (see ADR-0010 itself for that decision; this plan does not restate it). The repository now exists (`basis-foundation/basis-producer`), and its first implementation phase, Phase 2A, is implemented and merged.
+This is a statement about *scope*, not about disposability. The repository is a real, git-tracked, tested reference implementation whose accumulated code and dependency graph remain the primary input to §30's maturity review — it is not scratch work to be discarded on completion, and ADR-0010's acceptance establishes its permanent Core Services Distribution membership (see ADR-0010 itself for that decision; this plan does not restate it). The repository now exists (`basis-foundation/basis-producer`), and its first two implementation phases, Phase 2A and Phase 2B, are both implemented and merged.
 
 ### Option 4 — An existing demo/integration repository
 
@@ -171,11 +171,11 @@ No row below has ambiguous dual ownership.
 | Digest generation | `basis-adapters` (existing) |
 | Digest-derived storage-key derivation | `basis-producer` (implemented, Phase 2A — per ADR-0010, Accepted) |
 | Evidence blob retention (durable, digest-addressed) | `basis-producer` (implemented, Phase 2A) |
-| `reference_id` minting (post-retention) | `basis-producer` (new, Phase 2B) |
-| `reference_id` → digest/storage-key binding | `basis-producer` (new, Phase 2B) |
-| `adapter_source` assignment | `basis-producer` (new, Phase 2B) |
-| `redaction_classification` assignment | `basis-producer` (new, Phase 2B, under fixed reference-deployment policy — §10) |
-| Final `AdapterEvidenceReference` assembly | `basis-producer` (new, Phase 2B) |
+| `reference_id` minting (post-retention) | `basis-producer` (implemented, Phase 2B) |
+| `reference_id` → digest/storage-key binding | `basis-producer` (implemented, Phase 2B) |
+| `adapter_source` assignment | `basis-producer` (implemented, Phase 2B) |
+| `redaction_classification` assignment | `basis-producer` (implemented, Phase 2B, under fixed reference-deployment policy — §10) |
+| Final `AdapterEvidenceReference` assembly | `basis-producer` (implemented, Phase 2B) |
 | Producer client certificate / private key custody | `basis-producer` (new, Phase 3) |
 | Bearer subject credential custody (separate from the certificate) | `basis-producer` (new, Phase 3) |
 | Producer-facing TLS termination, certificate-chain validation, trust-anchor/CA configuration | trusted NGINX ingress — selected by [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) (Accepted) for the bounded reference topology; implemented and proven in CI, Phase 1B (1B.1–1B.3) merged (§11, corrected) |
@@ -645,7 +645,7 @@ A future architecture phase may decide how machine subjects, workload subjects, 
 The reference producer's gateway client requirements, informed by (but not dependent on) `basis-console`'s existing `GatewayClient` (`src/basis_console/gateway/client.py`, confirmed by inspection to use `httpx.Client` with injectable transport for tests — a directly reusable *pattern*, not a shared dependency, since the producer must never depend on `basis-console`):
 
 - gateway base URL (configured, injectable for tests);
-- client certificate + private key, presented to the trusted NGINX ingress ADR-0009 defines (`httpx.Client(cert=(certfile, keyfile))`, an already-supported `httpx` capability requiring no new dependency beyond `httpx` itself, which is not currently a `basis-adapters` dependency but is a reasonable, minimal addition to the new reference-producer repository only — never to `basis-adapters`); the producer's own TLS handshake is with the ingress, not directly with `basis-gateway`, under that topology;
+- client certificate + private key, presented to the trusted NGINX ingress ADR-0009 defines (`httpx.Client(cert=(certfile, keyfile))`, an already-supported `httpx` capability requiring no new dependency beyond `httpx` itself, which is not currently a `basis-adapters` dependency but is a reasonable, minimal addition to `basis-producer` only, once Phase 3 begins — never to `basis-adapters`); the producer's own TLS handshake is with the ingress, not directly with `basis-gateway`, under that topology;
 - CA/trust bundle for validating the gateway's own server certificate (`httpx.Client(verify=ca_bundle_path)`);
 - a **separate** bearer credential for the authorization subject (§14.4), supplied as an ordinary `Authorization: Bearer <token>` header on the submission — configured and injected independently of the client-certificate material, never derived from it, and never logged;
 - timeouts (explicit, finite — no indefinite hang on an unreachable gateway);
@@ -751,7 +751,7 @@ What this slice needs, additively, for the mTLS path to be observably distinguis
 | mTLS certificate identity profile (URI SAN as identity) | Existing contract sufficient (ADR-0008 itself, not a schema) | ADR-0008 already fixes the profile at the architecture level; nothing machine-readable is missing |
 | Producer admission configuration | New repository-local configuration (`basis-gateway`) | Deployment-controlled, not cross-repository — §12 |
 | Producer trust result (`OperationProducerTrust`) | Internal implementation detail | Not a published contract; additive dataclass fields only — §14.7 |
-| Evidence store interface (blob retention + reference binding) | New repository-local implementation detail | Lives entirely inside the new reference-producer repository; no other component calls it |
+| Evidence store interface (blob retention + reference binding) | New repository-local implementation detail | Lives entirely inside `basis-producer` (implemented, Phase 2A/2B); no other component calls it |
 | Digest-addressed blob layout (`blobs/sha256/<digest>`) | Internal reference-runtime persistence detail | A filesystem layout chosen by one runtime for its own local store; no second component reads it, so there is nothing for two components to agree on — §9 |
 | Reference-binding record (`refs/<reference_id>`) | Internal reference-runtime persistence detail | Internal lookup/integrity metadata; explicitly **not** part of the canonical evidence material and not published — §9 |
 | Evidence digest itself | Existing contract sufficient (`evidence-digest` on `adapter-evidence-reference`) | Already published, already carries algorithm + value; the corrected digest semantics (§9) change how the reference implementation *obtains* the expected digest, not what is transmitted |
@@ -880,7 +880,7 @@ This is the canonical scenario the discovery assessment's §11 explicitly names 
 
 ## 24. Local Demonstration
 
-A deterministic, offline demo/test environment, structured analogously to `basis-gateway`'s existing `demo/operation-aware/` (README, a run script, checked-in policy/expected fixtures) but living inside the new reference-producer repository and driving both `basis-adapters` and a locally-configured `basis-gateway` instance:
+A deterministic, offline demo/test environment, structured analogously to `basis-gateway`'s existing `demo/operation-aware/` (README, a run script, checked-in policy/expected fixtures) but living inside `basis-producer` and driving both `basis-adapters` and a locally-configured `basis-gateway` instance — Phase 5 work, not yet built:
 
 The demonstration must prove **both** identities independently, and must make it impossible to mistake producer-authentication failure, subject-authentication failure, admission failure, and authorization denial for one another.
 
@@ -924,10 +924,10 @@ No Docker or Kubernetes is required — under the trusted-ingress topology ADR-0
 | Dependency | Repository | Why stdlib/current deps are insufficient | Runtime or test-only | Notes |
 | - | - | - | - | - |
 | `cryptography` (X.509 parsing, SAN extraction) | `basis-gateway` | **Already a dependency** (`>=42.0.0`, confirmed) | Runtime | No new dependency — this materially simplifies Phase 1 |
-| `httpx` (mTLS-capable HTTP client) | new reference-producer repository | stdlib `http.client` supports client certificates but with a materially worse ergonomic and testing story; `httpx` is already the ecosystem's chosen pattern (`basis-console`'s `GatewayClient` already uses it) | Runtime | Reused pattern, not a shared code dependency — the producer does not import `basis-console` |
-| `basis-adapters` (as a library dependency) | new reference-producer repository | This is the entire point of the slice — reuse, not reimplementation, of normalization and evidence construction | Runtime | Already published/installable; no version-pinning concern beyond the repository's existing compatibility discipline |
-| `cryptography` (test-fixture certificate generation) | new reference-producer repository | Needed to generate the local PKI fixtures (§22) deterministically without external tooling | Test-only | Same library the gateway already depends on; no new maintenance burden ecosystem-wide |
-| `PyJWT` (issue the local BASIS-local identity token for the bearer-subject credential) | new reference-producer repository | The subject credential must be signed offline; the gateway's own `demo/operation-aware/run_demo.py` already uses exactly this library for exactly this purpose | Test/demo-only (or runtime if the reference producer issues its own demo token at run time) | Already an established ecosystem library (`basis-identity` runtime dependency, `basis-gateway` demo dependency); the producer *verifies* nothing — the gateway does |
+| `httpx` (mTLS-capable HTTP client) | `basis-producer` | stdlib `http.client` supports client certificates but with a materially worse ergonomic and testing story; `httpx` is already the ecosystem's chosen pattern (`basis-console`'s `GatewayClient` already uses it) | Runtime | Reused pattern, not a shared code dependency — the producer does not import `basis-console`; not yet added — pending Phase 3 |
+| `basis-adapters` (as a library dependency) | `basis-producer` | This is the entire point of the slice — reuse, not reimplementation, of normalization and evidence construction | Runtime | Already published/installable; no version-pinning concern beyond the repository's existing compatibility discipline; not yet added — `basis-producer`'s merged Phase 2A/2B implementation does not import `basis_adapters` (confirmed: `pyproject.toml` `dependencies = []`), pending Phase 4 adapter orchestration |
+| `cryptography` (test-fixture certificate generation) | `basis-producer` | Needed to generate the local PKI fixtures (§22) deterministically without external tooling | Test-only | Same library the gateway already depends on; no new maintenance burden ecosystem-wide; not yet added — pending Phase 3 |
+| `PyJWT` (issue the local BASIS-local identity token for the bearer-subject credential) | `basis-producer` | The subject credential must be signed offline; the gateway's own `demo/operation-aware/run_demo.py` already uses exactly this library for exactly this purpose | Test/demo-only (or runtime if the reference producer issues its own demo token at run time) | Already an established ecosystem library (`basis-identity` runtime dependency, `basis-gateway` demo dependency); the producer *verifies* nothing — the gateway does; not yet added — pending Phase 3 |
 | NGINX (trusted mTLS ingress, reference deployment/CI dependency) | Deployment/test fixture, not a Python package dependency of any repository | Phase 1A resolved to Outcome B (§11); [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) selects NGINX as the reference ingress | Runtime (reference deployment) and test-only (CI, via the distribution-packaged binary) | Not a Python dependency of `basis-gateway` or any other repository; installed as an external process per [`producer-mtls-proxy-trust-boundary.md`](producer-mtls-proxy-trust-boundary.md) §22 |
 
 No dependency is added by this planning PR. `basis-adapters` gains no new dependency under any branch of this plan. `basis-core` gains no new dependency. License/maintenance profile of every dependency named above is already established ecosystem-wide (`cryptography` and `httpx` are both already in production use in at least one released BASIS component); the previously contingent ASGI-server question is resolved (Outcome B — no different ASGI server is adopted; a trusted ingress proxy is used instead, per ADR-0009).
@@ -964,7 +964,7 @@ No dependency is added by this planning PR. `basis-adapters` gains no new depend
 
 **Phase 1 is not complete when certificate-parsing code exists.** It is complete only when a validated producer certificate can be mapped to exactly one URI SAN through a trust boundary that does not depend on caller-controlled request data (§11).
 
-### Phase 2 — Reference evidence store and reference assembly (`basis-producer` repository, per ADR-0010) — Phase 2A COMPLETE, Phase 2B NEXT
+### Phase 2 — Reference evidence store and reference assembly (`basis-producer` repository, per ADR-0010) — Phase 2A COMPLETE, Phase 2B COMPLETE
 
 Phase 2 is the already-approved scope from ADR-0008/ADR-0007; ADR-0010 (Accepted) refines its sequencing into two subphases at the natural durability boundary, the same way Phase 1 was already sequenced into 1A/1B. This is an implementation-sequencing refinement, not new or expanded scope — every item below already existed somewhere in Phase 2; none has been added, removed, or redesigned.
 
@@ -980,20 +980,20 @@ First branch: `feature/phase-2a-evidence-retention-foundation`, merged to `main`
 
 Consistent with this phase's scope, the merged implementation does not mint `reference_id`; does not persist a `reference_id` → digest/storage-key binding; does not assemble `AdapterEvidenceReference`; and does not implement gateway networking, mTLS client behavior, bearer-subject credential handling, adapter orchestration, or execution. It also has no runtime dependencies (`pyproject.toml` `dependencies = []`) and does not import `basis_adapters`.
 
-#### Phase 2B — Reference lifecycle and evidence-reference assembly — NEXT
+#### Phase 2B — Reference lifecycle and evidence-reference assembly — COMPLETE
 
-Begins only once Phase 2A's retained-evidence foundation exists. Phase 2A is complete; Phase 2B has not yet begun.
+Second branch: `feature/phase-2b-reference-lifecycle`, merged to `main` in `basis-foundation/basis-producer` (PR #2). Began only once Phase 2A's retained-evidence foundation existed, per the retain-before-mint ordering this document requires.
 
-1. Post-retention `reference_id` minting via injectable factory (§9, §10) — never before confirmed blob retention (Phase 2A).
-2. Reference binding: durable, confirmed `refs/<reference_id>` → digest/storage-key record, using the same flush/fsync/atomic-rename discipline as the blob (§9).
-3. `adapter_source`/`redaction_classification` assignment (§10).
-4. Final `AdapterEvidenceReference` assembly, validated against `basis-core`'s existing Pydantic model, gated on confirmed binding.
-5. Resolution by `reference_id` (binding → digest/storage key → blob → digest recomputation), extending Phase 2A's direct-by-digest verification to the full reference-layer chain (§9).
-6. Unit tests for all of the above, including binding-failure/no-assembly.
+1. Post-retention `reference_id` minting via injectable factory (§9, §10) — never before confirmed blob retention (Phase 2A). — Done (`generate_reference_id`, canonical-UUIDv4 validation, `src/basis_producer/reference_id.py`).
+2. Reference binding: durable, confirmed `refs/<reference_id>` → digest/storage-key record, using the same flush/fsync/atomic-rename discipline as the blob (§9), published with a genuinely atomic no-clobber primitive (`os.link()`, not `os.replace()`). — Done (`FilesystemReferenceBindingStore`, `src/basis_producer/reference_binding.py`); the write-once/no-clobber concurrency guarantee is proven by a real two-thread `os.link()` race test, not merely asserted.
+3. `adapter_source`/`redaction_classification` assignment (§10) — `redaction_classification` fixed to `reference_only` for this bounded phase, not caller-selectable. — Done.
+4. Final `AdapterEvidenceReference` assembly, validated against `basis-core`'s existing Pydantic model, gated on confirmed binding. — Done (`EvidenceReferenceLifecycle.create_reference()`, `src/basis_producer/evidence_reference_lifecycle.py`).
+5. Resolution by `reference_id` (binding → digest/storage key → blob → digest recomputation), extending Phase 2A's direct-by-digest verification to the full reference-layer chain (§9); the expected digest used for verification is sourced from the durable binding, never from the bytes under verification. — Done (`resolve_reference_evidence()`).
+6. Unit tests for all of the above, including binding-failure/no-assembly and the retain-before-mint ordering itself as a mechanically enforced invariant, not merely a documented convention. — Done.
 
-This is the same retain-before-mint invariant Phase 2 always required, unchanged: storage semantics, identifier ownership, redaction semantics, and failure semantics are not altered by this split — only their sequencing into two PRs is.
+Consistent with this phase's scope, the merged implementation does not implement gateway networking, mTLS client behavior, bearer-subject credential handling, adapter orchestration, or protocol execution — those remain Phase 3 and later. This is the same retain-before-mint invariant Phase 2 always required, unchanged: storage semantics, identifier ownership, redaction semantics, and failure semantics were not altered by the 2A/2B split — only their sequencing into two PRs was. See `basis-producer`'s own [`docs/reference-lifecycle.md`](https://github.com/basis-foundation/basis-producer/blob/main/docs/reference-lifecycle.md) for the full implementation-level ordering, durability, and failure-semantics detail this section summarizes.
 
-### Phase 3 — Reference producer gateway client
+### Phase 3 — Reference producer gateway client — NEXT
 
 1. mTLS producer credential: `httpx` client certificate/key configuration (§15).
 2. **Separate** bearer subject credential: independently configured `Authorization: Bearer` header (§14.4, §15).
@@ -1013,7 +1013,7 @@ This is the same retain-before-mint invariant Phase 2 always required, unchanged
 2. Evidence inspection and digest-verification demonstration (§24).
 3. Trust-boundary verification — the selected topology's identity boundary is demonstrated, not asserted (§11, §21).
 4. Documentation of what the slice proves and does not prove (§28).
-5. Release-readiness assessment per repository (§27) — likely: no release required for `basis-adapters`, `basis-core`, or `basis-schemas`; a `basis-gateway` release is likely once Phase 1B lands; the reference-producer repository itself is not released to any package index.
+5. Release-readiness assessment per repository (§27) — likely: no release required for `basis-adapters`, `basis-core`, or `basis-schemas`; a `basis-gateway` release is likely once Phase 1B lands; `basis-producer` itself is not released to any package index.
 6. The permanent-repository maturity review (§30) — repository *existence* is settled by ADR-0010; §30 now evaluates readiness for broader responsibility.
 
 Phases are ordered to minimize rework and to prevent building on an unproven boundary: Phase 1A is a gate, not a task; gateway admission logic (Phase 1B) does not depend on the reference producer existing and can be fully tested against synthetic client certificates before any producer code is written; the evidence store (Phase 2A) does not depend on gateway changes at all; Phase 2B depends only on Phase 2A, not on the gateway; only Phase 3 requires both the producer's own Phase 2 output and the gateway to exist simultaneously.
@@ -1030,7 +1030,7 @@ Phases are ordered to minimize rework and to prevent building on an unproven bou
 | `basis-gateway` | Additive: new configuration surface, additive internal dataclass fields, new certificate-identity-extraction module; existing `v0.1`/`v0.2` behavior unaffected | Likely, once Phase 1B lands, following the repository's own existing additive-release discipline (the same pattern `v0.2.0` itself already used for the operation-aware path) |
 | `basis-identity` | None anticipated | No — this plan explicitly does not depend on new `basis-identity` workload-identity capability (§30), per ADR-0008's own finding that the mTLS profile is independently deployable without it |
 | `basis-console` | None anticipated | No — §5.6 of the discovery assessment already confirms no console change is required for this slice, and this plan finds nothing to contradict that; the console is not touched merely because operation-aware results can be displayed |
-| new reference-producer repository | New, entirely internal to itself | No formal release/package-index publication for this reference/demo-scoped component (§5) |
+| `basis-producer` | New, entirely internal to itself | No formal release/package-index publication for this reference/demo-scoped component (§5) |
 
 ---
 
@@ -1071,7 +1071,7 @@ The future implementation is complete when, at minimum:
 
 Restated from ADR-0008 and this plan's own findings, not resolved here:
 
-- ~~Permanent operation-producer-runtime repository placement~~ (§30) — **resolved:** [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) establishes `basis-producer` as the answer and is recorded `Accepted`. The repository now exists and Phase 2A is implemented and merged; §30's maturity checklist remains the open item, and Phase 2B (reference lifecycle) is the next unresolved implementation phase.
+- ~~Permanent operation-producer-runtime repository placement~~ (§30) — **resolved:** [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) establishes `basis-producer` as the answer and is recorded `Accepted`. The repository now exists and Phase 2A and Phase 2B are both implemented and merged; §30's maturity checklist remains the open item, and Phase 3 (producer gateway client) is the next unresolved implementation phase.
 - ~~Exact `basis-gateway` environment-variable names for the new configuration surface (§12), pending Phase 1B implementation.~~ **Resolved by implementation:** Phase 1B merged `OPERATION_PRODUCER_MTLS_TRUSTED_PROXY_ENABLED` and `OPERATION_PRODUCER_MTLS_ADMITTED_URIS` (`basis-gateway` `src/basis_gateway/config.py`); this document's own §12 table remains an architectural sketch and does not update to mirror the merged names.
 - ~~Whether Option A (in-process ASGI TLS termination) is technically achievable with the current server stack, or whether a server change or Option B is required (§11).~~ **Resolved:** Outcome B — direct termination is not viable; [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) and [`producer-mtls-proxy-trust-boundary.md`](producer-mtls-proxy-trust-boundary.md) define the trusted-proxy topology. ADR-0009 is formally accepted, and Phase 1B — 1B.1, 1B.2, and 1B.3 — is fully implemented and merged.
 - How machine subjects, workload subjects, subject-less producer operations, delegated identities, and `basis-identity` workload credentials should eventually interact with producer authentication (§14.6). For this slice the model is fixed: mTLS producer + bearer subject.
@@ -1088,7 +1088,7 @@ Restated from ADR-0008 and this plan's own findings, not resolved here:
 
 ## 30. Permanent Repository Decision Gate
 
-**This gate is now answered by [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md), formally Accepted.** This section originally held permanent producer-runtime repository placement open until the bounded slice was working end to end, per ADR-0008 and `operation-producer-and-execution-boundary.md` §11's own deferred gate. That deferral is no longer the current architectural posture: ADR-0010 found that `basis-gateway`'s Phase 1A/1B mTLS and admission topology (ADR-0008, ADR-0009) had already fixed the shape of the trust boundary the producer sits behind, and that continuing to defer the placement/naming question specifically had stopped tracking any remaining architectural uncertainty. ADR-0010 accordingly establishes `basis-producer` (`basis-foundation/basis-producer`) as the permanent repository and component for the operation-producer runtime, as part of the BASIS Core Services Distribution, public, with the Python package `basis_producer` reserved — while explicitly not authorizing the bounded slice described in this document to expand beyond authorization-only, no-execution scope. Acceptance authorized creation of the repository; the repository now exists, and its Phase 2A evidence-retention foundation is implemented and merged. Phase 2B (reference lifecycle) is the next producer-runtime implementation phase and has not yet begun; Phase 3 through Phase 5 remain unimplemented.
+**This gate is now answered by [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md), formally Accepted.** This section originally held permanent producer-runtime repository placement open until the bounded slice was working end to end, per ADR-0008 and `operation-producer-and-execution-boundary.md` §11's own deferred gate. That deferral is no longer the current architectural posture: ADR-0010 found that `basis-gateway`'s Phase 1A/1B mTLS and admission topology (ADR-0008, ADR-0009) had already fixed the shape of the trust boundary the producer sits behind, and that continuing to defer the placement/naming question specifically had stopped tracking any remaining architectural uncertainty. ADR-0010 accordingly establishes `basis-producer` (`basis-foundation/basis-producer`) as the permanent repository and component for the operation-producer runtime, as part of the BASIS Core Services Distribution, public, with the Python package `basis_producer` reserved — while explicitly not authorizing the bounded slice described in this document to expand beyond authorization-only, no-execution scope. Acceptance authorized creation of the repository; the repository now exists, and both its Phase 2A evidence-retention foundation and its Phase 2B reference-lifecycle responsibility are implemented and merged. Phase 3 (producer gateway client) is the next producer-runtime implementation phase and has not yet begun; Phase 4 and Phase 5 remain unimplemented.
 
 `basis-producer` is now this document's decided permanent name — this document's own references to `basis-producer` throughout should be read on that basis. This section's remaining purpose is not to decide *whether* `basis-producer` is permanent — that is settled — but to track the bounded slice's own maturity against the checklist ADR-0010 does not itself resolve: the size and cohesion of the accumulated producer code; its dependency graph (does it still depend cleanly on `basis-adapters` as a library and on `basis-gateway` only over HTTP, with no reverse or circular dependency having crept in); the credential boundary (has the private-key-holding responsibility remained cleanly separated from every other component); the persistence boundary (has evidence retention remained a distinct, swappable concern, per the evidence-store responsibilities §9 defines, with content identity and logical reference identity still separate); whether an independent release cadence is actually needed; the deployment lifecycle once `basis-deploy` exists; how many producer protocols are eventually expected beyond REST; and whether multiple future runtimes would share substantial code (in which case a shared library, not just a shared repository, becomes the real question). This maturity review determines when `basis-producer` is ready for broader responsibility and eventual release, not whether it should exist as a permanent, separately named component — ADR-0010 already answers that question.
 
@@ -1127,14 +1127,14 @@ Restated from ADR-0008 and this plan's own findings, not resolved here:
 | Evidence-material construction, canonicalization, digest | Yes | `basis-adapters` | N/A (reused) |
 | Digest-addressed evidence blob retention (fsync/atomic-rename) | Yes — merged | `basis-producer` | **Phase 2A — complete** |
 | Blob retrieval + digest recomputation/verification (direct by digest) | Yes — merged | `basis-producer` | **Phase 2A — complete** |
-| Post-retention `reference_id` minting | No | new reference-producer repository (`basis-producer`) | Phase 2B |
-| `reference_id` → digest/storage-key binding record | No | new reference-producer repository (`basis-producer`) | Phase 2B |
-| Resolution by `reference_id` (binding → digest/storage key → blob) | No | new reference-producer repository (`basis-producer`) | Phase 2B |
-| `adapter_source` / `redaction_classification` assignment | No | new reference-producer repository (`basis-producer`) | Phase 2B |
-| `AdapterEvidenceReference` assembly | No | new reference-producer repository (`basis-producer`) | Phase 2B |
-| mTLS client presentation | No | new reference-producer repository | Phase 3 |
-| Separate bearer-subject credential presentation | No | new reference-producer repository | Phase 3 |
-| Gateway submission | No | new reference-producer repository | Phase 3 |
+| Post-retention `reference_id` minting | Yes — merged | `basis-producer` | **Phase 2B — complete** |
+| `reference_id` → digest/storage-key binding record | Yes — merged | `basis-producer` | **Phase 2B — complete** |
+| Resolution by `reference_id` (binding → digest/storage key → blob) | Yes — merged | `basis-producer` | **Phase 2B — complete** |
+| `adapter_source` / `redaction_classification` assignment | Yes — merged | `basis-producer` | **Phase 2B — complete** |
+| `AdapterEvidenceReference` assembly | Yes — merged | `basis-producer` | **Phase 2B — complete** |
+| mTLS client presentation | No | `basis-producer` | Phase 3 |
+| Separate bearer-subject credential presentation | No | `basis-producer` | Phase 3 |
+| Gateway submission | No | `basis-producer` | Phase 3 |
 | **mTLS termination topology proof (certificate exposure to application code)** | **Yes — proven not achievable via direct termination (Outcome B); trusted-proxy topology specified by ADR-0009** | `basis-gateway` (spike) / `basis-architecture` (topology decision) | **Phase 1A (gate) — complete** |
 | mTLS server-side termination (via trusted NGINX ingress) / cert validation | Yes — merged | `basis-gateway` | **Phase 1B — complete** |
 | URI SAN identity derivation | Yes — merged | `basis-gateway` | **Phase 1B — complete** |
@@ -1147,5 +1147,5 @@ Restated from ADR-0008 and this plan's own findings, not resolved here:
 | Gateway enforcement / HTTP disposition | Yes | `basis-gateway` | N/A (reused) |
 | Audit emission | Yes (base); additive diagnostic fields also merged | `basis-gateway` / `basis-core` | **Phase 1B — complete** (additive fields) |
 | End-to-end REST-to-disposition integration | No | cross-repository | Phase 4 |
-| Local demo / conformance evidence | No | new reference-producer repository | Phase 5 |
+| Local demo / conformance evidence | No | `basis-producer` | Phase 5 |
 | Protocol execution | No, and not authorized by this plan | none | Out of scope |
