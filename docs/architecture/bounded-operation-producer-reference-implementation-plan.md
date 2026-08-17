@@ -1,6 +1,6 @@
 # Bounded Operation-Producer Reference Implementation Plan
 
-**Status: Implementation planning. ADR-0008 is Accepted. Phase 1 of the bounded producer reference slice — the `basis-gateway`-side mTLS trust boundary, §26 Phase 1A and Phase 1B (1B.1, 1B.2, 1B.3) — has merged and is complete for its bounded, approved scope. Phase 2 onward (the operation-producer runtime itself: evidence retention, reference lifecycle, and gateway submission) is not yet implemented; the reference slice as a whole is therefore not yet complete. [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) — Accepted — establishes `basis-producer` as the permanent repository and component for the operation-producer runtime this plan's remaining phases target; the placement below is now the decided permanent name. Acceptance authorizes creation of the `basis-foundation/basis-producer` repository and its first implementation phase (Phase 2A); the repository does not yet exist.**
+**Status: Implementation planning. ADR-0008 is Accepted. Phase 1 of the bounded producer reference slice — the `basis-gateway`-side mTLS trust boundary, §26 Phase 1A and Phase 1B (1B.1, 1B.2, 1B.3) — has merged and is complete for its bounded, approved scope. [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) — Accepted — establishes `basis-producer` as the permanent repository and component for the operation-producer runtime this plan's remaining phases target; the `basis-foundation/basis-producer` repository now exists, and its first implementation phase, **Phase 2A — evidence-retention foundation**, is implemented and merged. **Phase 2B — reference lifecycle** is the next producer-runtime implementation phase and has not yet begun. Phase 3 (producer gateway client), Phase 4 (REST vertical slice), and Phase 5 (cross-repository conformance) remain unimplemented; the reference slice as a whole is therefore not yet complete.**
 
 This document is not an ADR and does not reopen any decision ADR-0008 or ADR-0007 already settled. It translates those accepted decisions into a concrete, repository-aware implementation sequence a lead engineer can execute without inventing security-critical behavior during coding. It is the implementation source of truth for the first producer slice until the slice is complete; implementation PRs should refer back to it rather than re-deciding architecture.
 
@@ -13,7 +13,7 @@ This document is not an ADR and does not reopen any decision ADR-0008 or ADR-000
 ADR-0008 authorizes, but does not implement, a bounded operation-producer reference slice: one REST operation, normalized by `basis-adapters`, evidenced deterministically, retained, referenced, submitted to `basis-gateway` over mTLS, evaluated by `basis-core`, audited, and stopped before execution. This document is the implementation plan for that slice. It:
 
 - names the repository each change belongs in;
-- targets the permanently established `basis-producer` repository for the not-yet-existing operation-producer runtime, per [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) (Accepted) — the repository does not yet exist, but its placement is no longer provisional;
+- targets the permanently established `basis-producer` repository for the operation-producer runtime, per [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) (Accepted) — the repository now exists, its Phase 2A evidence-retention foundation is implemented and merged, and its placement is no longer provisional;
 - specifies the minimal evidence-retention mechanism (digest-addressed blob retention plus a post-retention `reference_id` → digest binding), `reference_id` minting, `adapter_source`, and `redaction_classification` behavior for the reference slice;
 - specifies the mTLS termination topology *as a hard Phase 1A implementation gate*, the certificate identity extraction point, and the admission-configuration model;
 - fixes the first slice's dual-authentication model: mTLS authenticates the **producer workload**, the gateway's existing bearer path authenticates the **authorization subject**, and the two are never conflated;
@@ -77,15 +77,15 @@ REST operation (local mapping fixture, no network target)
     → basis-adapters normalization (RestAdapter.normalize())
     → construct_adapter_evidence() (basis-adapters, ADR-0007 Stage 1 — already implemented)
     → canonical evidence bytes + separately returned SHA-256 evidence digest
-    → derive storage key from the evidence digest (reference producer; new)
-    → durably retain canonical evidence bytes under the digest-derived key (reference producer; new)
-    → confirm blob retention succeeded
-    → mint opaque reference_id (reference producer; new)
-    → durably persist reference_id → evidence-digest/storage-key binding (reference producer; new)
+    → derive storage key from the evidence digest (reference producer; implemented, Phase 2A)
+    → durably retain canonical evidence bytes under the digest-derived key (reference producer; implemented, Phase 2A)
+    → confirm blob retention succeeded (reference producer; implemented, Phase 2A)
+    → mint opaque reference_id (reference producer; new, Phase 2B)
+    → durably persist reference_id → evidence-digest/storage-key binding (reference producer; new, Phase 2B)
     → confirm reference binding succeeded
-    → assign adapter_source, redaction_classification (reference producer; new)
-    → assemble AdapterEvidenceReference (reference producer; new)
-    → establish mTLS producer connection to basis-gateway (reference producer: new; basis-gateway: implemented and merged, Phase 1B)
+    → assign adapter_source, redaction_classification (reference producer; new, Phase 2B)
+    → assemble AdapterEvidenceReference (reference producer; new, Phase 2B)
+    → establish mTLS producer connection to basis-gateway (reference producer: new, Phase 3; basis-gateway: implemented and merged, Phase 1B)
     → establish a separate bearer-authenticated authorization subject on the same request (§14)
     → gateway validates the producer certificate at the selected TLS boundary (basis-gateway; implemented and merged, Phase 1B.2)
     → gateway derives producer identity from exactly one URI SAN (basis-gateway; implemented and merged, Phase 1B.1)
@@ -98,12 +98,13 @@ REST operation (local mapping fixture, no network target)
     → STOP — no protocol execution
 ```
 
-Everything left of "derive storage key from the evidence digest" already exists and is not reimplemented. Of what sits at and right of "establish mTLS producer connection," the two sides of that boundary are now in different states:
+Everything left of "derive storage key from the evidence digest" already exists and is not reimplemented. From "derive storage key" through "confirm blob retention succeeded," `basis-producer`'s Phase 2A now implements this segment. Of what sits at and right of "mint opaque reference_id," the remaining segments are in different states:
 
-- **Producer-side client behavior remains new** — nothing in the ecosystem yet performs it: `basis-producer` → mTLS client presentation → separate authorization-subject credential → gateway submission.
+- **Reference-lifecycle behavior (`reference_id` minting, reference binding, `adapter_source`/`redaction_classification` assignment, `AdapterEvidenceReference` assembly) remains new** — Phase 2B, not yet begun.
+- **Producer-side gateway-client behavior remains new** — nothing in the ecosystem yet performs it: `basis-producer` → mTLS client presentation → separate authorization-subject credential → gateway submission (Phase 3).
 - **Gateway-side behavior is already implemented and merged** (Phase 1B): trusted NGINX ingress → certificate handoff → URI SAN derivation → exact admission → independent bearer-subject authentication (§13) → operation-aware composition → `basis-core` invocation → enforcement/audit, without alteration to kernel-invocation or audit-emission code.
 
-The end-to-end path this diagram describes is still incomplete — not because the gateway side needs further work, but because no producer runtime yet exists to drive the now-implemented gateway boundary.
+The end-to-end path this diagram describes is still incomplete — not because the gateway side needs further work, but because `basis-producer` has implemented only evidence retention (Phase 2A) so far; reference lifecycle (Phase 2B) and the gateway client (Phase 3) that would drive the now-implemented gateway boundary remain unimplemented.
 
 The two authentication facts on that one request answer two different questions and are never substituted for one another (§14):
 
@@ -140,11 +141,11 @@ This section originally evaluated the slice's most consequential open decision �
 
 **Disposition — selected, with discipline.** A new repository is justified here specifically because Option 1 and Option 2 each fail at least one of the task's own justifying conditions: Option 1 risks misleading production ownership (a released, versioned distribution component acquiring a credential-holding network client under its own release discipline); Option 2 violates an already-accepted repository boundary (`basis-adapters` must never hold network or credential responsibility). No provisional location among the existing six repositories can host the reference slice without one of those two failures.
 
-**Repository name.** This document originally treated repository naming as unfinalized and used a working name, `basis-operation-producer-reference`, subject to change without requiring an architecture decision. [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) has since resolved that naming/placement gate: **`basis-producer`** (repository `basis-foundation/basis-producer`) is the permanent repository and component for the operation-producer runtime. ADR-0010 is recorded `Accepted` — `basis-producer` is this architecture's decided permanent name, and this document continues to refer to the not-yet-created repository as `basis-producer` below on that basis. It is not published to any package index and carries no independent release/versioning ceremony during the bounded slice.
+**Repository name.** This document originally treated repository naming as unfinalized and used a working name, `basis-operation-producer-reference`, subject to change without requiring an architecture decision. [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) has since resolved that naming/placement gate: **`basis-producer`** (repository `basis-foundation/basis-producer`) is the permanent repository and component for the operation-producer runtime. ADR-0010 is recorded `Accepted` — `basis-producer` is this architecture's decided permanent name, and this document refers to the now-created permanent repository as `basis-producer` below on that basis. It is not published to any package index and carries no independent release/versioning ceremony during the bounded slice.
 
 > **Per [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) (Accepted), `basis-producer` is the permanent repository and component for the operation-producer runtime, not a disposable reference placement. Its first implementation remains a bounded, reference-oriented slice — the phase sequence and scope this document defines are unchanged — but the repository itself is not provisional pending a later placement review. The post-reference-implementation review this document's §30 describes now concerns the repository's maturity and readiness for broader responsibility, not whether it should exist as a permanent, separately named component at all.**
 
-This is a statement about *scope*, not about disposability. The repository is a real, git-tracked, tested reference implementation whose accumulated code and dependency graph remain the primary input to §30's maturity review — it is not scratch work to be discarded on completion, and ADR-0010's acceptance establishes its permanent Core Services Distribution membership (see ADR-0010 itself for that decision; this plan does not restate it). The repository does not yet exist; acceptance authorizes its creation.
+This is a statement about *scope*, not about disposability. The repository is a real, git-tracked, tested reference implementation whose accumulated code and dependency graph remain the primary input to §30's maturity review — it is not scratch work to be discarded on completion, and ADR-0010's acceptance establishes its permanent Core Services Distribution membership (see ADR-0010 itself for that decision; this plan does not restate it). The repository now exists (`basis-foundation/basis-producer`), and its first implementation phase, Phase 2A, is implemented and merged.
 
 ### Option 4 — An existing demo/integration repository
 
@@ -154,7 +155,7 @@ No such repository exists (§3). Not applicable.
 
 `basis-core`, `basis-console`, `basis-identity`, and `basis-deploy` were each evaluated and rejected per the task's own strong constraints: `basis-core` must remain protocol-, transport-, and persistence-independent and must never hold a network credential (`docs/kernel-boundary-rules.md`); `basis-console` is bound by an already-implemented, already-honored console invariant (its own simulator self-classifies as preview-only — `src/basis_console/ui/views.py` docstring, confirmed by inspection) that a producer's authoritative submission role would violate outright; `basis-identity` has no implemented workload-credential-holding pipeline today (confirmed absent, §12) and its architecture role is identity federation, not operational-context assertion; `basis-deploy` does not exist and, per its own stated future scope, would not own runtime semantics even once it does.
 
-**Decision:** A new, separately named repository — `basis-producer`, per [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) (Accepted) — whose first implementation is reference-scoped and bounded. The repository does not yet exist; nothing in the five released repositories ever depends on it, so its eventual creation carries zero blast radius on any released component.
+**Decision:** A new, separately named repository — `basis-producer`, per [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) (Accepted) — whose first implementation is reference-scoped and bounded. The repository now exists; nothing in the five released repositories ever depends on it, so its creation carried zero blast radius on any released component.
 
 ---
 
@@ -168,15 +169,15 @@ No row below has ambiguous dual ownership.
 | Evidence-material construction | `basis-adapters` (existing) |
 | RFC 8785 canonicalization | `basis-adapters` (existing) |
 | Digest generation | `basis-adapters` (existing) |
-| Digest-derived storage-key derivation | reference producer (`basis-producer`, new — per ADR-0010, Accepted) |
-| Evidence blob retention (durable, digest-addressed) | reference producer (new) |
-| `reference_id` minting (post-retention) | reference producer (new) |
-| `reference_id` → digest/storage-key binding | reference producer (new) |
-| `adapter_source` assignment | reference producer (new) |
-| `redaction_classification` assignment | reference producer (new, under fixed reference-deployment policy — §10) |
-| Final `AdapterEvidenceReference` assembly | reference producer (new) |
-| Producer client certificate / private key custody | reference producer (new) |
-| Bearer subject credential custody (separate from the certificate) | reference producer (new) |
+| Digest-derived storage-key derivation | `basis-producer` (implemented, Phase 2A — per ADR-0010, Accepted) |
+| Evidence blob retention (durable, digest-addressed) | `basis-producer` (implemented, Phase 2A) |
+| `reference_id` minting (post-retention) | `basis-producer` (new, Phase 2B) |
+| `reference_id` → digest/storage-key binding | `basis-producer` (new, Phase 2B) |
+| `adapter_source` assignment | `basis-producer` (new, Phase 2B) |
+| `redaction_classification` assignment | `basis-producer` (new, Phase 2B, under fixed reference-deployment policy — §10) |
+| Final `AdapterEvidenceReference` assembly | `basis-producer` (new, Phase 2B) |
+| Producer client certificate / private key custody | `basis-producer` (new, Phase 3) |
+| Bearer subject credential custody (separate from the certificate) | `basis-producer` (new, Phase 3) |
 | Producer-facing TLS termination, certificate-chain validation, trust-anchor/CA configuration | trusted NGINX ingress — selected by [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) (Accepted) for the bounded reference topology; implemented and proven in CI, Phase 1B (1B.1–1B.3) merged (§11, corrected) |
 | Authenticated leaf-certificate forwarding | trusted NGINX ingress — same ADR-0009 caveat |
 | Protected ingress-to-gateway channel | deployment configuration (NGINX + Uvicorn `--uds` Unix-socket topology) — same ADR-0009 caveat |
@@ -963,25 +964,25 @@ No dependency is added by this planning PR. `basis-adapters` gains no new depend
 
 **Phase 1 is not complete when certificate-parsing code exists.** It is complete only when a validated producer certificate can be mapped to exactly one URI SAN through a trust boundary that does not depend on caller-controlled request data (§11).
 
-### Phase 2 — Reference evidence store and reference assembly (new `basis-producer` repository, per ADR-0010) — NEXT, refined into 2A/2B
+### Phase 2 — Reference evidence store and reference assembly (`basis-producer` repository, per ADR-0010) — Phase 2A COMPLETE, Phase 2B NEXT
 
 Phase 2 is the already-approved scope from ADR-0008/ADR-0007; ADR-0010 (Accepted) refines its sequencing into two subphases at the natural durability boundary, the same way Phase 1 was already sequenced into 1A/1B. This is an implementation-sequencing refinement, not new or expanded scope — every item below already existed somewhere in Phase 2; none has been added, removed, or redesigned.
 
-#### Phase 2A — Evidence-retention foundation — NEXT
+#### Phase 2A — Evidence-retention foundation — COMPLETE
 
-Expected first branch: `feature/phase-2a-evidence-retention-foundation`.
+First branch: `feature/phase-2a-evidence-retention-foundation`, merged to `main` in `basis-foundation/basis-producer` (PR #1).
 
-1. Repository scaffolding (minimal — no packaging/release ceremony, §5).
-2. Digest-addressed blob store: `blobs/sha256/<digest>` (§9).
-3. Flush/fsync/atomic-rename persistence discipline for the evidence blob (§9).
-4. Blob retrieval by digest, plus a digest-recomputation/integrity-verification helper operating directly against the digest-addressed blob (§9) — the expected digest is sourced from the caller (e.g. `basis-adapters`' returned `EvidenceDigest`), never from the bytes under verification.
-5. Unit tests for all of the above, including retention-failure behavior.
+1. Repository scaffolding (minimal — no packaging/release ceremony, §5). — Done.
+2. Digest-addressed blob store: `blobs/sha256/<digest>` (§9). — Done (`FilesystemEvidenceBlobStore`, `src/basis_producer/evidence_store.py`).
+3. Flush/fsync/atomic-rename persistence discipline for the evidence blob (§9). — Done.
+4. Blob retrieval by digest, plus a digest-recomputation/integrity-verification helper operating directly against the digest-addressed blob (§9) — the expected digest is sourced from the caller (e.g. `basis-adapters`' returned `EvidenceDigest`), never from the bytes under verification. — Done.
+5. Unit tests for all of the above, including retention-failure behavior. — Done.
 
-Phase 2A must not mint `reference_id`; must not persist a `reference_id` → digest/storage-key binding; must not assemble `AdapterEvidenceReference`; and must not implement gateway networking, mTLS client behavior, bearer-subject credential handling, adapter orchestration, or execution.
+Consistent with this phase's scope, the merged implementation does not mint `reference_id`; does not persist a `reference_id` → digest/storage-key binding; does not assemble `AdapterEvidenceReference`; and does not implement gateway networking, mTLS client behavior, bearer-subject credential handling, adapter orchestration, or execution. It also has no runtime dependencies (`pyproject.toml` `dependencies = []`) and does not import `basis_adapters`.
 
-#### Phase 2B — Reference lifecycle and evidence-reference assembly
+#### Phase 2B — Reference lifecycle and evidence-reference assembly — NEXT
 
-Begins only once Phase 2A's retained-evidence foundation exists.
+Begins only once Phase 2A's retained-evidence foundation exists. Phase 2A is complete; Phase 2B has not yet begun.
 
 1. Post-retention `reference_id` minting via injectable factory (§9, §10) — never before confirmed blob retention (Phase 2A).
 2. Reference binding: durable, confirmed `refs/<reference_id>` → digest/storage-key record, using the same flush/fsync/atomic-rename discipline as the blob (§9).
@@ -1070,7 +1071,7 @@ The future implementation is complete when, at minimum:
 
 Restated from ADR-0008 and this plan's own findings, not resolved here:
 
-- ~~Permanent operation-producer-runtime repository placement~~ (§30) — **resolved:** [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) establishes `basis-producer` as the answer and is recorded `Accepted`. The repository does not yet exist; §30's maturity checklist remains the open item.
+- ~~Permanent operation-producer-runtime repository placement~~ (§30) — **resolved:** [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) establishes `basis-producer` as the answer and is recorded `Accepted`. The repository now exists and Phase 2A is implemented and merged; §30's maturity checklist remains the open item, and Phase 2B (reference lifecycle) is the next unresolved implementation phase.
 - ~~Exact `basis-gateway` environment-variable names for the new configuration surface (§12), pending Phase 1B implementation.~~ **Resolved by implementation:** Phase 1B merged `OPERATION_PRODUCER_MTLS_TRUSTED_PROXY_ENABLED` and `OPERATION_PRODUCER_MTLS_ADMITTED_URIS` (`basis-gateway` `src/basis_gateway/config.py`); this document's own §12 table remains an architectural sketch and does not update to mirror the merged names.
 - ~~Whether Option A (in-process ASGI TLS termination) is technically achievable with the current server stack, or whether a server change or Option B is required (§11).~~ **Resolved:** Outcome B — direct termination is not viable; [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) and [`producer-mtls-proxy-trust-boundary.md`](producer-mtls-proxy-trust-boundary.md) define the trusted-proxy topology. ADR-0009 is formally accepted, and Phase 1B — 1B.1, 1B.2, and 1B.3 — is fully implemented and merged.
 - How machine subjects, workload subjects, subject-less producer operations, delegated identities, and `basis-identity` workload credentials should eventually interact with producer authentication (§14.6). For this slice the model is fixed: mTLS producer + bearer subject.
@@ -1087,7 +1088,7 @@ Restated from ADR-0008 and this plan's own findings, not resolved here:
 
 ## 30. Permanent Repository Decision Gate
 
-**This gate is now answered by [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md), formally Accepted.** This section originally held permanent producer-runtime repository placement open until the bounded slice was working end to end, per ADR-0008 and `operation-producer-and-execution-boundary.md` §11's own deferred gate. That deferral is no longer the current architectural posture: ADR-0010 found that `basis-gateway`'s Phase 1A/1B mTLS and admission topology (ADR-0008, ADR-0009) had already fixed the shape of the trust boundary the producer sits behind, and that continuing to defer the placement/naming question specifically had stopped tracking any remaining architectural uncertainty. ADR-0010 accordingly establishes `basis-producer` (`basis-foundation/basis-producer`) as the permanent repository and component for the operation-producer runtime, as part of the BASIS Core Services Distribution, public, with the Python package `basis_producer` reserved — while explicitly not authorizing the bounded slice described in this document to expand beyond authorization-only, no-execution scope. Acceptance authorizes creation of the repository; it does not itself create it.
+**This gate is now answered by [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md), formally Accepted.** This section originally held permanent producer-runtime repository placement open until the bounded slice was working end to end, per ADR-0008 and `operation-producer-and-execution-boundary.md` §11's own deferred gate. That deferral is no longer the current architectural posture: ADR-0010 found that `basis-gateway`'s Phase 1A/1B mTLS and admission topology (ADR-0008, ADR-0009) had already fixed the shape of the trust boundary the producer sits behind, and that continuing to defer the placement/naming question specifically had stopped tracking any remaining architectural uncertainty. ADR-0010 accordingly establishes `basis-producer` (`basis-foundation/basis-producer`) as the permanent repository and component for the operation-producer runtime, as part of the BASIS Core Services Distribution, public, with the Python package `basis_producer` reserved — while explicitly not authorizing the bounded slice described in this document to expand beyond authorization-only, no-execution scope. Acceptance authorized creation of the repository; the repository now exists, and its Phase 2A evidence-retention foundation is implemented and merged. Phase 2B (reference lifecycle) is the next producer-runtime implementation phase and has not yet begun; Phase 3 through Phase 5 remain unimplemented.
 
 `basis-producer` is now this document's decided permanent name — this document's own references to `basis-producer` throughout should be read on that basis. This section's remaining purpose is not to decide *whether* `basis-producer` is permanent — that is settled — but to track the bounded slice's own maturity against the checklist ADR-0010 does not itself resolve: the size and cohesion of the accumulated producer code; its dependency graph (does it still depend cleanly on `basis-adapters` as a library and on `basis-gateway` only over HTTP, with no reverse or circular dependency having crept in); the credential boundary (has the private-key-holding responsibility remained cleanly separated from every other component); the persistence boundary (has evidence retention remained a distinct, swappable concern, per the evidence-store responsibilities §9 defines, with content identity and logical reference identity still separate); whether an independent release cadence is actually needed; the deployment lifecycle once `basis-deploy` exists; how many producer protocols are eventually expected beyond REST; and whether multiple future runtimes would share substantial code (in which case a shared library, not just a shared repository, becomes the real question). This maturity review determines when `basis-producer` is ready for broader responsibility and eventual release, not whether it should exist as a permanent, separately named component — ADR-0010 already answers that question.
 
@@ -1124,8 +1125,8 @@ Restated from ADR-0008 and this plan's own findings, not resolved here:
 | - | - | - | - |
 | REST normalization | Yes | `basis-adapters` | N/A (reused) |
 | Evidence-material construction, canonicalization, digest | Yes | `basis-adapters` | N/A (reused) |
-| Digest-addressed evidence blob retention (fsync/atomic-rename) | No | new reference-producer repository (`basis-producer`) | Phase 2A |
-| Blob retrieval + digest recomputation/verification (direct by digest) | No | new reference-producer repository (`basis-producer`) | Phase 2A |
+| Digest-addressed evidence blob retention (fsync/atomic-rename) | Yes — merged | `basis-producer` | **Phase 2A — complete** |
+| Blob retrieval + digest recomputation/verification (direct by digest) | Yes — merged | `basis-producer` | **Phase 2A — complete** |
 | Post-retention `reference_id` minting | No | new reference-producer repository (`basis-producer`) | Phase 2B |
 | `reference_id` → digest/storage-key binding record | No | new reference-producer repository (`basis-producer`) | Phase 2B |
 | Resolution by `reference_id` (binding → digest/storage key → blob) | No | new reference-producer repository (`basis-producer`) | Phase 2B |
