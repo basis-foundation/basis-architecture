@@ -49,7 +49,11 @@ The console provides an operator and administrator interface for the authorizati
 
 **basis-adapters** — protocol and integration adapters
 
-The adapter library provides the normalization layer between field-level OT protocols and the subject-resource-action representation that basis-core evaluates. Each adapter handles a specific protocol family (BACnet, Modbus, MQTT, and others) and is responsible for translating protocol-specific messages into the shared authorization vocabulary and for delivering authorized commands back to the protocol layer. basis-adapters depends on basis-core for its authorization contracts and event schemas. See [`docs/architecture/basis-adapters.md`](basis-adapters.md) for the canonical adapter architecture reference.
+basis-adapters provides protocol-specific normalization and evidence construction that translate protocol-native operations into governed BASIS authorization semantics. Each adapter handles a specific protocol family (REST, BACnet, Modbus, OPC UA, MQTT, DNP3, IEC 61850, KNX, Niagara, and others) and is responsible for translating protocol-specific messages into the shared authorization vocabulary (`NormalizedAuthorizationRequest`) and for constructing the deterministic evidence material and digest that reference the protocol operation it normalized. basis-adapters performs no protocol execution and no live protocol communication — it is a library, not a daemon; dispatching an authorized operation to a protocol endpoint is a separate, not-yet-assigned role (see [`docs/architecture/operation-producer-and-execution-boundary.md`](operation-producer-and-execution-boundary.md)). basis-adapters depends on basis-core for its authorization contracts and event schemas. See [`docs/architecture/basis-adapters.md`](basis-adapters.md) for the canonical adapter architecture reference.
+
+**basis-producer** — operation-producer runtime
+
+The operation-producer runtime is the component responsible for turning normalized adapter operations into durably referenced, authenticated operation-aware submissions to `basis-gateway`. It orchestrates `basis-adapters` normalization, retains the evidence material `basis-adapters` constructs, mints and durably binds the opaque `reference_id` only after retention succeeds, assembles the final `AdapterEvidenceReference`, holds a producer mTLS client certificate and private key, independently obtains and presents an authorization-subject credential through a governed mechanism (never derived from its own producer workload credential), and submits the resulting request to `basis-gateway`. It does not evaluate policy, admit itself as a trusted producer, authenticate the authorization subject, normalize protocols, or execute against a protocol endpoint. `basis-producer` (repository `basis-foundation/basis-producer`) is the Foundation-maintained implementation of this role; the role itself remains architecturally distinct from any single implementation, and other conforming implementations remain possible. Established by [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) — recorded `Proposed`, not yet `Accepted` — its first implementation is a deliberately bounded, reference-oriented slice that stops at the authorization disposition and performs no protocol execution. See [`docs/architecture/operation-producer-and-execution-boundary.md`](operation-producer-and-execution-boundary.md) for the full role definition and trust rules.
 
 **basis-identity** — identity engine and federation boundary
 
@@ -109,7 +113,7 @@ The dependency relationships between components in the ecosystem follow a single
 ```text
 Commercial services (BASAuth)
     depends on
-Open-source services (basis-gateway, basis-console, basis-adapters, basis-identity, basis-deploy)
+Open-source services (basis-gateway, basis-console, basis-adapters, basis-producer, basis-identity, basis-deploy)
     depends on
 Authorization kernel (basis-core)
     depends on
@@ -118,13 +122,15 @@ Shared schemas (basis-schemas)
 
 `basis-identity` is an exception to the "depends on basis-core" arrow: it sits upstream of evaluation and does not depend on the kernel. It produces the canonical identity context that `basis-gateway` validates before invoking `basis-core`; identity integration and normalization happen before, not inside, authorization. It depends on `basis-schemas` for the shape of that canonical identity context.
 
+`basis-producer` depends on `basis-adapters` as an ordinary library dependency (it orchestrates adapter normalization directly) and on `basis-gateway` only as a network client over the published, mTLS- and bearer-authenticated operation-aware HTTP contract — never as a Python package dependency on gateway internals. No component depends on `basis-producer`: `basis-adapters`, `basis-gateway`, and `basis-core` remain fully unaware of its existence, consistent with the dependency-direction rules below.
+
 The rules that enforce this structure:
 
-1. **Commercial services may depend on open-source BASIS services.** BASAuth products may integrate with basis-core, basis-gateway, basis-adapters, and other open-source components. They must not be required for the open-source distribution to function.
+1. **Commercial services may depend on open-source BASIS services.** BASAuth products may integrate with basis-core, basis-gateway, basis-adapters, basis-producer, and other open-source components. They must not be required for the open-source distribution to function.
 
-2. **Open-source services may depend on basis-core.** basis-gateway, basis-console, basis-adapters, and basis-deploy may call into basis-core, reference its contracts, and extend its behavior at defined extension points. They must not modify core evaluation semantics or bypass its enforcement contracts. basis-identity is upstream of evaluation and does not depend on basis-core; it produces canonical identity context that basis-gateway consumes.
+2. **Open-source services may depend on basis-core.** basis-gateway, basis-console, basis-adapters, and basis-deploy may call into basis-core, reference its contracts, and extend its behavior at defined extension points. They must not modify core evaluation semantics or bypass its enforcement contracts. basis-identity is upstream of evaluation and does not depend on basis-core; it produces canonical identity context that basis-gateway consumes. basis-producer does not call into basis-core at all — it reaches authorization only indirectly, as a network caller of basis-gateway's published operation-aware contract.
 
-3. **basis-core must not depend on commercial services or higher-level runtime services.** basis-core must not import from basis-gateway, basis-console, basis-adapters, basis-identity, basis-deploy, or any BASAuth component. It must not depend on cloud platform SDKs, specific identity providers, database runtimes, UI frameworks, or protocol stacks.
+3. **basis-core must not depend on commercial services or higher-level runtime services.** basis-core must not import from basis-gateway, basis-console, basis-adapters, basis-producer, basis-identity, basis-deploy, or any BASAuth component. It must not depend on cloud platform SDKs, specific identity providers, database runtimes, UI frameworks, or protocol stacks.
 
 This rule is not a convention — it is a structural property of the kernel. Any dependency that crosses upward from basis-core toward higher-level services violates the isolation that makes the kernel stable, testable, and portable.
 
@@ -168,7 +174,8 @@ Each component in the BASIS Core Services Distribution is expected to be maintai
 | `basis-core` | Authorization kernel | Policy evaluation, enforcement semantics, audit contracts |
 | `basis-gateway` | API and runtime wrapper | Request handling, decision dispatch, policy distribution |
 | `basis-console` | Operator/admin UI | Policy inspection, audit review, operational management |
-| `basis-adapters` | Protocol adapters | Field-protocol normalization and command delivery |
+| `basis-adapters` | Protocol adapters | Field-protocol normalization and evidence construction |
+| `basis-producer` | Operation-producer runtime | Evidence retention, reference-lifecycle management, producer workload credential custody, authenticated gateway submission (proposed by [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md); Proposed, not yet Accepted) |
 | `basis-identity` | Identity engine and federation boundary | External IdP integration, federation, login/session, claim mapping, canonical identity context |
 | `basis-deploy` | Deployment tooling | Packaging, configuration, deployment validation |
 | `basis-schemas` | Shared schemas | Authorization contracts, audit schemas, compatibility definitions |

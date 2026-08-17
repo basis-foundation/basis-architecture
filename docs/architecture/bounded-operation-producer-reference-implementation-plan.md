@@ -1,10 +1,10 @@
 # Bounded Operation-Producer Reference Implementation Plan
 
-**Status: Implementation planning. ADR-0008 is Accepted; the bounded producer reference slice described here is not yet implemented.**
+**Status: Implementation planning. ADR-0008 is Accepted. Phase 1 of the bounded producer reference slice — the `basis-gateway`-side mTLS trust boundary, §26 Phase 1A and Phase 1B (1B.1, 1B.2, 1B.3) — has merged and is complete for its bounded, approved scope. Phase 2 onward (the operation-producer runtime itself: evidence retention, reference lifecycle, and gateway submission) is not yet implemented; the reference slice as a whole is therefore not yet complete. [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) — Proposed, not yet Accepted — proposes `basis-producer` as the permanent repository and component for the operation-producer runtime this plan's remaining phases target; until ADR-0010 is formally accepted, the placement below is the proposed permanent name, not a decided one.**
 
 This document is not an ADR and does not reopen any decision ADR-0008 or ADR-0007 already settled. It translates those accepted decisions into a concrete, repository-aware implementation sequence a lead engineer can execute without inventing security-critical behavior during coding. It is the implementation source of truth for the first producer slice until the slice is complete; implementation PRs should refer back to it rather than re-deciding architecture.
 
-**Companion documents:** [ADR-0008](../adr/0008-producer-workload-authentication-and-admission.md), [ADR-0007](../adr/0007-adapter-evidence-construction.md), [`operation-producer-and-execution-boundary.md`](operation-producer-and-execution-boundary.md), [`adapter-evidence-construction-semantics.md`](adapter-evidence-construction-semantics.md), [`operation-producer-discovery-assessment.md`](operation-producer-discovery-assessment.md), [`ecosystem-contract-inventory.md`](ecosystem-contract-inventory.md), [`ROADMAP.md`](../../ROADMAP.md) (**Next Producer and Execution-Evidence Boundary**).
+**Companion documents:** [ADR-0008](../adr/0008-producer-workload-authentication-and-admission.md), [ADR-0007](../adr/0007-adapter-evidence-construction.md), [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md), [`operation-producer-and-execution-boundary.md`](operation-producer-and-execution-boundary.md), [`adapter-evidence-construction-semantics.md`](adapter-evidence-construction-semantics.md), [`operation-producer-discovery-assessment.md`](operation-producer-discovery-assessment.md), [`ecosystem-contract-inventory.md`](ecosystem-contract-inventory.md), [`ROADMAP.md`](../../ROADMAP.md) (**Next Producer and Execution-Evidence Boundary**).
 
 ---
 
@@ -42,7 +42,7 @@ The following are Accepted and not reconsidered by this document:
 - `basis-adapters` owns evidence-material construction, RFC 8785 canonicalization, and digest computation; the operation-producer runtime owns `reference_id` minting, `adapter_source`, `redaction_classification`, request/correlation linkage, and final `AdapterEvidenceReference` assembly (ADR-0007).
 - `OPERATION_PRODUCER_SUBJECT_IDS` is retained, not removed or reinterpreted as mTLS (ADR-0008, "Existing allowlist transition").
 - No new `basis-schemas` contract is assumed necessary merely because this slice is being planned (ADR-0008, "Machine-readable contract decision"; ADR-0007, "No `basis-schemas` change is made by this ADR").
-- Permanent operation-producer-runtime repository placement is not decided by ADR-0008 and is not decided by this document either (ADR-0008, "Provisional implementation location"; boundary document §11).
+- Permanent operation-producer-runtime repository placement is not decided by ADR-0008 and is not decided by this document either (ADR-0008, "Provisional implementation location"; boundary document §11). [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) now proposes resolving that gate — `basis-producer` as the permanent repository/component — but ADR-0010 is `Proposed`, not `Accepted`, and this document's own placement discussion below still describes the proposed, not the decided, permanent name.
 
 This document treats every one of the above as a fixed constraint, not a topic for renewed debate.
 
@@ -133,11 +133,13 @@ This is the most consequential open decision in the slice. Five candidate locati
 
 **Against:** Adds a repository, a nominal maintenance surface, and a naming question before a single line of producer code exists.
 
-**Disposition — selected, with discipline.** A new repository is justified here specifically because Option 1 and Option 2 each fail at least one of the task's own justifying conditions: Option 1 risks misleading production ownership (a released, versioned distribution component acquiring a credential-holding network client under its own release discipline); Option 2 violates an already-accepted repository boundary (`basis-adapters` must never hold network or credential responsibility). No provisional location among the existing six repositories can host the reference slice without one of those two failures. Per the task's new-repository discipline: **repository naming is not finalized by this document** (a working name is used below only for concreteness); it is not published to any package index and carries no independent release/versioning ceremony during the bounded slice. The working/reference name used in the rest of this document, subject to change without requiring an architecture decision, is **`basis-operation-producer-reference`**.
+**Disposition — selected, with discipline.** A new repository is justified here specifically because Option 1 and Option 2 each fail at least one of the task's own justifying conditions: Option 1 risks misleading production ownership (a released, versioned distribution component acquiring a credential-holding network client under its own release discipline); Option 2 violates an already-accepted repository boundary (`basis-adapters` must never hold network or credential responsibility). No provisional location among the existing six repositories can host the reference slice without one of those two failures.
 
-> **The repository is provisionally scoped as a reference implementation. Its long-term role, name, release policy, and inclusion in the BASIS Core Services Distribution remain subject to the post-reference implementation decision gate (§30).**
+**Repository name.** This document originally treated repository naming as unfinalized and used a working name, `basis-operation-producer-reference`, subject to change without requiring an architecture decision. [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) has since proposed resolving that naming/placement gate: **`basis-producer`** (repository `basis-foundation/basis-producer`) as the permanent repository and component for the operation-producer runtime. ADR-0010 is recorded `Proposed`, not `Accepted` — until formal acceptance, `basis-producer` is this architecture's proposed permanent name, not a decided one, and this document continues to refer to the not-yet-created repository as `basis-producer` below on that basis. It is not published to any package index and carries no independent release/versioning ceremony during the bounded slice regardless of which name governs it.
 
-This is a statement about *scope*, not about disposability. The repository is a real, git-tracked, tested reference implementation whose accumulated code and dependency graph are the primary input to §30's review — it is not scratch work to be discarded on completion, and it is equally not promoted, by this plan, to permanent Core Services Distribution membership.
+> **Per [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) (Proposed), `basis-producer` is intended as the permanent repository and component for the operation-producer runtime, not a disposable reference placement. Its first implementation remains a bounded, reference-oriented slice — the phase sequence and scope this document defines are unchanged — but the repository itself is not provisional pending a later placement review once ADR-0010 is accepted. The post-reference-implementation review this document's §30 describes now concerns the repository's maturity and readiness for broader responsibility, not whether it should exist as a permanent, separately named component at all.**
+
+This is a statement about *scope*, not about disposability. The repository is a real, git-tracked, tested reference implementation whose accumulated code and dependency graph remain the primary input to §30's maturity review — it is not scratch work to be discarded on completion, and ADR-0010's acceptance is what establishes its permanent Core Services Distribution membership (see ADR-0010 itself for that decision; this plan does not restate it).
 
 ### Option 4 — An existing demo/integration repository
 
@@ -147,7 +149,7 @@ No such repository exists (§3). Not applicable.
 
 `basis-core`, `basis-console`, `basis-identity`, and `basis-deploy` were each evaluated and rejected per the task's own strong constraints: `basis-core` must remain protocol-, transport-, and persistence-independent and must never hold a network credential (`docs/kernel-boundary-rules.md`); `basis-console` is bound by an already-implemented, already-honored console invariant (its own simulator self-classifies as preview-only — `src/basis_console/ui/views.py` docstring, confirmed by inspection) that a producer's authoritative submission role would violate outright; `basis-identity` has no implemented workload-credential-holding pipeline today (confirmed absent, §12) and its architecture role is identity federation, not operational-context assertion; `basis-deploy` does not exist and, per its own stated future scope, would not own runtime semantics even once it does.
 
-**Decision:** A new, explicitly provisional, reference-scoped repository (`basis-operation-producer-reference`, working name), reversible by construction — deleting or renaming this repository has zero blast radius on any released component, since nothing in the five released repositories ever depends on it.
+**Decision:** A new, separately named repository — `basis-producer`, per [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) (Proposed) — whose first implementation is reference-scoped and bounded regardless of ADR-0010's acceptance state. Until ADR-0010 is accepted, treat the repository as reversible by construction — deleting or renaming it has zero blast radius on any released component, since nothing in the five released repositories ever depends on it.
 
 ---
 
@@ -161,7 +163,7 @@ No row below has ambiguous dual ownership.
 | Evidence-material construction | `basis-adapters` (existing) |
 | RFC 8785 canonicalization | `basis-adapters` (existing) |
 | Digest generation | `basis-adapters` (existing) |
-| Digest-derived storage-key derivation | reference producer (`basis-operation-producer-reference`, new) |
+| Digest-derived storage-key derivation | reference producer (`basis-producer`, new — per ADR-0010, Proposed) |
 | Evidence blob retention (durable, digest-addressed) | reference producer (new) |
 | `reference_id` minting (post-retention) | reference producer (new) |
 | `reference_id` → digest/storage-key binding | reference producer (new) |
@@ -170,7 +172,7 @@ No row below has ambiguous dual ownership.
 | Final `AdapterEvidenceReference` assembly | reference producer (new) |
 | Producer client certificate / private key custody | reference producer (new) |
 | Bearer subject credential custody (separate from the certificate) | reference producer (new) |
-| Producer-facing TLS termination, certificate-chain validation, trust-anchor/CA configuration | trusted NGINX ingress — selected by [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) (Accepted) for the bounded reference topology; Phase 1B implementation architecturally unblocked, not yet begun (§11, corrected) |
+| Producer-facing TLS termination, certificate-chain validation, trust-anchor/CA configuration | trusted NGINX ingress — selected by [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) (Accepted) for the bounded reference topology; implemented and proven in CI, Phase 1B (1B.1–1B.3) merged (§11, corrected) |
 | Authenticated leaf-certificate forwarding | trusted NGINX ingress — same ADR-0009 caveat |
 | Protected ingress-to-gateway channel | deployment configuration (NGINX + Uvicorn `--uds` Unix-socket topology) — same ADR-0009 caveat |
 | Certificate decoding/parsing (of the forwarded leaf certificate) | `basis-gateway` (new) |
@@ -463,7 +465,7 @@ For the pinned server stack (`uvicorn[standard]>=0.29.0`, installed `0.52.3`, se
 
 Per the plan this section already specified, implementation stopped before any producer-admission code was written, and no `X-Client-Cert`/`X-SSL-Client-*`-style header was added as a shortcut. The required architecture/planning follow-up is now complete: [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) and its companion [`producer-mtls-proxy-trust-boundary.md`](producer-mtls-proxy-trust-boundary.md) define which proxy terminates mTLS for the reference environment (NGINX), how the proxy-to-gateway channel is isolated (a Unix domain socket with restrictive permissions), why ordinary callers cannot reach that channel directly (no gateway TCP listener in this mode), how certificate-derived identity is conveyed across it (the authenticated leaf certificate, URL-escaped PEM, in a private internal header unconditionally overwritten by the proxy), how spoofed identity headers are stripped (the same unconditional-overwrite directive), what fact the gateway trusts about the proxy (§16 of the architecture document's trust-fact matrix), how local tests must prove that trust boundary holds (Appendix B of the architecture document), and why the resulting topology still conforms to ADR-0008 (§3 and §10–§13 of the architecture document; ADR-0009's own "relationship to ADR-0008" analysis).
 
-**ADR-0009 is now formally accepted**, per this repository's ADR governance process. Phase 1B is architecturally unblocked and proceeds exactly as this document's §26 sequence already describes, using the topology ADR-0009 and its companion architecture document specify rather than inventing one during implementation — Phase 1B.1 and Phase 1B.2 are implemented and merged in `basis-gateway`; Phase 1B.3 remains in progress, not yet complete.
+**ADR-0009 is formally accepted**, per this repository's ADR governance process. Phase 1B has since merged in full — Phase 1B.1, Phase 1B.2, and Phase 1B.3 are all implemented and merged in `basis-gateway`, using the topology ADR-0009 and its companion architecture document specify rather than inventing one during implementation.
 
 #### Phase 1 completion gate
 
@@ -471,7 +473,7 @@ Phase 1 is **not** complete merely because certificate-parsing code exists. It i
 
 > A validated producer certificate can be mapped to exactly one URI SAN through a trust boundary that does not depend on caller-controlled request data.
 
-Phase 1A itself (proving the topology) is now complete, with Outcome B recorded above. Phase 1B (implementing admission logic against the now-specified trusted-proxy topology) remains not started; ADR-0009's formal acceptance gate is now satisfied. The reference slice does not attempt to support every deployment topology — one topology is selected, proven, and documented as this slice's own (per ADR-0009 and its companion architecture document), with permanent production ingress architecture left for later.
+Phase 1A itself (proving the topology) is complete, with Outcome B recorded above. **Phase 1B (implementing admission logic against the now-specified trusted-proxy topology) is complete** — 1B.1, 1B.2, and 1B.3 have merged, and the demonstration this gate requires has been made for the bounded, approved scope: a trusted NGINX ingress proven in CI, certificate-derived URI SAN identity, exact admission matching, and the producer workload independently authenticated from the bearer authorization subject. The reference slice does not attempt to support every deployment topology — one topology is selected, proven, and documented as this slice's own (per ADR-0009 and its companion architecture document), with permanent production ingress architecture left for later. This gateway-side completion is a distinct fact from whether the operation-producer runtime that will call this boundary exists — it does not (§5, §30; [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md)).
 
 ### Certificate identity extraction location
 
@@ -939,11 +941,11 @@ No dependency is added by this planning PR. `basis-adapters` gains no new depend
 5. Record which of the five mechanisms (§11) the working answer requires. — A trusted reverse proxy (ADR-0009).
 
 **Exit — Outcome A:** direct application termination works; document the exact mechanism and proceed to Phase 1B. *(Not taken.)*
-**Exit — Outcome B (taken):** direct termination does not provide a safe application identity boundary, per `basis-gateway`'s `docs/spikes/producer-mtls-certificate-exposure.md` (merged to `main` at `07586110b847d2c8fe5dfadd7a3eba027bc74024`). The required follow-up architecture/planning update is complete: [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) and [`producer-mtls-proxy-trust-boundary.md`](producer-mtls-proxy-trust-boundary.md) answer every question §11 enumerated. **ADR-0009 is now formally accepted; Phase 1B is architecturally unblocked** — Phase 1B.1 and Phase 1B.2 are implemented and merged, Phase 1B.3 remains in progress.
+**Exit — Outcome B (taken):** direct termination does not provide a safe application identity boundary, per `basis-gateway`'s `docs/spikes/producer-mtls-certificate-exposure.md` (merged to `main` at `07586110b847d2c8fe5dfadd7a3eba027bc74024`). The required follow-up architecture/planning update is complete: [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) and [`producer-mtls-proxy-trust-boundary.md`](producer-mtls-proxy-trust-boundary.md) answer every question §11 enumerated. **ADR-0009 is formally accepted; Phase 1B is complete** — Phase 1B.1, Phase 1B.2, and Phase 1B.3 are all implemented and merged.
 
-### Phase 1B — Gateway producer authentication and admission foundation (`basis-gateway`)
+### Phase 1B — Gateway producer authentication and admission foundation (`basis-gateway`) — COMPLETE
 
-**Architecturally unblocked — ADR-0009 is formally accepted; Phase 1B.1 and Phase 1B.2 are implemented and merged, Phase 1B.3 remains in progress.** Implementation proceeds against the trusted-proxy topology ADR-0009 and its companion architecture document specify, not against Option A (direct termination), which Phase 1A ruled out.
+**Complete — ADR-0009 is formally accepted; Phase 1B.1, Phase 1B.2, and Phase 1B.3 are all implemented and merged.** Implementation proceeded against the trusted-proxy topology ADR-0009 and its companion architecture document specify, not against Option A (direct termination), which Phase 1A ruled out. Gateway-side producer mTLS authentication and admission is implemented and proven for the bounded, approved scope below.
 
 1. Configuration additions (§12, corrected), fail-closed at startup — including the trusted-proxy-mode toggle and internal-header parsing configuration, per [`producer-mtls-proxy-trust-boundary.md`](producer-mtls-proxy-trust-boundary.md) §15.
 2. Certificate identity extraction module (§11), using `cryptography` (already a dependency), parsing the certificate as forwarded by the trusted ingress rather than read from the TLS transport directly.
@@ -956,7 +958,7 @@ No dependency is added by this planning PR. `basis-adapters` gains no new depend
 
 **Phase 1 is not complete when certificate-parsing code exists.** It is complete only when a validated producer certificate can be mapped to exactly one URI SAN through a trust boundary that does not depend on caller-controlled request data (§11).
 
-### Phase 2 — Reference evidence store and reference assembly (new `basis-operation-producer-reference` repository)
+### Phase 2 — Reference evidence store and reference assembly (new `basis-producer` repository, per ADR-0010)
 
 1. Repository scaffolding (minimal — no packaging/release ceremony, §5).
 2. Digest-addressed blob store: `blobs/sha256/<digest>` (§9).
@@ -1046,9 +1048,9 @@ The future implementation is complete when, at minimum:
 
 Restated from ADR-0008 and this plan's own findings, not resolved here:
 
-- Permanent operation-producer-runtime repository placement (§30).
+- Permanent operation-producer-runtime repository placement (§30) — [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) proposes `basis-producer` as the answer, but remains `Proposed`, not `Accepted`, as of this document's current revision.
 - Exact `basis-gateway` environment-variable names for the new configuration surface (§12), pending Phase 1B implementation.
-- ~~Whether Option A (in-process ASGI TLS termination) is technically achievable with the current server stack, or whether a server change or Option B is required (§11).~~ **Resolved:** Outcome B — direct termination is not viable; [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) and [`producer-mtls-proxy-trust-boundary.md`](producer-mtls-proxy-trust-boundary.md) define the trusted-proxy topology. ADR-0009 is now formally accepted; Phase 1B is architecturally unblocked, and Phase 1B.1/1B.2 are implemented — Phase 1B.3 remains in progress.
+- ~~Whether Option A (in-process ASGI TLS termination) is technically achievable with the current server stack, or whether a server change or Option B is required (§11).~~ **Resolved:** Outcome B — direct termination is not viable; [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) and [`producer-mtls-proxy-trust-boundary.md`](producer-mtls-proxy-trust-boundary.md) define the trusted-proxy topology. ADR-0009 is formally accepted, and Phase 1B — 1B.1, 1B.2, and 1B.3 — is fully implemented and merged.
 - How machine subjects, workload subjects, subject-less producer operations, delegated identities, and `basis-identity` workload credentials should eventually interact with producer authentication (§14.6). For this slice the model is fixed: mTLS producer + bearer subject.
 - Whether a production deployment would use `AUTH_MODE=oidc` rather than the reference slice's `basis_local_token` subject credential (§14.4) — a deployment choice the gateway already supports, unaffected by this plan.
 - Category-scoped producer capability (unchanged from ADR-0008 — not addressed by this slice).
@@ -1063,7 +1065,9 @@ Restated from ADR-0008 and this plan's own findings, not resolved here:
 
 ## 30. Permanent Repository Decision Gate
 
-Permanent producer-runtime repository placement will be reconsidered only after this bounded slice is working end to end, per ADR-0008 and `operation-producer-and-execution-boundary.md` §11's own deferred gate. At that review, architecture should evaluate: the size and cohesion of the accumulated producer code; its dependency graph (does it still depend cleanly on `basis-adapters` as a library and on `basis-gateway` only over HTTP, with no reverse or circular dependency having crept in); the credential boundary (has the private-key-holding responsibility remained cleanly separated from every other component); the persistence boundary (has evidence retention remained a distinct, swappable concern, per the evidence-store responsibilities §9 defines, with content identity and logical reference identity still separate); whether an independent release cadence is actually needed; the deployment lifecycle once `basis-deploy` exists; how many producer protocols are eventually expected beyond REST; whether multiple future runtimes would share substantial code (in which case a shared library, not just a shared repository, becomes the real question); whether colocating the reference implementation inside its own small repository has caused any ownership confusion in practice; and whether extraction — which, for a repository that is already separate, mostly means *renaming and formalizing*, not physically moving code — is in fact straightforward. This document does not name a permanent repository and does not pre-judge that review's outcome.
+**This gate is now answered by [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md), subject to that ADR's formal acceptance.** This section originally held permanent producer-runtime repository placement open until the bounded slice was working end to end, per ADR-0008 and `operation-producer-and-execution-boundary.md` §11's own deferred gate. That deferral is no longer the current architectural posture: ADR-0010 found that `basis-gateway`'s Phase 1A/1B mTLS and admission topology (ADR-0008, ADR-0009) had already fixed the shape of the trust boundary the producer sits behind, and that continuing to defer the placement/naming question specifically had stopped tracking any remaining architectural uncertainty. ADR-0010 accordingly establishes `basis-producer` (`basis-foundation/basis-producer`) as the permanent repository and component for the operation-producer runtime, as part of the BASIS Core Services Distribution, public, with the Python package `basis_producer` reserved — while explicitly not authorizing the bounded slice described in this document to expand beyond authorization-only, no-execution scope.
+
+Until ADR-0010 is formally `Accepted` (not merely merged), the placement it proposes is the *proposed* permanent name this document uses, not yet the decided one — this document's own references to `basis-producer` throughout should be read with that qualification. Once ADR-0010 is accepted, this section's remaining purpose is not to decide *whether* `basis-producer` is permanent — that is settled — but to track the bounded slice's own maturity against the checklist ADR-0010 does not itself resolve: the size and cohesion of the accumulated producer code; its dependency graph (does it still depend cleanly on `basis-adapters` as a library and on `basis-gateway` only over HTTP, with no reverse or circular dependency having crept in); the credential boundary (has the private-key-holding responsibility remained cleanly separated from every other component); the persistence boundary (has evidence retention remained a distinct, swappable concern, per the evidence-store responsibilities §9 defines, with content identity and logical reference identity still separate); whether an independent release cadence is actually needed; the deployment lifecycle once `basis-deploy` exists; how many producer protocols are eventually expected beyond REST; and whether multiple future runtimes would share substantial code (in which case a shared library, not just a shared repository, becomes the real question). This maturity review determines when `basis-producer` is ready for broader responsibility and eventual release, not whether it should exist as a permanent, separately named component — ADR-0010 answers that question once accepted.
 
 ---
 
@@ -1108,16 +1112,16 @@ Permanent producer-runtime repository placement will be reconsidered only after 
 | Separate bearer-subject credential presentation | No | new reference-producer repository | Phase 3 |
 | Gateway submission | No | new reference-producer repository | Phase 3 |
 | **mTLS termination topology proof (certificate exposure to application code)** | **Yes — proven not achievable via direct termination (Outcome B); trusted-proxy topology specified by ADR-0009** | `basis-gateway` (spike) / `basis-architecture` (topology decision) | **Phase 1A (gate) — complete** |
-| mTLS server-side termination / cert validation | No | `basis-gateway` | Phase 1B |
-| URI SAN identity derivation | No | `basis-gateway` | Phase 1B |
-| Exact admission matching | No | `basis-gateway` | Phase 1B |
-| Producer trust internal model refinement | No | `basis-gateway` | Phase 1B |
-| Dual producer-mTLS + bearer-subject authentication on one request | No (bearer subject auth itself: Yes) | `basis-gateway` | Phase 1B |
-| Legacy allowlist coexistence | Yes (allowlist itself); No (coexistence tests) | `basis-gateway` | Phase 1B |
+| mTLS server-side termination (via trusted NGINX ingress) / cert validation | Yes — merged | `basis-gateway` | **Phase 1B — complete** |
+| URI SAN identity derivation | Yes — merged | `basis-gateway` | **Phase 1B — complete** |
+| Exact admission matching | Yes — merged | `basis-gateway` | **Phase 1B — complete** |
+| Producer trust internal model refinement | Yes — merged | `basis-gateway` | **Phase 1B — complete** |
+| Dual producer-mTLS + bearer-subject authentication on one request | Yes — merged | `basis-gateway` | **Phase 1B — complete** |
+| Legacy allowlist coexistence | Yes (allowlist itself and coexistence tests, both merged) | `basis-gateway` | **Phase 1B — complete** |
 | Operation-aware request composition | Yes | `basis-gateway` | N/A (reused) |
 | Kernel evaluation | Yes | `basis-core` | N/A (reused) |
 | Gateway enforcement / HTTP disposition | Yes | `basis-gateway` | N/A (reused) |
-| Audit emission | Yes (base); additive diagnostic fields, No | `basis-gateway` / `basis-core` | Phase 1B (additive fields only) |
+| Audit emission | Yes (base); additive diagnostic fields also merged | `basis-gateway` / `basis-core` | **Phase 1B — complete** (additive fields) |
 | End-to-end REST-to-disposition integration | No | cross-repository | Phase 4 |
 | Local demo / conformance evidence | No | new reference-producer repository | Phase 5 |
 | Protocol execution | No, and not authorized by this plan | none | Out of scope |

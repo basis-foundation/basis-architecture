@@ -6,7 +6,15 @@ protocol normalization and before submission to `basis-gateway`. Acceptance auth
 implementation according to this decision; implementation remains separate and decision-gated. This
 document does not itself implement Python runtime behavior, does not modify a JSON Schema, does not
 create a producer runtime, does not choose a producer-authentication mechanism, and does not add
-protocol execution or execution-result evidence.
+protocol execution or execution-result evidence. Throughout this document, "the operation-producer
+runtime" names the logical role defined by
+[`operation-producer-and-execution-boundary.md`](operation-producer-and-execution-boundary.md) §2.
+[ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) — Proposed, not yet
+Accepted — proposes that this role's Foundation-maintained implementation is `basis-producer`. This
+document's own construction/reference-assembly ownership split, below, is unchanged by that naming
+proposal: `basis-adapters` still constructs evidence material, canonicalizes it, and computes its
+digest; the operation-producer runtime — `basis-producer`, once ADR-0010 is accepted — still mints
+`reference_id` and assembles the final `AdapterEvidenceReference`.
 
 **Scope:** What constitutes adapter evidence material; how that material is serialized
 deterministically; which component computes its digest; which component mints the evidence
