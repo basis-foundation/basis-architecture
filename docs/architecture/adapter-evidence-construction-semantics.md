@@ -9,12 +9,13 @@ create a producer runtime, does not choose a producer-authentication mechanism, 
 protocol execution or execution-result evidence. Throughout this document, "the operation-producer
 runtime" names the logical role defined by
 [`operation-producer-and-execution-boundary.md`](operation-producer-and-execution-boundary.md) §2.
-[ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) — Proposed, not yet
-Accepted — proposes that this role's Foundation-maintained implementation is `basis-producer`. This
+[ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md) — Accepted —
+establishes that this role's Foundation-maintained implementation is `basis-producer`. This
 document's own construction/reference-assembly ownership split, below, is unchanged by that naming
-proposal: `basis-adapters` still constructs evidence material, canonicalizes it, and computes its
-digest; the operation-producer runtime — `basis-producer`, once ADR-0010 is accepted — still mints
-`reference_id` and assembles the final `AdapterEvidenceReference`.
+decision: `basis-adapters` still constructs evidence material, canonicalizes it, and computes its
+digest; the operation-producer runtime — `basis-producer` — still mints `reference_id` and assembles
+the final `AdapterEvidenceReference`. The `basis-producer` repository does not yet exist; acceptance
+authorizes its creation.
 
 **Scope:** What constitutes adapter evidence material; how that material is serialized
 deterministically; which component computes its digest; which component mints the evidence
