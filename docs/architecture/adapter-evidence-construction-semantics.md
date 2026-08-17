@@ -14,8 +14,12 @@ establishes that this role's Foundation-maintained implementation is `basis-prod
 document's own construction/reference-assembly ownership split, below, is unchanged by that naming
 decision: `basis-adapters` still constructs evidence material, canonicalizes it, and computes its
 digest; the operation-producer runtime — `basis-producer` — still mints `reference_id` and assembles
-the final `AdapterEvidenceReference`. The `basis-producer` repository does not yet exist; acceptance
-authorizes its creation.
+the final `AdapterEvidenceReference`. The `basis-producer` repository now exists, and its first
+implementation phase, Phase 2A (evidence-retention foundation), is implemented and merged — it
+retains adapter-constructed evidence bytes, digest-addressed, and verifies them on retrieval.
+Reference-lifecycle work (Phase 2B: `reference_id` minting, reference binding, and final
+`AdapterEvidenceReference` assembly) remains unimplemented; retention existing does not mean
+`basis-producer` currently assembles `AdapterEvidenceReference`.
 
 **Scope:** What constitutes adapter evidence material; how that material is serialized
 deterministically; which component computes its digest; which component mints the evidence
