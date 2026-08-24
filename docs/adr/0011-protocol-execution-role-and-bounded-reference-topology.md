@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
@@ -14,7 +14,7 @@ The merged, non-normative [`execution-boundary-discovery-assessment.md`](../arch
 
 The assessment's own §20 concluded there is enough evidence to write an ADR selecting a default deployment topology and stating the governing invariants execution must preserve, but not yet enough evidence to select a specific binding mechanism, freshness model, or execution-evidence contract shape — each of those needs its own normative architecture specification following this ADR, and, only where a specific implementation question cannot responsibly be settled from architecture alone, a bounded technical spike. This ADR is that first decision: it establishes the protocol-executor role and its governing invariants; it does not resolve the binding mechanism, the execution-lifecycle vocabulary, or the execution-evidence contract, each of which this ADR explicitly defers to Gates 1 through 3 below — and, if the selected bounded target requires a protocol/device credential, a fourth, conditional gate (Gate 4).
 
-Consistent with this repository's ADR-acceptance governance convention (ADR-0007, ADR-0008, ADR-0009, and ADR-0010 were each first merged with `Status: Proposed`, and a separate, dedicated follow-up PR later changed the status to `Accepted` after independent architecture and governance review — see [`docs/adr/README.md`](README.md#lifecycle-states)), this ADR is submitted as `Proposed`. Merging this ADR does not itself constitute acceptance, and no implementation work is authorized until a separate formal-acceptance PR records `Status: Accepted` — and, per **ADR Acceptance Boundary** below, acceptance itself would not authorize protocol execution.
+Consistent with this repository's ADR-acceptance governance convention (ADR-0007, ADR-0008, ADR-0009, and ADR-0010 were each first merged with `Status: Proposed`, and a separate, dedicated follow-up PR later changed the status to `Accepted` after independent architecture and governance review — see [`docs/adr/README.md`](README.md#lifecycle-states)), this ADR was submitted as `Proposed` and has since undergone that same separate, dedicated formal-acceptance review; its status now records `Accepted`. Acceptance does not itself authorize implementation work — per **ADR Acceptance Boundary** below, acceptance itself does not authorize protocol execution.
 
 ## Problem
 
@@ -276,7 +276,7 @@ The intended first reference execution slice should remain **REST first**, becau
 
 ## ADR Acceptance Boundary
 
-This ADR is precise about what its eventual acceptance would authorize:
+This ADR is precise about what acceptance authorizes:
 
 > Acceptance of ADR-0011 establishes the protocol-executor role, selects same-process colocation with `basis-producer` as the default topology for the first bounded reference slice, and fixes the governing execution invariants. It does not authorize bounded execution implementation — including dispatch — until Gates 1 through 3 identified by this ADR are satisfied — and Gate 4 as well, if the selected bounded target requires a protocol/device credential.
 
@@ -306,7 +306,7 @@ This ADR does not: implement execution; contact an OT endpoint; add REST, BACnet
 
 ## Validation / Implementation Gate
 
-Formal acceptance of ADR-0011 establishes the execution-model direction — the protocol-executor role, the same-process default topology for the first bounded reference slice, and the governing execution invariants — but does not itself open bounded execution implementation. Except for a separately authorized bounded technical spike needed to resolve a specific architectural feasibility question that architecture cannot responsibly answer from available evidence (the same narrow precedent `basis-gateway`'s Phase 1A mTLS-termination spike set on the path to ADR-0009), Gates 1 through 3, plus Gate 4 if applicable to the selected bounded target, must be satisfied before bounded execution implementation begins; actual dispatch remains prohibited until that point regardless. Such a spike must be explicitly scoped to the specific question it is authorized to answer, authorized by architecture rather than self-initiated by an implementation team, non-production, and must not itself constitute — or silently become — the execution reference implementation. This ADR, once merged, does not itself constitute acceptance, consistent with this repository's established convention (see ADR-0010's own Validation / Implementation Gate section and [`docs/adr/README.md`](README.md#lifecycle-states)) that merging an ADR does not by itself change its status to `Accepted`. After this ADR merges, a separate formal architect acceptance review, consistent with recent ADR governance practice, determines whether ADR-0011 is ready to move from `Proposed` to `Accepted`. No implementation is authorized by this ADR, and none is authorized by this correction pass.
+Formal acceptance of ADR-0011 establishes the execution-model direction — the protocol-executor role, the same-process default topology for the first bounded reference slice, and the governing execution invariants — but does not itself open bounded execution implementation. Except for a separately authorized bounded technical spike needed to resolve a specific architectural feasibility question that architecture cannot responsibly answer from available evidence (the same narrow precedent `basis-gateway`'s Phase 1A mTLS-termination spike set on the path to ADR-0009), Gates 1 through 3, plus Gate 4 if applicable to the selected bounded target, must be satisfied before bounded execution implementation begins; actual dispatch remains prohibited until that point regardless. Such a spike must be explicitly scoped to the specific question it is authorized to answer, authorized by architecture rather than self-initiated by an implementation team, non-production, and must not itself constitute — or silently become — the execution reference implementation. This ADR's merging did not itself constitute acceptance, consistent with this repository's established convention (see ADR-0010's own Validation / Implementation Gate section and [`docs/adr/README.md`](README.md#lifecycle-states)) that merging an ADR does not by itself change its status to `Accepted`. After this ADR merged, a separate formal architect acceptance review, consistent with recent ADR governance practice, found sufficient architectural and implementation evidence to accept the distinct protocol-executor role and the first bounded reference topology while keeping binding, lifecycle, execution evidence, and credential custody behind Gates 1 through 3 (plus Gate 4 if applicable); this ADR's status now records `Accepted`. No implementation is authorized by this ADR, and none is authorized by this correction pass.
 
 ## References
 
@@ -320,4 +320,4 @@ Formal acceptance of ADR-0011 establishes the execution-model direction — the 
 - [`docs/architecture/basis-ecosystem.md`](../architecture/basis-ecosystem.md) — component-boundary and dependency-direction model this ADR does not add `basis-executor` to
 - [`docs/security/threat-model.md`](../security/threat-model.md) — the compromised-adapter, compromised-gateway, and deployment/network-guarantee framing this ADR's Security Consequences section restates for the execution boundary
 - [`docs/glossary.md`](../glossary.md) — terminology this ADR's role naming is reconciled against
-- [`GOVERNANCE.md`](../../GOVERNANCE.md) — the ADR acceptance process this ADR's `Proposed` status observes
+- [`GOVERNANCE.md`](../../GOVERNANCE.md) — the ADR acceptance process this ADR's acceptance followed
