@@ -1,10 +1,10 @@
 # Action Vocabulary Reconciliation
 
-**Status:** Investigation report and recommendation. Not yet ratified.
+**Status:** Investigation report and recommendation; §5.1's canonical verb set, the applicable §5.3 domain/infrastructure classifications, and §5.4's governed default migrations ratified by [ADR-0017](../adr/0017-action-vocabulary-naming-structure.md). The composition-ownership recommendation in §5.2 remains an investigation-report recommendation, not an accepted decision — see the note at the end of §5.2.
 **Scope:** Architecture-level review of the action vocabulary as it actually exists across `basis-core`, `basis-gateway`, `basis-adapters`, `basis-console`, and `basis-architecture`.
 **Companion document:** [`action-vocabulary.md`](action-vocabulary.md) — the governance document, updated to reflect the recommendation in this report. The action vocabulary and action composition contracts discussed here are also recorded, alongside the rest of the ecosystem's contracts, in [`ecosystem-contract-inventory.md`](ecosystem-contract-inventory.md).
 
-This report does not assume any single repository is correct. It inventories what each component actually does, identifies where the components disagree, and recommends a canonical contract for the ecosystem to converge on. A formal ADR (provisionally `docs/adr/0003-action-vocabulary-naming-structure.md`) should be opened to ratify the recommendation in [§5](#5-recommended-canonical-vocabulary).
+This report does not assume any single repository is correct. It inventories what each component actually does, identifies where the components disagree, and recommends a canonical contract for the ecosystem to converge on. §5.1's canonical verb set, the applicable §5.3 domain/infrastructure classifications, and §5.4's governed default migrations have been ratified by [`docs/adr/0017-action-vocabulary-naming-structure.md`](../adr/0017-action-vocabulary-naming-structure.md) (`Status: Accepted`). Ratification does not extend to §5.2's composition-location recommendation, which remains open (see the note at the end of §5.2).
 
 ---
 
@@ -158,15 +158,17 @@ The canonical **authorization action** — the value the policy engine evaluates
 
 The adapter's bare `action` verb is **one input to that composite**, not the composite itself. The ecosystem must define a single, explicit **composition rule** — verb (from the adapter) + domain/object (from the resource mapping) → canonical action — and assign an owner for it (recommended: the normalization/gateway boundary, ultimately specified by `basis-schemas`). Until that rule exists, adapter output and kernel input remain structurally incompatible (I-1). This report recommends closing that gap as the **highest-priority** follow-up; the verb reconciliation above is necessary but not sufficient on its own.
 
+**This composition-location recommendation was not ratified by [ADR-0017](../adr/0017-action-vocabulary-naming-structure.md).** ADR-0017 accepted §5.1's verb set, the applicable §5.3 domain/infrastructure classifications, and §5.4's default migrations; it explicitly declined to decide the composition rule or its owner, stating that neither the normalization/gateway boundary nor `basis-schemas` is a decided architecture position. The candidate named above remains this report's recommendation only, pending a future, separately governed architecture decision.
+
 ### 5.3 Domains and infrastructure verbs
 
 - `audit` is a **domain**, not a verb (align with the kernel: `read:audit:log`). Remove it from the verb set.
 - `policy`, `audit`, `admin` remain **reserved domains** for authorization-infrastructure resources.
 - `enroll` / `revoke` are **credential-infrastructure** operations, not protocol actions. They are removed from the operational action vocabulary; if needed they belong to a separate identity/admin contract, not the protocol-action set.
 
-### 5.4 Migration notes (non-breaking path)
+### 5.4 Migration notes (compatibility-preserving transition)
 
-`control` and `discover` are established in the adapter schema and so are subject to stability expectations. They become **deprecated aliases** of `execute` and `browse` respectively: continue to validate during a defined deprecation window, update adapter default maps to emit the canonical verbs, and remove the aliases only after the window closes. This follows the deprecation process already defined in [`action-vocabulary.md`](action-vocabulary.md) and [`compatibility-philosophy.md`](compatibility-philosophy.md).
+`control` and `discover` are established in the adapter schema and so are subject to stability expectations. They become **deprecated aliases** of `execute` and `browse` respectively: continue to validate during a defined deprecation window, and remove the aliases only after the window closes. Retaining them this way avoids immediate removal of the old vocabulary and preserves an explicit legacy-mapping path for deployments that need one. Updating BACnet's and REST's adapter **default** maps to emit the canonical verbs is a separate matter: it changes the normalization mapping for an established protocol operation, which `compatibility-philosophy.md` treats as a breaking change regardless of alias retention. This follows the deprecation process already defined in [`action-vocabulary.md`](action-vocabulary.md) and [`compatibility-philosophy.md`](compatibility-philosophy.md).
 
 ---
 
@@ -175,4 +177,4 @@ The adapter's bare `action` verb is **one input to that composite**, not the com
 - **This report** — `docs/architecture/action-vocabulary-reconciliation.md` (new).
 - **[`action-vocabulary.md`](action-vocabulary.md)** — canonical verb set reduced to the five recommended verbs with definitions; `control`/`command`/`discover`/`configure` recorded as deprecated/absorbed; `audit` reclassified as a domain; `enroll`/`revoke` removed from the operational verb set; examples updated; a "Verbs vs. composite action names" clarification and a "Future Shared Contract Ownership" section added.
 
-No code was changed. A formal ADR should be opened to ratify §5.
+No code was changed. [ADR-0017](../adr/0017-action-vocabulary-naming-structure.md) (`Status: Accepted`) ratifies §5.1's canonical verb set, the applicable §5.3 domain/infrastructure classifications, and §5.4's default migrations. It does not ratify §5.2's composition-location recommendation, which remains open (see the note at the end of §5.2).
