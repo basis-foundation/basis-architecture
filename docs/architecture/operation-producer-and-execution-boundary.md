@@ -41,7 +41,7 @@ The chain from protocol operation to execution evidence involves more logical ro
 
 ### Operation initiator
 
-The human, machine, workload, service, automation rule, or upstream system requesting an operation. The operation initiator's identity may or may not be the same as the operation producer's authenticated workload identity (§3) — an operator using a supervisory HMI is an operation initiator whose request is carried, but not authenticated as, the operation producer that actually submits to the gateway.
+The human, machine, workload, service, automation rule, or upstream system requesting an operation. The operation initiator's identity may or may not be the same as the operation producer's authenticated workload identity (§3) — an operator using a supervisory HMI is an operation initiator whose request is carried, but not authenticated as, the operation producer that actually submits to the gateway. Where the initiator is an upstream supervisory system — a workload outside BASIS submitting supervisory intent — [ADR-0018](../adr/0018-upstream-supervisory-producer-intake-boundary.md) (Proposed) defines the governed producer-intake boundary that request crosses to reach the operation-producer role; submitting across it confers no producer, authorization, or execution authority.
 
 ### Adapter normalization library
 
