@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
@@ -14,7 +14,7 @@ That gap has become concrete. A supervisory platform — an application that own
 
 Without a BASIS-side decision, the path of least resistance is to collapse the boundary. One way is to admit the upstream platform as a gateway-trusted operation producer directly. Another is to embed it as a trusted in-process caller of the producer runtime. A third is to let it address the protocol executor. Each alternative is analyzed under **Alternatives Considered** below. Each would make supervisory intent into producer trust or execution authority by integration convenience rather than by architecture.
 
-Consistent with this repository's ADR-acceptance convention (each of ADR-0007 through ADR-0016 was first merged `Proposed` and accepted by a separate, dedicated PR — see [`README.md`](README.md#lifecycle-states)), this ADR is submitted as `Proposed`. Merging it does not constitute acceptance and authorizes no implementation.
+Consistent with this repository's ADR-acceptance convention (each of ADR-0007 through ADR-0016 was first merged `Proposed` and accepted by a separate, dedicated PR — see [`README.md`](README.md#lifecycle-states)), this ADR was submitted as `Proposed`, and its merging did not constitute acceptance. It has since undergone that same separate, dedicated formal-acceptance review, and its status now records `Accepted`. Acceptance changes no part of the decision below and authorizes no implementation.
 
 ## Problem
 
@@ -201,7 +201,7 @@ This ADR defines no BASIS type, field, role, or vocabulary named after, or shape
 
 ## Relationship to ARCH-GAP-001
 
-ARCH-GAP-001 records a cross-ecosystem gap: the upstream platform's architecture defined what it is and is not relative to BASIS, but nothing on the BASIS side defined how BASIS receives its requests. This ADR supplies the BASIS-side half of that closure condition. Once this ADR is accepted and reconciled with the upstream platform's already-merged decision, both ecosystems' architecture will jointly support the following statements:
+ARCH-GAP-001 records a cross-ecosystem gap: the upstream platform's architecture defined what it is and is not relative to BASIS, but nothing on the BASIS side defined how BASIS receives its requests. This ADR supplies the BASIS-side half of that closure condition. With this ADR accepted, once it is reconciled with the upstream platform's already-merged decision, both ecosystems' architecture will jointly support the following statements:
 
 - Ipotio is an upstream supervisory operation initiator (upstream decision; consistent with Decision 1 here).
 - BASIS accepts upstream supervisory requests only through a governed producer-intake boundary (Decisions 2, 6, 7).
@@ -270,7 +270,7 @@ This ADR does not modify any implementation repository or schema; does not defin
 
 ## Validation / Implementation Gate
 
-Acceptance of this ADR would establish the producer-intake boundary as governed architecture and supply the BASIS-side decision needed for ARCH-GAP-001's joint closure. It would **not** authorize implementing an intake realization. At minimum, an intake implementation additionally requires decisions on: the intake transport and integrity mechanism; the bounded-validity rule (Decision 7); the Workstream 3C mapping for the operations the realization will accept; and the Workstream 3E credential posture for the workloads it involves. A bounded implementation plan must then derive from those accepted decisions.
+Acceptance of this ADR establishes the producer-intake boundary as governed architecture and supplies the BASIS-side decision needed for ARCH-GAP-001's joint closure. It does **not** authorize implementing an intake realization. At minimum, an intake implementation additionally requires decisions on: the intake transport and integrity mechanism; the bounded-validity rule (Decision 7); the Workstream 3C mapping for the operations the realization will accept; and the Workstream 3E credential posture for the workloads it involves. A bounded implementation plan must then derive from those accepted decisions.
 
 ## References
 
