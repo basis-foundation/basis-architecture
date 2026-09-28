@@ -119,7 +119,7 @@ Implemented as `compose_action()` in `basis-gateway` (`core/actions.py`). When c
 
 **Implemented in:** `basis-gateway`.
 
-**Current stability:** emerging. The mechanism is implemented and tested; the boundary decision has not yet been ratified by ADR.
+**Current stability:** emerging. The mechanism is implemented and tested; the boundary decision has not yet been ratified by ADR. [ADR-0020](../adr/0020-operation-to-authorization-mapping-and-composition-boundary.md) (`Status: Proposed`) proposes ratifying `basis-gateway` as the sole composition owner on the governed admitted-producer path.
 
 **Future `basis-schemas` candidate:** Yes — the composition rule is named in [`action-vocabulary.md`](action-vocabulary.md) as a `basis-schemas`-owned contract.
 
@@ -172,7 +172,7 @@ Implemented as `compose_resource_id()` in `basis-gateway` (`core/resources.py`),
 
 **Implemented in:** `basis-gateway`.
 
-**Current stability:** emerging. Implemented and tested; boundary decision not yet ratified by ADR.
+**Current stability:** emerging. Implemented and tested; boundary decision not yet ratified by ADR. [ADR-0020](../adr/0020-operation-to-authorization-mapping-and-composition-boundary.md) (`Status: Proposed`) proposes ratifying it, and proposes that admitted operation producers be refused the typed pass-through path.
 
 **Future `basis-schemas` candidate:** Yes.
 
