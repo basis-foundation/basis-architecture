@@ -119,7 +119,7 @@ Implemented as `compose_action()` in `basis-gateway` (`core/actions.py`). When c
 
 **Implemented in:** `basis-gateway`.
 
-**Current stability:** emerging. The mechanism is implemented and tested; the boundary decision has not yet been ratified by ADR. [ADR-0020](../adr/0020-operation-to-authorization-mapping-and-composition-boundary.md) (`Status: Proposed`) proposes ratifying `basis-gateway` as the sole composition owner on the governed admitted-producer path.
+**Current stability:** emerging. The mechanism is implemented and tested. [ADR-0020](../adr/0020-operation-to-authorization-mapping-and-composition-boundary.md) (`Status: Accepted`) ratifies `basis-gateway` as the sole composition owner on the governed admitted-producer path; composition ownership for embedded direct-kernel deployments is outside that decision. ADR-0020's admitted-producer derivation requirement is not yet implemented.
 
 **Future `basis-schemas` candidate:** Yes — the composition rule is named in [`action-vocabulary.md`](action-vocabulary.md) as a `basis-schemas`-owned contract.
 
@@ -172,7 +172,7 @@ Implemented as `compose_resource_id()` in `basis-gateway` (`core/resources.py`),
 
 **Implemented in:** `basis-gateway`.
 
-**Current stability:** emerging. Implemented and tested; boundary decision not yet ratified by ADR. [ADR-0020](../adr/0020-operation-to-authorization-mapping-and-composition-boundary.md) (`Status: Proposed`) proposes ratifying it, and proposes that admitted operation producers be refused the typed pass-through path.
+**Current stability:** emerging. Implemented and tested. [ADR-0020](../adr/0020-operation-to-authorization-mapping-and-composition-boundary.md) (`Status: Accepted`) ratifies the boundary on the governed admitted-producer path and requires that admitted operation producers be refused the typed pass-through path; composition ownership for embedded direct-kernel deployments is outside that decision. That refusal is not yet implemented.
 
 **Future `basis-schemas` candidate:** Yes.
 
@@ -402,7 +402,7 @@ This document does **not**:
 - define deployment topology;
 - define commercial BASAuth behavior.
 
-It also does not ratify any boundary decision; the action- and resource-composition boundaries are recorded here as implemented, and their ratification remains with the ADRs proposed in the reconciliation reports.
+It also does not itself ratify any boundary decision; the action- and resource-composition boundaries are recorded here as implemented. [ADR-0020](../adr/0020-operation-to-authorization-mapping-and-composition-boundary.md) (`Status: Accepted`) now ratifies `basis-gateway` as the canonical action and resource composition owner on the governed admitted-producer path. Composition ownership for embedded direct-kernel deployments remains outside ADR-0020.
 
 ---
 

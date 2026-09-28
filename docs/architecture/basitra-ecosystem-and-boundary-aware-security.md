@@ -300,7 +300,7 @@ This section checks Boundary-Aware Security against the architecture already in 
 | Operation-aware authorization model ([ADR-0001](../adr/0001-operation-aware-ot-authorization.md), [model](operation-aware-authorization-model.md)) | Evaluates an operation with context, not only a subject–resource pair | **Implemented** (`basis-schemas` v0.2.0, `basis-core` v0.2.0) |
 | Deterministic evaluation semantics (default deny, deny precedence, `NOT_APPLICABLE`, fail-closed errors) | Decision semantics at the authorization boundary | **Implemented** |
 | Policy bundle and rule model; condition operators | Policy can condition on published context (location, device, safety, environment, time) | **Implemented**; environmental boundary *crossing* is not modeled (**Future**) |
-| Canonical action vocabulary ([ADR-0017](../adr/0017-action-vocabulary-naming-structure.md)) | A normalized operation verb across protocol boundaries | **Accepted.** Migration of the two built-in default drifts it names was not verified in this review. Composite-action composition ownership (I-1) remains open. |
+| Canonical action vocabulary ([ADR-0017](../adr/0017-action-vocabulary-naming-structure.md)) | A normalized operation verb across protocol boundaries | **Accepted.** Migration of the two built-in default drifts it names was not verified in this review. [ADR-0020](../adr/0020-operation-to-authorization-mapping-and-composition-boundary.md) (Accepted) now resolves composite-action composition ownership (I-1) for the governed admitted-producer path; embedded direct-kernel composition remains outside that decision. |
 | Protocol normalization and the trusted adapter boundary | The protocol boundary is a semantic trust boundary | **Implemented** (normalization and evidence construction) |
 | Adapter evidence construction ([ADR-0007](../adr/0007-adapter-evidence-construction.md)) | Evidence that attributes a decision to the protocol operation that produced it | **Implemented** (Stage 1 in `basis-adapters`; retention and reference lifecycle in `basis-producer`) |
 | Producer workload authentication and admission ([ADR-0008](../adr/0008-producer-workload-authentication-and-admission.md), [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md)) | Producer identity kept separate from subject identity at the admission boundary | **Implemented** for its bounded scope |
@@ -439,7 +439,7 @@ BASac therefore earns a normative meaning only if it names something the operati
 | Element | Existing basis | Status |
 | - | - | - |
 | Subject context | Canonical identity context; subject attributes; authority mode reference | **Implemented** |
-| Operation | Canonical action verbs (ADR-0017); operation intent; protocol operation as evidence | **Implemented** (composition ownership I-1 open) |
+| Operation | Canonical action verbs (ADR-0017); operation intent; protocol operation as evidence | **Implemented** (composition ownership accepted for the governed admitted-producer path by ADR-0020; embedded direct-kernel composition remains outside that decision) |
 | Target resource | Canonical resource identifier and resource type | **Implemented** |
 | Boundary context | Optional `location`, `device`, `protocol_context`, `safety_context`, `environment_context` request context | **Implemented** as individual context fields; no model of boundary *crossings* |
 | Decision semantics | Default deny, deny precedence, `NOT_APPLICABLE`, fail-closed failures | **Implemented** |

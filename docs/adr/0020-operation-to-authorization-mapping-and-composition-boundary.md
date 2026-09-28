@@ -2,9 +2,9 @@
 
 ## Status
 
-Proposed
+Accepted
 
-Consistent with this repository's established practice (see ADR-0018's Context and ADR-0019's Status), this ADR is numbered when first proposed and submitted as `Proposed`. Merging it does not accept it. Acceptance requires a separate, dedicated review. Until then, nothing below is a current architectural position, and every statement elsewhere in this repository that describes action or resource composition ownership as undecided remains accurate.
+Consistent with this repository's established practice (see ADR-0018's Context and ADR-0019's Status), this ADR was numbered when first proposed and submitted as `Proposed`, and its merging did not constitute acceptance. It has since undergone that separate, dedicated formal-acceptance review, and its status now records `Accepted`. Acceptance changes no part of the decision below and authorizes no implementation. The composition ownership it decides applies to the governed admitted-producer path only; composition ownership for embedded direct-kernel deployments remains outside this decision (Decision 6).
 
 ## Context
 
@@ -309,7 +309,7 @@ It narrows what an intake request may carry (Decision 2). That is a constraint o
 
 ## Relationship to ARCH-GAP-002
 
-ARCH-GAP-002 is a joint cross-ecosystem gap tracked in Ipotio's architecture repository. On acceptance, this ADR establishes the **BASIS-side prerequisite** for closing it. It does **not** close ARCH-GAP-002, which remains open until Ipotio reconciles its asset and operation model against this decision in its own repository.
+ARCH-GAP-002 is a joint cross-ecosystem gap tracked in Ipotio's architecture repository. With its acceptance, this ADR establishes the **BASIS-side prerequisite** for closing it. It does **not** close ARCH-GAP-002, which remains open until Ipotio reconciles its asset and operation model against this decision in its own repository.
 
 That reconciliation will need to confirm, at least:
 
@@ -395,7 +395,7 @@ This ADR does not: implement anything; modify any implementation repository or s
 
 ## Validation / Implementation Gate
 
-Acceptance requires the same separate, dedicated review every ADR since ADR-0007 has received. Acceptance authorizes no implementation. Once it is accepted, the following gaps between current implementation and this decision become inputs to a bounded implementation plan:
+This ADR was accepted through the same separate, dedicated review every ADR since ADR-0007 has received. Acceptance authorizes no implementation. With it accepted, the following gaps between current implementation and this decision become inputs to a bounded implementation plan:
 
 - `basis-gateway`: require derivation, and reject composite or typed values, for callers classified as admitted operation producers (Decision 6.4). Today the operation-aware path reuses dual-accept.
 - `basis-producer`: capture and record the effective mapping identity and mapping provenance (Decisions 9, 10). Today the REST reference mapping is fixed in code and has no identity.
