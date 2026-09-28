@@ -379,3 +379,21 @@ A defined demarcation between two system domains with different trust levels, wh
 ## Zero Trust
 
 A security model premised on the assumption that no subject, device, or network segment should be implicitly trusted based on its location or prior access. Under zero trust, every access request is authenticated and authorized independently, regardless of whether the requester is inside or outside a conventional network perimeter. Zero trust is an architectural principle rather than a specific technology; its application to OT environments requires careful adaptation to account for constrained devices, legacy protocols, and availability requirements.
+
+---
+
+## Proposed Terminology (Not Yet Canonical)
+
+The entries in this block are **proposed** by [ADR-0019](adr/0019-basitra-ecosystem-identity-and-terminology-hierarchy.md), which is `Proposed`. They are recorded here, in the single definition point that [`terminology-rules.md`](standards/terminology-rules.md#introducing-new-terms) requires, so that proposal documents can refer to them. They are **not canonical**. They do not change any definition above, the canonical BASIS expansion (*Building Automation Secure Identity Service*), or the canonical meaning of BAS (*Building Automation System*). They are promoted to canonical entries only if ADR-0019 is accepted. Full analysis: [`docs/architecture/basitra-ecosystem-and-boundary-aware-security.md`](architecture/basitra-ecosystem-and-boundary-aware-security.md).
+
+### Basitra (proposed)
+
+Proposed long-term canonical identity of the open-source project, its community, its ecosystem, and eventually its organizational and GitHub namespace. A proper noun, not an acronym. It names the project and community, not a component, runtime, or service. It does not yet name a governance body: the Basis Foundation governs today, and their long-term relationship (rename, succession, or coexistence) is an open decision. See also: **Basis Foundation**, **BASIS Core Services Distribution**.
+
+### Boundary-Aware Security (proposed)
+
+Proposed name for a security approach in which authorization, enforcement, and evidence explicitly account for the security-relevant boundaries a requested operation must cross between the party that initiates it and the resource it affects. Each crossing is verified on its own terms, not inherited from the crossing before it. It is a descriptive architectural concept, not a component or contract, and it adds no kernel semantics. In documents that also discuss building automation systems it is always written in full, never as bare "BAS." See also: **Trust Boundary**, **Identity-Aware Authorization**, **Operation-Aware Authorization Model**.
+
+### BASac (prospective)
+
+Reserved name, *Boundary-Aware Secure Access Control*, for a possible future formal access-control model. It has no normative meaning, no specification exists, and it must not be used as a synonym for the **Operation-Aware Authorization Model**.
