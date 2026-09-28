@@ -1,6 +1,6 @@
 # Resource Identifier Reconciliation
 
-**Status:** Investigation report and recommendation. Not yet ratified. [ADR-0020](../adr/0020-operation-to-authorization-mapping-and-composition-boundary.md) (`Status: Proposed`) proposes ratifying §5 for the governed admitted-producer path, with a refinement: admitted operation producers must submit the separate-field form, so there is no pass-through on that path. It also answers open questions 3 and 5 and defers 1 and 2. Until ADR-0020 is accepted, this report's recommendation remains unratified.
+**Status:** Investigation report and recommendation. §5 is ratified for the governed admitted-producer path by [ADR-0020](../adr/0020-operation-to-authorization-mapping-and-composition-boundary.md) (`Status: Accepted`), with a refinement: admitted operation producers must submit the separate-field form, so there is no pass-through on that path. ADR-0020 also answers open questions 3 and 5 and defers 1 and 2. Outside that path, including embedded direct-kernel deployments, this report's recommendation remains unratified.
 **Scope:** Architecture-level review of how resource identity is represented across `basis-core`, `basis-gateway`, `basis-adapters`, `basis-console`, and `basis-architecture`, and a recommendation for where canonical resource-identifier composition belongs.
 **Companion work:** [`action-vocabulary-reconciliation.md`](action-vocabulary-reconciliation.md) settled the parallel question for the `action` field. This report applies the same method to the resource fields and arrives at a structurally identical boundary decision. The resource-identifier and composition contracts discussed here are also recorded, alongside the rest of the ecosystem's contracts, in [`ecosystem-contract-inventory.md`](ecosystem-contract-inventory.md).
 
@@ -311,7 +311,7 @@ Following the conventions in [`docs/adr/README.md`](../adr/README.md), the ADR s
 
 Provisional filename, consistent with the numbering and naming rules in [`docs/adr/README.md`](../adr/README.md): `docs/adr/0004-gateway-owned-resource-identifier-composition.md`. The number is assigned at acceptance, not at draft.
 
-**Current status (not part of the original report):** the ratifying ADR this section calls for has been proposed as [ADR-0020](../adr/0020-operation-to-authorization-mapping-and-composition-boundary.md) (`Status: Proposed`), which also decides action-composition ownership on that path. It does not change the embedded direct-kernel deployment model. Under its Decision 6.5, the three-segment example in §8 (`resource_type=sensor`, `resource_id=co2:lobby`) would be rejected rather than composed, consistent with current `basis-gateway` behavior.
+**Current status (not part of the original report):** the ratifying ADR this section calls for is [ADR-0020](../adr/0020-operation-to-authorization-mapping-and-composition-boundary.md) (`Status: Accepted`), which ratifies gateway-owned resource composition on the governed admitted-producer path and also decides action-composition ownership on that path. It does not change the embedded direct-kernel deployment model or decide composition ownership for it. Under its Decision 6.5, the three-segment example in §8 (`resource_type=sensor`, `resource_id=co2:lobby`) is rejected rather than composed, consistent with current `basis-gateway` behavior.
 
 ---
 
