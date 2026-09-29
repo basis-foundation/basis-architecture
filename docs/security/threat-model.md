@@ -637,6 +637,27 @@ The component analysis in §6 reasons from the inside out. This section reasons 
 
 **Mitigation.** The gateway's token verification includes expiry, which bounds the window in which a captured token is usable, and request correlation identifiers support detection of duplicates in audit. The architecture's honest position is that comprehensive replay protection (nonces, short-lived tokens, mutual-TLS-bound sessions) is partly a gateway-implementation and deployment concern rather than a fully settled architectural guarantee; the expiry bound and audit correlation are the architectural contributions, and tighter replay defenses are noted among the gateway's open questions. This case is recorded with its residual risk rather than as fully closed.
 
+### 7.7 Context-trust laundering — borrowing trust for operational context
+
+**Attacker objective.** Get the kernel to evaluate an operational context value (for example `safety_context`, `risk_context`, `location`, or `device`) as trusted, when the party that originated it is not trusted to assert that category, or when the value is stale, unattributed, or contested. A policy that relies on that context can then permit what it would otherwise refuse, or fail to deny what it should.
+
+**Attack path.** Several variants share one pattern: use a more-trusted hop to add trust to a less-trusted claim.
+
+- **Privilege amplification.** An upstream workload admitted to the producer-intake boundary, but not trusted for a category, sends a value in that category through an admitted operation producer. At the gateway, the value then carries only the producer's trust.
+- **Origin stripping and re-labeling.** A producer removes a value's upstream origin, or re-labels it producer-derived, so that the originating source disappears from provenance.
+- **Unauthorized category assertion.** An admitted producer asserts a category it was never meant to supply, relying on producer admission granting authority over every producer-only field.
+- **Timestamp refresh.** A relay replaces an old observation time with its own relay or submission time, so that stale context appears current.
+- **Status upgrade.** A relay turns an inferred, unknown, or conflicted value into an authoritative one.
+- **Provenance omission.** A value is submitted without the attribution needed to decide whether its source was entitled to supply it.
+- **Heuristic conflict resolution.** When candidate values disagree, a component silently picks one (newest, preferred source, merged).
+- **Rejected-to-absent bypass.** Any component drops a rejected value instead of failing closed. Absence then reaches policy, and absence has permissive cases under the existing missing-context and condition-operator semantics.
+
+**Trust boundary.** Upstream system → producer-intake boundary (ADR-0018), operation producer → gateway (§3.3; ADR-0008), and the gateway's pre-kernel validation (§3.2).
+
+**Architectural impact.** Decision integrity (§2.1) rests on context the architecture believes is trusted but is not. Audit evidence (§2.4) misattributes the fact's origin. The compromise is silent, because the kernel evaluates faithfully whatever context it receives.
+
+**Mitigation.** In current implementation, producer-only context is accepted only from an admitted operation producer and is classified `trusted_producer_asserted`, never `verified`. ADR-0018 Decision 4's interim posture forbids presenting upstream-originated context as producer-only context at all. That interim posture withholds trust but does not define when trust may be granted, and producer admission still grants authority over all nine producer-only fields. [ADR-0021](../adr/0021-upstream-context-assertion-trust-boundary.md) (`Status: Proposed`) proposes the durable mitigation: category-scoped, default-deny assertion authority; independent grants for the upstream source and for the relaying producer; origin that survives every relay; separately reconstructible origin and assertion-trust provenance; per-category freshness enforced at evaluation time, with relay time never substituting for observation time; fail-closed rejection of present-but-inadmissible values rather than conversion to absence; and fail-closed handling of unresolved conflicts. These mitigations are proposed, not accepted, and not implemented. The residual risk — a compromised producer misattributing origin within its own grants — remains until an end-to-end origin-integrity mechanism is decided.
+
 ---
 
 ## 8. Mitigations
@@ -727,7 +748,7 @@ This section records questions the architecture has not yet resolved. They are r
 
 **Long-term key management expectations.** The gateway depends on key material from the identity provider and may present its own credentials. Long-term expectations for key rotation, revocation propagation, and key-management responsibility across the distribution and the eventual deploy and commercial layers are unresolved.
 
-**Adapter-to-gateway producer authentication.** The trusted adapter boundary (§3.3) describes the semantic trust the gateway places in an already-authenticated caller's normalization; it does not yet specify how an `basis-adapters`-produced operation reaches an authenticated caller in the first place. [`docs/architecture/operation-producer-and-execution-boundary.md`](../architecture/operation-producer-and-execution-boundary.md) names this gap and the further gap between gateway enforcement and actual protocol execution, and records open questions — including which authentication mechanism should establish producer workload identity, and whether producer trust should become category-scoped — that this threat model does not resolve.
+**Adapter-to-gateway producer authentication.** The trusted adapter boundary (§3.3) describes the semantic trust the gateway places in an already-authenticated caller's normalization; it does not yet specify how an `basis-adapters`-produced operation reaches an authenticated caller in the first place. [`docs/architecture/operation-producer-and-execution-boundary.md`](../architecture/operation-producer-and-execution-boundary.md) names this gap and the further gap between gateway enforcement and actual protocol execution, and records open questions — including which authentication mechanism should establish producer workload identity, and whether producer trust should become category-scoped — that this threat model does not resolve. [ADR-0021](../adr/0021-upstream-context-assertion-trust-boundary.md) (`Status: Proposed`) proposes an answer to the category-scoping question, extended to upstream-originated context (§7.7). Until it is accepted and implemented, the question remains open here.
 
 Recording these as open is itself a security posture. An architecture that claimed to have settled them prematurely would invite reliance on guarantees it had not actually thought through. The honest position is that these are known, they matter, and they will be resolved as the constraints that should govern them come into focus.
 
@@ -746,6 +767,7 @@ Recording these as open is itself a security posture. An architecture that claim
 - [`docs/architecture/resource-identifier-reconciliation.md`](../architecture/resource-identifier-reconciliation.md) — gateway-owned resource-identifier composition and the open action-domain/resource-type question
 - [`docs/architecture/action-vocabulary-reconciliation.md`](../architecture/action-vocabulary-reconciliation.md) — the ecosystem inventory that established gateway-owned action composition
 - [`docs/adr/0020-operation-to-authorization-mapping-and-composition-boundary.md`](../adr/0020-operation-to-authorization-mapping-and-composition-boundary.md) — ADR-0020 (`Status: Accepted`); governing decision for canonical composition ownership on the governed admitted-producer path and upstream operation-to-authorization mapping
+- [`docs/adr/0021-upstream-context-assertion-trust-boundary.md`](../adr/0021-upstream-context-assertion-trust-boundary.md) — ADR-0021 (`Status: Proposed`); proposed category-scoped, origin-preserving context-assertion trust boundary and the mitigation for §7.7
 - [`docs/glossary.md`](../glossary.md) — definitions for Trust Boundary, Trusted Adapter Boundary, Authorization Kernel, Identity Propagation, Immutable Audit Logging, and related terms
 - [`whitepapers/identity-aware-authorization-for-operational-technology/sections/05-ot-trust-boundaries.md`](../../whitepapers/identity-aware-authorization-for-operational-technology/sections/05-ot-trust-boundaries.md) — the OT trust-boundary and zone analysis this document builds on
 - [`whitepapers/identity-aware-authorization-for-operational-technology/sections/08-threat-modeling-and-security-considerations.md`](../../whitepapers/identity-aware-authorization-for-operational-technology/sections/08-threat-modeling-and-security-considerations.md) — the white paper's OT-scoped threat analysis, complementary to this component-scoped model
