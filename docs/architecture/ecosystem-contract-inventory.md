@@ -355,6 +355,7 @@ deployment topology
 multi-site trust
 policy lifecycle management
 operator workflow semantics
+context-assertion trust
 ```
 
 - **Resource taxonomy.** The set of valid resource types (and whether it is a closed enum or an open prefix) is not unified across adapters, kernel, and console. See [`resource-identifier-reconciliation.md`](resource-identifier-reconciliation.md) M-4.
@@ -363,6 +364,7 @@ operator workflow semantics
 - **Deployment topology and multi-site trust.** How components are deployed, and how trust is established across sites, are architecture concerns with no implemented cross-repository contract.
 - **Policy lifecycle management.** Authoring, distribution, versioning beyond a single version field, and retirement of policies are not yet contracted.
 - **Operator workflow semantics.** What an operator can do through the console, and how those workflows map onto enforcement boundaries, are described architecturally but not as a schema.
+- **Context-assertion trust.** Which principals may assert which operational context categories, from which origins, with what provenance and freshness, has no implemented contract. Producer admission currently grants authority over all nine producer-only fields, and the field-level provenance classification cannot represent an upstream origin. [ADR-0021](../adr/0021-upstream-context-assertion-trust-boundary.md) (`Status: Proposed`) proposes the architecture. Any category-trust configuration or multi-dimensional provenance shape remains a future contract, not a schema candidate yet.
 
 These belong in architecture documents and ADRs until implementation proves a stable shape, at which point they may join the inventory above.
 
