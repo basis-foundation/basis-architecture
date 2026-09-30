@@ -2,9 +2,9 @@
 
 ## Status
 
-Proposed
+Accepted
 
-Consistent with this repository's established practice (see ADR-0018's Context and ADR-0020's Status), this ADR is numbered when first proposed and submitted as `Proposed`. Merging it does not accept it. Acceptance requires a separate, dedicated formal-acceptance review and PR. Publication of this proposal authorizes no implementation, does not close cross-ecosystem gap ARCH-GAP-004, and makes no upstream platform's contract canonical.
+Consistent with this repository's established practice (see ADR-0018's Context and ADR-0020's Status), this ADR was numbered when first proposed and submitted as `Proposed`, and its merging did not constitute acceptance. It has since undergone that separate, dedicated formal-acceptance review, and its status now records `Accepted`. Acceptance changes no part of the decision below, authorizes no implementation, does not close cross-ecosystem gap ARCH-GAP-004, and makes no upstream platform's contract canonical.
 
 ## Context
 
@@ -402,8 +402,8 @@ This ADR answers the "Context-assertion trust (cross-ecosystem Workstream 3D)" i
 
 ARCH-GAP-004 is a joint cross-ecosystem gap tracked in Ipotio's architecture repository. It covers authorization-context freshness, staleness, and category-scoped producer-assertion trust. Its BASIS half is cross-ecosystem Workstream 3D-A; its Ipotio half is Workstream 3D-B.
 
-- **BASIS-side prerequisite:** established by this decision once it is Accepted. While this ADR is Proposed, the prerequisite is proposed, not established.
-- **ARCH-GAP-004:** remains open. This ADR does not close it, whether Proposed or Accepted. Closure requires (1) acceptance of this ADR and (2) Ipotio's Workstream 3D-B reconciliation in its own repository.
+- **BASIS-side prerequisite:** established by this decision, now Accepted.
+- **ARCH-GAP-004:** remains open. This ADR does not close it. Closure requires (1) acceptance of this ADR, now satisfied, and (2) Ipotio's Workstream 3D-B reconciliation in its own repository.
 
 That reconciliation will need to confirm, at least:
 
@@ -490,7 +490,7 @@ This ADR does not: define Ipotio semantics or modify Ipotio's repository; define
 
 ## Validation / Implementation Gate
 
-This ADR is `Proposed`. Merging it does not accept it, and neither this proposal nor its later acceptance authorizes implementation. After acceptance, the following gaps between current implementation and this decision become inputs to a bounded implementation plan:
+This ADR was accepted through a separate, dedicated formal-acceptance review. Neither its proposal nor its acceptance authorizes implementation. With it accepted, the following gaps between current implementation and this decision become inputs to a bounded implementation plan:
 
 - **`basis-gateway`:** replace the single all-or-nothing producer-only gate with category trust evaluation (origin permission, source grant, producer grant, provenance, freshness at evaluation time, conflict), rejecting pre-kernel; record the admission basis; evolve the provenance representation (Decision 5); keep the all-or-nothing gate's fail-closed behavior for unadmitted producers.
 - **`basis-producer`:** represent origin class, originating source, relay attribution, source time, eligibility status, and provenance reference for relayed values; enforce its own category scope locally; never re-label, refresh, or synthesize.
@@ -511,7 +511,7 @@ This ADR is `Proposed`. Merging it does not accept it, and neither this proposal
 - [ADR-0018](0018-upstream-supervisory-producer-intake-boundary.md): producer-intake boundary; Decision 4 interim context posture
 - [ADR-0019](0019-basitra-ecosystem-identity-and-terminology-hierarchy.md) (Proposed): Basitra terminology
 - [ADR-0020](0020-operation-to-authorization-mapping-and-composition-boundary.md): operation-to-authorization mapping; mapping provenance is not context
-- [`operation-producer-and-execution-boundary.md`](../architecture/operation-producer-and-execution-boundary.md): §1, §3 (category trust open), §4 (field ownership; absence), §7 (provenance vocabulary), §8 (not-executed family)
+- [`operation-producer-and-execution-boundary.md`](../architecture/operation-producer-and-execution-boundary.md): §1, §3 (producer context trust), §4 (field ownership; absence), §7 (provenance vocabulary), §8 (not-executed family)
 - [`operation-aware-evaluation-semantics.md`](../architecture/operation-aware-evaluation-semantics.md): §10 missing-context behavior
 - [`condition-operator-semantics.md`](../architecture/condition-operator-semantics.md): §7–§8 absent-value semantics
 - [`operation-aware-authorization-model.md`](../architecture/operation-aware-authorization-model.md): §3 context categories

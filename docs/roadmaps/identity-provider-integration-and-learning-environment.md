@@ -521,7 +521,7 @@ The following ten phases are architecture phases, not a predetermined pull-reque
 
 **Distributed-systems concerns.** Whatever the real producer-to-gateway and gateway-to-executor correlation model eventually requires, once it exists, per boundary-document §6 — this phase inherits, rather than redefines, that model.
 
-**Decision gates.** None new beyond what ADR-0008 and the boundary document already name as open (execution-status vocabulary, category-scoped producer capability, workload-identity establishment in `basis-identity`); this phase depends on those gates resolving elsewhere, not on resolving them itself.
+**Decision gates.** None new beyond what ADR-0008 and the boundary document already name as open (execution-status vocabulary, workload-identity establishment in `basis-identity`); this phase depends on those gates resolving elsewhere, not on resolving them itself. Category-scoped producer capability, originally also named here, is now resolved architecturally by Accepted ADR-0021; its implementation is pending.
 
 **Completion criteria.** A reviewed lab design for the full 23-step trace that can only be marked ready for implementation once every prerequisite above is independently satisfied — this phase's completion criteria are therefore compound and explicitly not met by this roadmap's own acceptance.
 
