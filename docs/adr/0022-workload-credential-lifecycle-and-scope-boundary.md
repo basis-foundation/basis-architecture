@@ -2,9 +2,9 @@
 
 ## Status
 
-Proposed
+Accepted
 
-Consistent with this repository's established practice (see ADR-0018's Context and ADR-0021's Status), this ADR is numbered when first proposed and submitted as `Proposed`. Merging it does not accept it. Acceptance requires a separate, dedicated formal-acceptance review and PR. Publication of this proposal authorizes no implementation, selects no credential technology, does not close cross-ecosystem gap ARCH-GAP-011, and makes no upstream platform's contract canonical.
+Consistent with this repository's established practice (see ADR-0018's Context and ADR-0021's Status), this ADR was numbered when first proposed and submitted as `Proposed`, and its merging did not constitute acceptance. It has since undergone that separate, dedicated formal-acceptance review, and its status now records `Accepted`. Acceptance changes no part of the decision below, authorizes no implementation, selects no credential technology, does not close cross-ecosystem gap ARCH-GAP-011, and makes no upstream platform's contract canonical.
 
 ## Context
 
@@ -333,7 +333,7 @@ This ADR defines no type, field, identity namespace, topology, or rule named aft
 
 ## Security Invariants
 
-When this decision is accepted and implemented, the following hold on the governed path:
+When this decision is implemented, the following hold on the governed path:
 
 ```text
 logical workload identity                 != credential instance
@@ -488,7 +488,7 @@ This ADR does not: select a PKI, CA hierarchy, workload-identity framework, secr
 
 ## Implementation Status
 
-Architecture decision ≠ implementation. Nothing in this ADR is implemented, and acceptance would authorize no implementation. Measured against this decision, current implementation stands as follows:
+Architecture decision ≠ implementation. Nothing in this ADR is implemented. Neither its proposal nor its acceptance authorizes implementation. Measured against this decision, current implementation stands as follows:
 
 | Area | Current state | Gap against this decision |
 | - | - | - |
@@ -503,8 +503,8 @@ Architecture decision ≠ implementation. Nothing in this ADR is implemented, an
 
 *Non-normative.* An upstream platform that integrates through the producer-intake boundary consumes this decision the same way it consumed ADR-0020 and ADR-0021: it reconciles its own architecture against these semantics in its own repository. Ipotio tracks that reconciliation as Workstream 3E-B for **ARCH-GAP-011**.
 
-- **BASIS-side prerequisite:** proposed by this ADR. It is established only when this ADR is accepted.
-- **ARCH-GAP-011:** remains open. This ADR does not close it. Closure requires (1) acceptance of this ADR and (2) the upstream platform's Workstream 3E-B reconciliation in its own repository.
+- **BASIS-side prerequisite:** established by this decision, now Accepted.
+- **ARCH-GAP-011:** remains open. This ADR does not close it. Closure requires (1) acceptance of this ADR, now satisfied, and (2) the upstream platform's Workstream 3E-B reconciliation in its own repository.
 
 That reconciliation would need to confirm, at least:
 
