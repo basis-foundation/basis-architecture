@@ -259,7 +259,7 @@ The single most important boundary in the architecture is the one around the ker
 
 **Untrusted inputs.** Everything the operator submits through the console, until it has crossed the User → Gateway boundary and been authenticated and authorized there.
 
-**Assumptions.** That the console never becomes an authorization or authentication authority; that all operator actions against the authorization system flow through the gateway; that the console does not reach the kernel directly in production; that operator-initiated operations are auditable because they pass through the gateway.
+**Assumptions.** That the console never becomes an authorization or authentication authority; that all operator actions against the authorization system flow through the gateway; that the console does not reach the kernel directly in production; that operator-initiated operations are auditable because they pass through the gateway. That the console has no path to the producer-intake boundary, the authorization-to-execution binding, or the protocol executor, and that a disposition the console obtains on the gateway's direct path cannot support dispatch (ADR-0011 Decision 9, ADR-0012, ADR-0020 Decision 6). That OT device operation originates in an upstream supervisory system, not in the console (ADR-0018; [`basis-console.md`](../architecture/basis-console.md#device-management)). *Proposed, pending [ADR-0023](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md) acceptance:* that a console session establishes a BASIS administrative context only, and confers no OT operation-initiation authority or authorization-subject standing on any OT operation.
 
 **Validation expectations.** The console forwards operator requests to the gateway and renders what the gateway returns. The gateway authenticates and enforces. A console action that produces no audit record through the gateway is an audit gap, not a console feature. The console's invariants — it renders and submits, it does not evaluate — are the boundary's protection, and are detailed in [`basis-console.md`](../architecture/basis-console.md).
 
@@ -307,7 +307,7 @@ A threat model that assumes all threats are external is incomplete. BASIS is des
 
 ### 4.1 Legitimate actors
 
-**Operators.** Human principals who interact with the system through the console to inspect policy, review audit records, investigate denials, and submit changes. They authenticate as individuals and act within the authority their roles grant. Their access to the authorization system is itself subject to policy.
+**Operators.** Human principals who interact with the system through the console to inspect policy, review audit records, investigate denials, and submit changes. They authenticate as individuals and act within the authority their roles grant. Their access to the authorization system is itself subject to policy. In this document, operators are humans who operate the authorization system; OT operators who operate equipment do so through an upstream supervisory system (ADR-0018), and on a governed operation they are represented as authorization subjects established through the subject-identity chain (ADR-0008; ADR-0018 Decision 3).
 
 **Administrators.** Principals with elevated authority over configuration, policy authorship, and the deployment. Administrators define what the system enforces. Their authority is broad, which makes the integrity of their actions — and the auditability of those actions — particularly important.
 
@@ -502,6 +502,14 @@ The console is the lowest-privilege component in the authorization path by desig
 *Architectural consequence:* A console that reached the kernel directly would bypass authentication, enforcement, and audit assembly — exactly the guarantees the gateway provides — and would present the kernel with input it was not designed to receive (§2.3, §2.5).
 
 *Mitigation:* A console invariant: in production the console does not bypass gateway boundaries; direct console-to-kernel communication is permitted only in explicitly bounded local development tooling and must be documented as such. The console has no independent path to authorization state — it obtains everything through the gateway's authenticated APIs. The mitigation is the invariant plus the deployment property that the kernel is not reachable except through the gateway.
+
+**Threat: administrative session used as an OT operation path.**
+
+*Trust boundary:* Operator → Console (§3.4), the gateway's direct, non-producer path, and the producer-intake boundary (ADR-0018).
+
+*Architectural consequence:* If a console login, or a console simulation result, could cause an OT operation to be dispatched, the console would become a second, privileged origin of OT intent. It would bypass intake admission, producer admission, independent subject establishment, and the authorization-to-execution binding. A compromised administrator account would then be an OT control credential.
+
+*Mitigation:* Console simulation and diagnostic submissions use the direct path, whose dispositions are not bound to any preserved operation and cannot support dispatch (ADR-0011 Decision 9, ADR-0012, ADR-0020 Decision 6). The console has no path to the producer-intake boundary, the binding, or the protocol executor. It is not a device management platform and must not submit protocol commands ([`basis-console.md`](../architecture/basis-console.md)). *Proposed, pending [ADR-0023](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md) acceptance:* a console session would establish a BASIS administrative context only, conferring no OT operation-initiation or execution authority, and any future BASIS-native capability that originates real operations would have to be an ordinary governed producer with no special trust. The residual risk is policy authority: an administrator who can change policy can broaden what governed requests are permitted to do, which is the policy-integrity concern in §2.2 and §7.3.
 
 **Threat: visibility abuse — using read access to over-collect.**
 

@@ -298,7 +298,7 @@ A professional interface may be fast without being reckless. Future work on cons
 
 Confirmation friction should not be added to read-only investigation actions — an operator reviewing evidence should never be interrupted by a dialog meant for someone about to change system state. Training mode must never be permitted to bypass a real safety boundary in the name of a smoother learning experience.
 
-This document does not define specific confirmation dialogs, risk levels, or thresholds. Those are implementation decisions for whichever future phase introduces consequential, execution-capable operator actions.
+This document does not define specific confirmation dialogs, risk levels, or thresholds. Those are implementation decisions for whichever future phase introduces consequential, execution-capable operator actions. No such phase is authorized by this document. [ADR-0023](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md) (Proposed, pending acceptance) proposes that a console session confers no OT operation-initiation or execution authority, and that normal OT operations originate in an upstream supervisory platform. Under that proposal, a console-hosted capability that originated a real governed operation would require its own decision establishing it as an ordinary admitted producer, traversing the same intake, authentication, authorization, binding, execution, and evidence path as any other origin, with no special trust because it is part of BASIS.
 
 ---
 

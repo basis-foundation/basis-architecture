@@ -45,7 +45,7 @@ The API gateway wraps the authorization kernel and exposes it as a runtime servi
 
 **basis-console** — operator and administrator UI
 
-The console provides an operator and administrator interface for the authorization system. It supports policy inspection, authorization decision review, audit log querying, and basic operational management. It depends on basis-gateway. It does not contain authorization logic of its own. See [`docs/architecture/basis-console.md`](basis-console.md) for the canonical console architecture reference.
+The console provides an operator and administrator interface for the authorization system. It supports policy inspection, authorization decision review, audit log querying, and basic operational management of the authorization system. It is not a device management platform or an OT operator workstation: operator-driven OT intent originates in an upstream supervisory system ([ADR-0018](../adr/0018-upstream-supervisory-producer-intake-boundary.md)). [ADR-0023](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md) (Proposed, pending acceptance) proposes that a console login confers no OT operation-initiation authority. It depends on basis-gateway. It does not contain authorization logic of its own. See [`docs/architecture/basis-console.md`](basis-console.md) for the canonical console architecture reference.
 
 **basis-adapters** — protocol and integration adapters
 
