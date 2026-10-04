@@ -16,7 +16,7 @@ The ecosystem's division of responsibility has stabilized through implementation
 Adapters normalize.
 Gateway composes and enforces.
 Core evaluates.
-Console operates.
+Console administers BASIS.
 ```
 
 Several cross-repository contracts that follow from that division are now implemented and exercised by tests in their owning repositories — an action vocabulary, action composition, resource-identifier composition, gateway request shapes, the adapter normalized-request shape, the console's normalized submission, audit evidence, and a reserved gateway evidence namespace. They are currently expressed in whichever repository implements them, and in several cases mirrored or re-derived in more than one place.
