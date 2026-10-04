@@ -2,9 +2,9 @@
 
 ## Status
 
-Proposed
+Accepted
 
-Consistent with this repository's established practice (see ADR-0018's Context and ADR-0019's Status), this ADR is numbered when first proposed and submitted as `Proposed`. Merging it does not accept it. Acceptance requires a separate, dedicated review. Until then, the clarifications below are a proposal, and the accepted decisions they compose remain authoritative on their own terms.
+Consistent with this repository's established practice (see ADR-0018's Context and ADR-0019's Status), this ADR was numbered when first proposed and submitted as `Proposed`, and its merging did not constitute acceptance. It has since undergone that separate, dedicated formal-acceptance review, and its status now records `Accepted`. Acceptance changes no part of the decision below, modifies no accepted ADR, selects no mechanism, and authorizes no implementation. The accepted decisions it composes remain authoritative on their own terms.
 
 ## Context
 
@@ -343,7 +343,7 @@ This ADR composes accepted decisions. It invalidates none, modifies no accepted 
 - **ADR-0020.** Unchanged. Decision 6 here relies on its Decision 6, under which a direct-path disposition, including the console's, cannot support dispatch.
 - **ADR-0021.** Unchanged. Context, including category-authorized context, never establishes the subject.
 - **ADR-0022.** Unchanged. Any future BASIS-native producer would hold its own logical workload identity under ADR-0022's rules.
-- **`basis-console.md`, `basis-identity.md`, threat model.** Consistent. Narrow clarifying additions accompany this proposal. No existing invariant is removed or weakened.
+- **`basis-console.md`, `basis-identity.md`, threat model.** Consistent. Narrow clarifying additions accompanied this ADR's proposal. No existing invariant is removed or weakened.
 
 ## Alternatives Considered
 
@@ -418,7 +418,7 @@ This ADR does not:
 
 ## Validation / Implementation Gate
 
-Acceptance would establish the boundary as governed architecture against which console, identity, and integration work is reviewed. It authorizes no implementation. Implementation repositories may later reflect it in their own documentation through separate, bounded changes. A console change that adds any path toward the producer-intake boundary, the binding, or the protocol executor is not conforming unless a separate decision under Decision 7 authorizes it.
+Acceptance establishes the boundary as governed architecture against which console, identity, and integration work is reviewed. It authorizes no implementation. Implementation repositories may later reflect it in their own documentation through separate, bounded changes. A console change that adds any path toward the producer-intake boundary, the binding, or the protocol executor is not conforming unless a separate decision under Decision 7 authorizes it.
 
 ## References
 
