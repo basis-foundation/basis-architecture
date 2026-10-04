@@ -12,7 +12,7 @@ This document does not redefine component responsibilities. The recent reconcili
 Adapters normalize.
 Gateway composes and enforces.
 Core evaluates.
-Console operates.
+Console administers BASIS.
 ```
 
 The reason that division matters for security is the subject of this document.
@@ -23,7 +23,7 @@ The reason that division matters for security is the subject of this document.
 
 BASIS protects authorization decisions, policy integrity, identity context, audit evidence, enforcement integrity, the operational resources it governs, and the configuration that places its boundaries. It does so by arranging three properties in order — a request carries a verified **identity**, that identity is evaluated for **authorization** against policy, and the decision is recorded for **auditability** — and by assigning each property to a component that cannot substitute for another.
 
-The architecture's security rests on a single division of labor: adapters normalize protocol traffic, the gateway authenticates, composes, and enforces, the kernel evaluates, and the console operates. The most isolated component, the kernel, is also the one that produces decisions; every other component exists to deliver verified, normalized input to it and to carry out and record its decisions. The gateway is the trust boundary — in a typical deployment it is the only network-facing component, and the kernel is not reachable directly at all.
+The architecture's security rests on a single division of labor: adapters normalize protocol traffic, the gateway authenticates, composes, and enforces, the kernel evaluates, and the console administers BASIS. The most isolated component, the kernel, is also the one that produces decisions; every other component exists to deliver verified, normalized input to it and to carry out and record its decisions. The gateway is the trust boundary — in a typical deployment it is the only network-facing component, and the kernel is not reachable directly at all.
 
 The strongest security properties that follow from this structure are boundary ownership (each responsibility decided in exactly one place), fail-closed behavior (every ambiguous or error condition denies), kernel isolation (the decision engine has almost no attack surface), deterministic evaluation, and audit generation independent of enforcement. Together these mean a compromise of any one component is bounded by what the others still guarantee.
 
@@ -34,11 +34,13 @@ At the highest level, the system and its primary trust boundary look like this:
 ```mermaid
 flowchart TD
     subgraph Untrusted["Untrusted domain"]
+        Supervisory["Upstream supervisory platform<br/>(originates operator-driven OT intent)"]
         Protocol["Protocol operations<br/>(BACnet, Modbus, MQTT, OPC-UA, ...)"]
-        Operator["Operator<br/>(human)"]
+        Operator["Operator<br/>(BASIS administration)"]
         Client["External clients / integrations"]
     end
 
+    Producer["Producer-intake boundary · operation-producer role<br/>admit upstream workload · produce governed operation"]
     Adapters["basis-adapters<br/>normalize protocol → verb + resource_type + local resource_id"]
     Console["basis-console<br/>render · submit (no authorization)"]
 
@@ -50,10 +52,12 @@ flowchart TD
     Core["basis-core<br/>deterministic evaluation (ALLOW / DENY / NOT_APPLICABLE)"]
     Audit["Audit sink<br/>(AuditEvent stream)"]
 
+    Supervisory --> Producer
+    Producer -->|authenticated producer submission| Gateway
     Protocol --> Adapters
     Adapters --> Gateway
     Operator --> Console
-    Console --> Gateway
+    Console -->|administrative / direct path only| Gateway
     Client --> Gateway
     IdP -. "keys for token verification" .-> Gateway
     Gateway -->|verified, normalized DecisionRequest| Core
@@ -65,7 +69,7 @@ flowchart TD
     Console -. "forbidden in production" .-> Core
 ```
 
-The dashed lines into the kernel are architectural invariants, not configuration options: untrusted callers and the console do not reach `basis-core` directly. Everything that crosses into the kernel has first been authenticated, validated, and normalized at the gateway. The sections that follow develop why each of these boundaries reduces risk and what happens when one is crossed.
+The dashed lines into the kernel are architectural invariants, not configuration options: untrusted callers and the console do not reach `basis-core` directly. Everything that crosses into the kernel has first been authenticated, validated, and normalized at the gateway. The diagram shows components and the primary trust boundary, not the origin of OT intent. Operator-driven OT intent originates in an upstream supervisory platform and reaches the gateway through the producer-intake boundary and the operation-producer role. The console path is administrative, diagnostic, inspection, and simulation only, and cannot support dispatch (§1.3). The sections that follow develop why each of these boundaries reduces risk and what happens when one is crossed.
 
 ---
 
@@ -110,7 +114,33 @@ The BASIS Core Services Distribution is a set of open-source components with a s
 
 ### 1.3 The authorization request path
 
-The architecture is organized around a single canonical path that an authorization request travels. Each component on the path owns exactly one responsibility, and the security properties of the system follow from that separation.
+The architecture distinguishes two paths into the authorization runtime. Each component on them owns exactly one responsibility, and the security properties of the system follow from that separation.
+
+**Governed OT operation path.** Operator-driven OT intent originates outside BASIS, in an upstream supervisory platform ([ADR-0018](../adr/0018-upstream-supervisory-producer-intake-boundary.md); [ADR-0023](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md)):
+
+```text
+Authorization subject           human or non-human; needs no interactive BASIS session
+        ↓
+Upstream supervisory platform   originates the request (outside BASIS)
+        ↓
+Producer-intake boundary        admit the upstream workload; preserve subject provenance (ADR-0018)
+        ↓
+Operation-producer role         orchestrate adapter normalization; produce the governed operation;
+        ↓                       authenticate as the producer workload (ADR-0008, ADR-0010)
+basis-gateway                   admit the producer; establish the subject; compose; enforce (ADR-0020, ADR-0021)
+        ↓
+basis-core                      evaluate
+        ↓
+Authorization-to-execution binding   (ADR-0012)
+        ↓
+Protocol-executor role          bounded dispatch; execution evidence (ADR-0011, ADR-0013, ADR-0014)
+        ↓
+OT target
+```
+
+This is accepted architecture, not a statement of current implementation. The producer-intake boundary, the binding, and the protocol-executor role are not implemented. Current implementation stops at the gateway's authorization disposition ([`operation-producer-and-execution-boundary.md`](../architecture/operation-producer-and-execution-boundary.md)).
+
+Within that path, the segment from a protocol operation to an authorization decision is:
 
 ```text
 Protocol Operations          (BACnet, Modbus, MQTT, OPC-UA, ... — untrusted field traffic)
@@ -124,7 +154,11 @@ basis-core                   evaluate: deterministic policy decision (ALLOW / DE
 Authorization Decision       enforced at the gateway; serialized to protocol by the adapter; recorded in audit
 ```
 
-The role of each component on this path:
+This segment is not by itself the complete governed OT operation path, and an authorization decision on it is not a dispatch. The embedded model in [`basis-adapters.md`](../architecture/basis-adapters.md) remains valid for constrained deployments. In that model, the adapter host takes on the gateway's authentication, identity-normalization, and audit responsibilities, without changing authorization semantics.
+
+**Administrative and direct path.** A BASIS administrator uses `basis-console`, which calls `basis-gateway`, which invokes `basis-core` where evaluation is required. This path carries administration, inspection, diagnostics, and simulation only. A disposition obtained on it is not bound to any preserved operation and cannot support dispatch (ADR-0020 Decision 6; ADR-0023 Decisions 5 and 6).
+
+The role of each component:
 
 **basis-adapters** is the only place protocol-specific code exists. An adapter parses a protocol-native operation — a BACnet `WriteProperty`, a Modbus function code, an MQTT publish — and normalizes it into a bare verb, a `resource_type`, and a local `resource_id`. It does not authorize. It does not authenticate users. It does not compose kernel-canonical identifiers. It carries the kernel's decision back to the protocol layer faithfully, expressing a `DENY` as a protocol-appropriate denial.
 
@@ -132,7 +166,7 @@ The role of each component on this path:
 
 **basis-core** is the authorization kernel. It evaluates a `DecisionRequest` — a normalized subject, action, and resource identifier — against policy and returns a deterministic `DecisionResponse`. It has no network surface, no authentication layer, no protocol knowledge, and no transport. It assumes its inputs have already been verified and normalized.
 
-**basis-console** is the operator interface. It renders policy state, decisions, and audit records, and submits operator requests — through the gateway, under the gateway's authentication and enforcement. It does not evaluate, authenticate, normalize protocols, or produce audit records of its own.
+**basis-console** is the operator interface. It renders policy state, decisions, and audit records, and submits operator requests — through the gateway, under the gateway's authentication and enforcement. It does not evaluate, authenticate, normalize protocols, or produce audit records of its own. It administers BASIS. It is not a supervisory platform and does not originate OT operations, which originate in upstream supervisory platforms (ADR-0018; ADR-0023).
 
 This is an authorization-centric architecture: the kernel that produces decisions is the smallest, most isolated, most heavily constrained component in the system, and every other component exists to deliver verified, normalized input to it and to faithfully carry out and record its decisions. The security argument of this document is, in large part, an argument that this arrangement is the correct one.
 
@@ -259,7 +293,7 @@ The single most important boundary in the architecture is the one around the ker
 
 **Untrusted inputs.** Everything the operator submits through the console, until it has crossed the User → Gateway boundary and been authenticated and authorized there.
 
-**Assumptions.** That the console never becomes an authorization or authentication authority; that all operator actions against the authorization system flow through the gateway; that the console does not reach the kernel directly in production; that operator-initiated operations are auditable because they pass through the gateway. That the console has no path to the producer-intake boundary, the authorization-to-execution binding, or the protocol executor, and that a disposition the console obtains on the gateway's direct path cannot support dispatch (ADR-0011 Decision 9, ADR-0012, ADR-0020 Decision 6). That OT device operation originates in an upstream supervisory system, not in the console (ADR-0018; [`basis-console.md`](../architecture/basis-console.md#device-management)). *Proposed, pending [ADR-0023](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md) acceptance:* that a console session establishes a BASIS administrative context only, and confers no OT operation-initiation authority or authorization-subject standing on any OT operation.
+**Assumptions.** That the console never becomes an authorization or authentication authority; that all operator actions against the authorization system flow through the gateway; that the console does not reach the kernel directly in production; that operator-initiated operations are auditable because they pass through the gateway. That the console has no path to the producer-intake boundary, the authorization-to-execution binding, or the protocol executor, and that a disposition the console obtains on the gateway's direct path cannot support dispatch (ADR-0011 Decision 9, ADR-0012, ADR-0020 Decision 6). That OT device operation originates in an upstream supervisory system, not in the console (ADR-0018; [`basis-console.md`](../architecture/basis-console.md#device-management)). That a console session establishes a BASIS administrative context only, and confers no OT operation-initiation authority, execution authority, or authorization-subject standing on any OT operation, and that no authorization subject needs a console session ([ADR-0023](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md), Accepted, Decisions 3 and 5).
 
 **Validation expectations.** The console forwards operator requests to the gateway and renders what the gateway returns. The gateway authenticates and enforces. A console action that produces no audit record through the gateway is an audit gap, not a console feature. The console's invariants — it renders and submits, it does not evaluate — are the boundary's protection, and are detailed in [`basis-console.md`](../architecture/basis-console.md).
 
@@ -309,7 +343,7 @@ A threat model that assumes all threats are external is incomplete. BASIS is des
 
 **Operators.** Human principals who interact with the system through the console to inspect policy, review audit records, investigate denials, and submit changes. They authenticate as individuals and act within the authority their roles grant. Their access to the authorization system is itself subject to policy. In this document, operators are humans who operate the authorization system; OT operators who operate equipment do so through an upstream supervisory system (ADR-0018), and on a governed operation they are represented as authorization subjects established through the subject-identity chain (ADR-0008; ADR-0018 Decision 3).
 
-**Administrators.** Principals with elevated authority over configuration, policy authorship, and the deployment. Administrators define what the system enforces. Their authority is broad, which makes the integrity of their actions — and the auditability of those actions — particularly important.
+**Administrators.** Principals with elevated authority over configuration, policy authorship, and the deployment. Administrators define what the system enforces. Their authority is broad, which makes the integrity of their actions — and the auditability of those actions — particularly important. Administrative authority over BASIS is not authority to originate OT operations. An administrator who can change policy can change what a future governed request would be permitted to do, but gains no path to originate that request (ADR-0023 Decision 5).
 
 **Automation systems.** Non-human principals such as a building management system that issues scheduled or reactive commands. They carry system identity rather than operator identity, and policy that governs their autonomous behavior is distinct from policy governing operator-initiated actions. Their actions must be attributed to the system principal, not to whichever operator last touched the system.
 
@@ -331,7 +365,7 @@ A threat model that assumes all threats are external is incomplete. BASIS is des
 
 **Compromised gateway.** The most consequential component compromise, because the gateway is the trust boundary. A compromised gateway can fabricate identity, suppress audit, or misenforce. The architecture's structural answer is that even a compromised gateway cannot alter the kernel's evaluation semantics — but it can control what reaches the kernel and what is done with the result, which bounds how much the kernel's correctness can save. See §6.2 and §7.1.
 
-**Compromised automation platform.** A subverted BMS or similar system that issues malicious commands under its system identity, or that forges operator identity on commands it forwards. The architecture's defense is that the platform is a subject like any other: its autonomous authority is bounded by policy, and identity propagation is expected to attribute forwarded commands to their true origin.
+**Compromised automation platform.** A subverted BMS or similar system that issues malicious commands under its system identity, or that forges operator identity on commands it forwards. The architecture's defense is that the platform is a subject like any other: its autonomous authority is bounded by policy, and identity propagation is expected to attribute forwarded commands to their true origin. The same applies to any compromised upstream supervisory platform (BAS/BMS, HMI, SCADA, or similar). It can still originate admissible but unwanted requests for subjects it can legitimately convey. It cannot assert that a subject is authorized, and its own authentication never substitutes for BASIS subject establishment (ADR-0018 Decisions 1 and 3; ADR-0023 Decision 4). Each such request still undergoes full subject establishment and evaluation.
 
 The recurring structure across these adversaries is that BASIS does not assume the boundary holds because the actor is internal. It assumes any actor — internal or external, human or component — may be the adversary, and it places its guarantees in the structure of the boundaries rather than in the good behavior of the principals crossing them.
 
@@ -509,7 +543,23 @@ The console is the lowest-privilege component in the authorization path by desig
 
 *Architectural consequence:* If a console login, or a console simulation result, could cause an OT operation to be dispatched, the console would become a second, privileged origin of OT intent. It would bypass intake admission, producer admission, independent subject establishment, and the authorization-to-execution binding. A compromised administrator account would then be an OT control credential.
 
-*Mitigation:* Console simulation and diagnostic submissions use the direct path, whose dispositions are not bound to any preserved operation and cannot support dispatch (ADR-0011 Decision 9, ADR-0012, ADR-0020 Decision 6). The console has no path to the producer-intake boundary, the binding, or the protocol executor. It is not a device management platform and must not submit protocol commands ([`basis-console.md`](../architecture/basis-console.md)). *Proposed, pending [ADR-0023](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md) acceptance:* a console session would establish a BASIS administrative context only, conferring no OT operation-initiation or execution authority, and any future BASIS-native capability that originates real operations would have to be an ordinary governed producer with no special trust. The residual risk is policy authority: an administrator who can change policy can broaden what governed requests are permitted to do, which is the policy-integrity concern in §2.2 and §7.3.
+*Mitigation:* Console simulation and diagnostic submissions use the direct path, whose dispositions are not bound to any preserved operation and cannot support dispatch (ADR-0011 Decision 9, ADR-0012, ADR-0020 Decision 6). The console has no path to the producer-intake boundary, the binding, or the protocol executor. It is not a device management platform and must not submit protocol commands ([`basis-console.md`](../architecture/basis-console.md)). Under [ADR-0023](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md) (Accepted), a console session establishes a BASIS administrative context only, conferring no OT operation-initiation or execution authority. Any future BASIS-native capability that originates real operations must first be established by its own architecture decision as an ordinary governed producer, with no special trust or bypass ([`basis-console.md`](../architecture/basis-console.md) Design Invariants 11 through 15). The architecture rules out the implicit authority collapse. Each implementation must still enforce it, and a console change that adds any path toward the intake boundary, the binding, or the executor is non-conforming. The residual risk is policy authority: an administrator who can change policy can broaden what governed requests are permitted to do, which is the policy-integrity concern in §2.2 and §7.3.
+
+**Threat: administrator identity confused with OT subject identity.**
+
+*Trust boundary:* Operator → Console (§3.4) and the subject-identity chain at the gateway (§3.5; ADR-0008).
+
+*Architectural consequence:* If an administrator's console session were treated as the subject context of an OT operation, the same person's OT operations would be authorized against their administrative grants, or their administrative identity would be attributed to operations they never originated. Either corrupts the decision and its audit attribution (§2.3).
+
+*Mitigation:* A BASIS administrative context is the subject only of the administrative actions taken in it. It gains no subject standing on any OT operation by virtue of administration. One human may be both an administrator and an OT operator, but administrative grants and OT operation grants are separate policy questions about separate actions. The subject of an OT operation is established independently through the governed identity path (ADR-0023 Decisions 3 and 5). Correspondence between a human's identities is established by subject resolution, never by name equality or a shared login.
+
+**Threat: simulation result misrepresented as executable authorization.**
+
+*Trust boundary:* Operator → Console (§3.4) and the gateway's direct, non-producer path.
+
+*Architectural consequence:* A Decision Simulator or diagnostic `ALLOW` presented, or relied upon, as permission to act could lead a human or a downstream system to treat an evaluation as an executed or executable operation.
+
+*Mitigation:* A direct-path disposition is evaluation information. It is bound to no preserved operation and cannot support dispatch: `ALLOW` is not `DISPATCHED` (ADR-0011 Decision 9, ADR-0012, ADR-0020 Decision 6). The console must keep simulation and diagnostic results distinguishable from governed operations (ADR-0023 Decision 6). The residual risk is a non-conforming console that presents a simulation result as live. The rule is architectural; its enforcement is an implementation concern. How the distinction is represented in presentation and evidence remains deferred (§11).
 
 **Threat: visibility abuse — using read access to over-collect.**
 
@@ -597,6 +647,8 @@ The component analysis in §6 reasons from the inside out. This section reasons 
 
 **Mitigation.** The gateway verifies signature, expiry, and issuer against the provider's keys before any evaluation, and normalizes only already-verified claims. A fabricated token fails verification; an altered one fails signature. The architecture confines all of this to the gateway, so identity forgery must defeat cryptographic verification rather than exploit scattered, inconsistent checks. The residual path — a genuinely issued token with elevated claims — falls to the identity-provider trust assumption (§9), not to a gap in BASIS.
 
+**Upstream subject context.** The same attack applies to subject context conveyed from an upstream supervisory platform. A forged, replayed, or merely asserted subject claim, or the supervisory platform's own session, could be presented as if it established the subject. The architecture does not permit that. A supervisory platform's claim about a subject that is not bound to a verifiable subject authentication remains an unverified hint, and being authenticated as the upstream workload does not authenticate the subject (ADR-0018 Decision 3). A shared enterprise IdP or single sign-on does not change this: shared authentication authority is not shared authorization authority, and any subject proof BASIS accepts must satisfy the BASIS identity chain (ADR-0023 Decision 8). The conveyance mechanism and federation profile that would carry such proof remain deferred (§11).
+
 ### 7.3 Policy tampering — altering policy behavior
 
 **Attacker objective.** Change what the system permits, without touching any component's code, by altering the policy the kernel evaluates.
@@ -631,7 +683,7 @@ The component analysis in §6 reasons from the inside out. This section reasons 
 
 **Architectural impact.** Authorization of operations beyond the attacker's legitimate authority (§2.3, §2.5).
 
-**Mitigation.** Normalization operates only on verified claims and is confined to the gateway. Composition is single-owner with dual-accept/reject discipline, rejecting ambiguous or contradictory inputs rather than resolving them in the attacker's favor. The console cannot bypass the gateway in production and owns no authority of its own. Each escalation path is closed by a boundary-ownership property: authority is decided in exactly one place (the kernel, on input the gateway verified and composed), not in several places that could disagree (§8).
+**Mitigation.** Normalization operates only on verified claims and is confined to the gateway. Composition is single-owner with dual-accept/reject discipline, rejecting ambiguous or contradictory inputs rather than resolving them in the attacker's favor. The console cannot bypass the gateway in production and owns no authority of its own. A BASIS administrative session confers no OT operation-initiation or execution authority, and no BASIS-native tool receives privileged admission, binding, or dispatch because it is part of BASIS (ADR-0023 Decisions 5 and 7). Each escalation path is closed by a boundary-ownership property: authority is decided in exactly one place (the kernel, on input the gateway verified and composed), not in several places that could disagree (§8).
 
 ### 7.6 Replay — reusing previously valid requests
 
@@ -672,7 +724,7 @@ The component analysis in §6 reasons from the inside out. This section reasons 
 
 The preceding sections referenced a small set of architectural properties repeatedly. This section names them directly and explains why each reduces risk. These are architectural mitigations — properties of how the system is structured — not implementation techniques. Their power is that they hold across deployments and across the specific threats in §6 and §7 rather than addressing any one of them in isolation.
 
-**Boundary ownership.** Each responsibility is owned by exactly one component at exactly one boundary: adapters normalize, the gateway composes and enforces, the kernel evaluates, the console operates. This is the deepest security property in the architecture, not merely an implementation tidiness. When a responsibility has a single owner, there is one place it must be correct and one place to audit it; when authority is decided in one place rather than several, components cannot disagree in ways an attacker exploits. The action and resource-identifier reconciliation work is the clearest expression of this: rather than letting adapters, the gateway, and the console each compose canonical artifacts (and drift apart), composition was assigned to one boundary — the gateway — so the action's domain and the resource's type are produced from the same input and are consistent by construction. Boundary ownership is what makes the other mitigations possible: fail-closed behavior, kernel isolation, and auditability each depend on responsibilities not being smeared across components.
+**Boundary ownership.** Each responsibility is owned by exactly one component at exactly one boundary: adapters normalize, the gateway composes and enforces, the kernel evaluates, the console administers BASIS. This is the deepest security property in the architecture, not merely an implementation tidiness. When a responsibility has a single owner, there is one place it must be correct and one place to audit it; when authority is decided in one place rather than several, components cannot disagree in ways an attacker exploits. The action and resource-identifier reconciliation work is the clearest expression of this: rather than letting adapters, the gateway, and the console each compose canonical artifacts (and drift apart), composition was assigned to one boundary — the gateway — so the action's domain and the resource's type are produced from the same input and are consistent by construction. Boundary ownership is what makes the other mitigations possible: fail-closed behavior, kernel isolation, and auditability each depend on responsibilities not being smeared across components.
 
 **Fail-closed behavior.** In every ambiguous or error condition, the system denies. A `NOT_APPLICABLE` is treated as `DENY`; an unmatched action defaults to deny; a kernel error, a validation failure, an authentication failure, an unavailable kernel — all fail closed. This matters because an authorization system's failures should subtract access, not add it. An attacker who can induce a failure should gain nothing; the worst they achieve is denial of service, which is visible, rather than silent unauthorized access, which is not. Fail-closed is why inducing errors is not a productive attack strategy against BASIS, and it is why the gateway's prohibition on adding permit logic is an invariant rather than a preference.
 
@@ -758,6 +810,8 @@ This section records questions the architecture has not yet resolved. They are r
 
 **Adapter-to-gateway producer authentication.** The trusted adapter boundary (§3.3) describes the semantic trust the gateway places in an already-authenticated caller's normalization; it does not itself specify how a `basis-adapters`-produced operation reaches the gateway from an authenticated producer. That mechanism is now decided elsewhere. [ADR-0008](../adr/0008-producer-workload-authentication-and-admission.md) and [ADR-0009](../adr/0009-trusted-producer-mtls-ingress-and-gateway-certificate-handoff.md) (both `Status: Accepted`) establish mTLS producer workload authentication, exact producer admission, and the trusted-ingress topology, and a bounded implementation exists in `basis-gateway` and `basis-producer`. The producer workload credential lifecycle is decided architecturally by [ADR-0022](../adr/0022-workload-credential-lifecycle-and-scope-boundary.md) (`Status: Accepted`) and is not implemented. The upstream workload authentication mechanism at the producer-intake boundary is still deferred with ADR-0018's intake mechanism. [`docs/architecture/operation-producer-and-execution-boundary.md`](../architecture/operation-producer-and-execution-boundary.md) also names the further gap between gateway enforcement and actual protocol execution, which this threat model does not resolve. That document originally also recorded whether producer trust should become category-scoped as an open architectural question; [ADR-0021](../adr/0021-upstream-context-assertion-trust-boundary.md) (`Status: Accepted`) now resolves that question architecturally, including for upstream-originated context (§7.7). The accepted model is not yet implemented, and current producer admission remains all-or-nothing.
 
+**Supervisory-platform subject conveyance and federation.** [ADR-0023](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md) (`Status: Accepted`) fixes the boundary between supervisory platforms and BASIS administrative interfaces, but leaves its mechanisms open. Subject-credential conveyance from a supervisory platform to the operation-producer role, the federation profile for subject proof that originates from an enterprise IdP shared with a supervisory platform, the representation of simulation and diagnostic results in presentation and evidence, break-glass procedures, and policy-administration controls such as review and separation of duties are unresolved. Until subject-credential conveyance is decided, a conforming implementation cannot authorize an upstream-initiated operation for a human subject.
+
 Recording these as open is itself a security posture. An architecture that claimed to have settled them prematurely would invite reliance on guarantees it had not actually thought through. The honest position is that these are known, they matter, and they will be resolved as the constraints that should govern them come into focus.
 
 ---
@@ -777,6 +831,7 @@ Recording these as open is itself a security posture. An architecture that claim
 - [`docs/adr/0020-operation-to-authorization-mapping-and-composition-boundary.md`](../adr/0020-operation-to-authorization-mapping-and-composition-boundary.md) — ADR-0020 (`Status: Accepted`); governing decision for canonical composition ownership on the governed admitted-producer path and upstream operation-to-authorization mapping
 - [`docs/adr/0021-upstream-context-assertion-trust-boundary.md`](../adr/0021-upstream-context-assertion-trust-boundary.md) — ADR-0021 (`Status: Accepted`); accepted, not implemented, category-scoped, origin-preserving context-assertion trust boundary and the mitigation for §7.7
 - [`docs/adr/0022-workload-credential-lifecycle-and-scope-boundary.md`](../adr/0022-workload-credential-lifecycle-and-scope-boundary.md) — ADR-0022 (`Status: Accepted`); workload credential lifecycle and scope boundary for upstream and producer workloads; bears on §7.2, §7.5, and §11 (long-term key management); not implemented
+- [`docs/adr/0023-supervisory-platform-and-administrative-interface-boundary.md`](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md) — ADR-0023 (`Status: Accepted`); supervisory-platform and administrative-interface boundary; bears on §3.4, §4, §6.4, §7.2, §7.5, and §11; not an implementation change
 - [`docs/glossary.md`](../glossary.md) — definitions for Trust Boundary, Trusted Adapter Boundary, Authorization Kernel, Identity Propagation, Immutable Audit Logging, and related terms
 - [`whitepapers/identity-aware-authorization-for-operational-technology/sections/05-ot-trust-boundaries.md`](../../whitepapers/identity-aware-authorization-for-operational-technology/sections/05-ot-trust-boundaries.md) — the OT trust-boundary and zone analysis this document builds on
 - [`whitepapers/identity-aware-authorization-for-operational-technology/sections/08-threat-modeling-and-security-considerations.md`](../../whitepapers/identity-aware-authorization-for-operational-technology/sections/08-threat-modeling-and-security-considerations.md) — the white paper's OT-scoped threat analysis, complementary to this component-scoped model

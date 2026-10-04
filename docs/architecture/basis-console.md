@@ -14,32 +14,26 @@ The core architectural question `basis-console` answers is: what is the minimum 
 
 `basis-console` is a human-facing operational interface for observing, configuring, and interacting with BASIS components through established enforcement boundaries.
 
-It is not an authorization engine. It does not evaluate policy, interpret access decisions, or determine who may do what. It is not an identity provider. It does not issue credentials, manage sessions, or federate identity. It is not a protocol adapter. It does not speak BACnet, Modbus, MQTT, or any other field protocol. It is not a deployment platform. It does not manage infrastructure, coordinate upgrades, or distribute configuration.
+It is not an authorization engine. It does not evaluate policy, interpret access decisions, or determine who may do what. It is not an identity provider. It does not issue credentials, manage sessions, or federate identity. It is not a protocol adapter. It does not speak BACnet, Modbus, MQTT, or any other field protocol. It is not a deployment platform. It does not manage infrastructure, coordinate upgrades, or distribute configuration. It is not a supervisory platform. It is not the workstation through which humans monitor and operate OT equipment, and it does not originate OT operations.
 
-The console is an operator-facing interface layer. It renders information that the authorization system already has, and submits requests through channels the authorization system already enforces.
+The console is an operator-facing interface layer for BASIS itself: an administrative, observability, diagnostic, inspection, and simulation interface. It renders information that the authorization system already has, and submits requests through channels the authorization system already enforces.
 
-**Terminology in this document.** Here, *operator* means a human who operates, administers, or investigates the authorization system itself. It does not mean an OT operator who monitors and operates OT equipment through a supervisory platform. Likewise, *operational management*, *operator workflows*, and *initiating requests* refer to operating BASIS, not to operating OT devices. See [Relationship to Supervisory Platforms and OT Operations](#relationship-to-supervisory-platforms-and-ot-operations).
+**Terminology in this document.** Here, *operator* means a human who operates, administers, or investigates the authorization system itself — a *BASIS administrator* in [ADR-0023](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md)'s working vocabulary. It does not mean an OT operator who monitors and operates OT equipment through a supervisory platform. Likewise, *operational management*, *operator workflows*, and *initiating requests* refer to operating BASIS, not to operating OT devices. See [Relationship to Supervisory Platforms and OT Operations](#relationship-to-supervisory-platforms-and-ot-operations).
 
 ---
 
 ## Relationship to Supervisory Platforms and OT Operations
 
-This section separates what accepted architecture established before [ADR-0023](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md) from what ADR-0023 adds. ADR-0023 is `Accepted`, so the rules listed under **Established by ADR-0023** are governing architecture and constrain console implementations. They have not yet been structurally promoted into this document's Design Invariants and surrounding prose. That reconciliation is deferred to a bounded follow-up update.
+BASIS is an authorization and security substrate for OT operations. It is not a supervisory platform ([ADR-0023](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md), Accepted). `basis-console` operates and administers BASIS. It does not operate OT equipment. Its role is BASIS-facing: security administration, inspection, diagnostics, policy and security visibility, evidence and audit review, identity and security visibility, and testing and simulation where explicitly labeled.
 
-**Established by accepted architecture before ADR-0023:**
+- **OT intent originates upstream, not in the console.** Operator-driven OT intent originates in an upstream supervisory platform, such as a BAS/BMS, HMI, SCADA, maintenance, orchestration, or other admitted operational application. No platform in that category is a special case. That intent reaches BASIS across the producer-intake boundary ([ADR-0018](../adr/0018-upstream-supervisory-producer-intake-boundary.md), Accepted, Decision 1; [`operation-producer-and-execution-boundary.md`](operation-producer-and-execution-boundary.md) §2). This is the positive counterpart of the **Device Management** non-responsibility below.
+- **A console login establishes a BASIS administrative context only.** Every console action is authenticated and enforced at `basis-gateway` and evaluated by policy. The administrator is the authorization subject of those administrative actions only. The login confers no OT operation-initiation authority, no execution authority, and no authorization-subject standing on any OT operation. One human may be both a BASIS administrator and an OT operator. Their OT operations still originate in a supervisory platform, and their console session is not their subject context on those operations (ADR-0023 Decision 5).
+- **No authorization subject needs a console session.** The subject of an OT operation initiated through a supervisory platform is established through the governed identity path, and need never open the console (ADR-0023 Decision 3). Sharing an enterprise identity provider or single sign-on between BASIS and a supervisory platform is permitted, and merges neither relying-party contexts nor authorization (ADR-0023 Decision 8; [`basis-identity.md`](basis-identity.md)).
+- **Simulation and direct-path evaluation cannot support dispatch.** The Decision Simulator and similar diagnostic or test tools submit on the gateway's direct, non-producer path. A disposition obtained there, including `ALLOW`, is evaluation information. It is not bound to any preserved operation and cannot support dispatch: `ALLOW` is not `DISPATCHED` ([ADR-0020](../adr/0020-operation-to-authorization-mapping-and-composition-boundary.md), Accepted, Decision 6; [ADR-0011](../adr/0011-protocol-execution-role-and-bounded-reference-topology.md) Decision 9; [ADR-0012](../adr/0012-authorization-to-execution-binding.md)). These tools remain legitimate. Their results must remain distinguishable from governed operations ([`operator-and-training-experience.md`](../roadmaps/operator-and-training-experience.md), **Safety and Confirmation Design**).
+- **The console has no privileged path into the governed chain.** The protocol-executor role dispatches only on an authoritative disposition bound to the exact operation authorized, and accepts no command from anything other than the governed path (ADR-0011 Decision 9; ADR-0012; ADR-0018 Decision 8). The console holds no such binding and has no path to the producer-intake boundary, the binding, or the protocol executor.
+- **A future operation-originating capability is possible only as an ordinary governed producer.** BASIS is not permanently barred from hosting a capability that originates a real governed OT operation, such as a reference producer or a constrained emergency tool. Any such capability first requires its own architecture decision establishing it as an ordinary governed producer or upstream source. It then traverses the same governed path as any external origin, with no special trust because it is part of BASIS (ADR-0023 Decision 7). BASIS-native tools may consume BASIS's security architecture. They may not bypass it.
 
-- **The console is not the OT supervisory or operator workstation.** This document's **Device Management** non-responsibility already excludes it: the console "is not a SCADA system, a building automation system, a BAS programming environment, or a device fleet manager." Operator-driven OT intent originates in an upstream supervisory system, such as a BAS/BMS, HMI, SCADA, or other operational application. That intent reaches BASIS across the producer-intake boundary ([ADR-0018](../adr/0018-upstream-supervisory-producer-intake-boundary.md), Accepted, Decision 1; [`operation-producer-and-execution-boundary.md`](operation-producer-and-execution-boundary.md) §2). The console's role is BASIS-facing: security administration, inspection, diagnostics, policy and security visibility, evidence and audit review, identity and security visibility, and testing and simulation where explicitly labeled.
-- **A console login does not itself establish an OT-control session.** The console does not evaluate authorization (Design Invariants 1 and 2). It must not submit protocol commands (see [Relationship to basis-adapters](#relationship-to-basis-adapters)). Every console action is authenticated and enforced at `basis-gateway`.
-- **Decision Simulator and direct-path evaluation cannot trigger dispatch.** The Decision Simulator and similar diagnostic or test tools submit on the gateway's direct, non-producer path. A disposition obtained there, including `ALLOW`, is not bound to any preserved operation and cannot support dispatch ([ADR-0020](../adr/0020-operation-to-authorization-mapping-and-composition-boundary.md), Accepted, Decision 6; [ADR-0011](../adr/0011-protocol-execution-role-and-bounded-reference-topology.md) Decision 9; [ADR-0012](../adr/0012-authorization-to-execution-binding.md)). These tools remain legitimate. Their results should remain distinguishable from live action ([`operator-and-training-experience.md`](../roadmaps/operator-and-training-experience.md), **Safety and Confirmation Design**).
-- **No existing console path reaches binding or protocol execution.** The protocol-executor role dispatches only on an authoritative disposition bound to the exact operation authorized. It accepts no command from anything other than the governed path (ADR-0011 Decision 9; ADR-0012; ADR-0018 Decision 8). The console holds no such binding and has no path to the producer-intake boundary.
-
-**Established by ADR-0023 (Accepted):**
-
-- A console login, like any BASIS administrative login, establishes a BASIS administrative context only. It confers no OT operation-initiation authority, no execution authority, and no authorization-subject standing on any OT operation.
-- No authorization subject is required to hold a console session. A human whose OT operation is initiated through a supervisory platform is established as the subject through the governed identity path, and need never open the console.
-- If a console-hosted capability were ever permitted to originate a real governed operation, a separate decision would have to establish it as an ordinary admitted producer. It would traverse the same intake, authentication, authorization, binding, execution, and evidence path as any other origin, with no special trust because it is part of BASIS.
-
-A later bounded update will promote these rules into the Design Invariants below. Until then, they bind as stated here and in ADR-0023.
+These rules are governing architecture and are stated normatively in Design Invariants 11 through 15. This document selects no mechanism for subject-credential conveyance, intake transport, federation, or the representation of simulation results. Those remain deferred under ADR-0023. These rules govern console implementations. This document does not claim that any existing implementation has been reviewed for conformance to them.
 
 ---
 
@@ -154,6 +148,8 @@ console → kernel
 
 The gateway-mediated path preserves enforcement consistency, audit consistency, and trust-boundary consistency. A console that bypasses the gateway to reach the kernel directly also bypasses authentication, audit assembly, and enforcement — creating a path that the kernel was not designed to receive.
 
+This administrative path is separate from the governed OT operation path, which runs from an upstream supervisory platform through the producer-intake boundary, the operation-producer role, `basis-gateway`, `basis-core`, the authorization-to-execution binding, and the protocol-executor role. The console path reaches only the gateway's administrative, inspection, diagnostic, and simulation APIs. It never joins the governed OT operation path (see [Relationship to Supervisory Platforms and OT Operations](#relationship-to-supervisory-platforms-and-ot-operations)).
+
 ### Architecture Diagram
 
 ```mermaid
@@ -187,8 +183,9 @@ The gateway is the console's primary operational dependency.
 
 The console does not have an independent path to authorization state, audit records, or kernel metadata. It obtains everything through the gateway's APIs. The gateway provides:
 
-- **Authenticated APIs** — all console interactions are authenticated at the gateway boundary; the console presents operator credentials that the gateway verifies against the configured identity provider
+- **Authenticated APIs** — all console interactions are authenticated at the gateway boundary; the console presents operator credentials that the gateway verifies against the configured identity provider. The identity established this way is the operator's BASIS administrative context. It is the subject of the operator's administrative actions, not of any OT operation
 - **Enforcement boundaries** — the gateway enforces authorization decisions on console requests just as it does on any other caller; operator access to policy state and administrative operations is subject to policy
+- **Direct-path evaluation** — the Decision Simulator and similar tools submit evaluation requests on the gateway's direct, non-producer path; the disposition returned there is evaluation information and cannot support dispatch (ADR-0020 Decision 6)
 - **Audit generation** — the gateway writes audit records of console-initiated operations; the console does not maintain its own audit trail
 - **Runtime services** — policy queries, decision history, adapter status, and system health are surfaced through gateway-provided endpoints; the console is a consumer of these services, not their source
 
@@ -230,7 +227,7 @@ Adapter observability through the console is appropriate. Adapter control throug
 
 ## Operator Workflows
 
-The following workflows illustrate how operators interact with BASIS through the console. They are conceptual — the console's specific UI, interaction model, and endpoint structure are implementation decisions, not architectural requirements.
+The following workflows illustrate how operators interact with BASIS through the console. They are conceptual — the console's specific UI, interaction model, and endpoint structure are implementation decisions, not architectural requirements. Each is a workflow for administering or investigating BASIS. None originates an OT operation.
 
 ### Audit Review
 
@@ -376,6 +373,16 @@ The following invariants constrain all console implementations. They are not imp
 
 10. **The console must remain optional within the ecosystem.** BASIS deployments must remain viable without `basis-console`. Enforcement correctness, audit completeness, and authorization semantics must not depend on whether a console is present. This prevents console-centric architecture: the system does not require a console to function correctly — it requires a kernel and a gateway.
 
+11. **The console is a BASIS administrative interface, not an OT supervisory workstation.** The console is BASIS's administrative, observability, diagnostic, inspection, and simulation interface. It is not the workstation through which humans monitor and operate OT equipment. Operator-driven OT intent originates in an upstream supervisory platform, not in the console (ADR-0018 Decision 1; ADR-0023 Decisions 1, 2, and 6).
+
+12. **A console login establishes a BASIS administrative context only.** It confers no OT operation-initiation authority and no execution authority. It does not make the operator the authorization subject of any OT operation. The operator is the authorization subject of their administrative actions only, which the gateway authenticates and policy evaluates (ADR-0023 Decision 5).
+
+13. **No authorization subject needs a console session.** The subject of an OT operation is established through the governed identity path. Holding or opening a console session is never a precondition for being an authorization subject (ADR-0023 Decision 3).
+
+14. **Direct-path evaluation and simulation cannot support dispatch.** A disposition obtained through the Decision Simulator or any other diagnostic, test, or direct-path evaluation is not bound to any preserved operation. It cannot support dispatch. `ALLOW` on that path does not mean `DISPATCHED`. The console keeps such results distinguishable from governed operations (ADR-0011 Decision 9; ADR-0012; ADR-0020 Decision 6; ADR-0023 Decision 6).
+
+15. **The console creates no privileged path into the governed chain.** The console has no path to the producer-intake boundary, the authorization-to-execution binding, or the protocol executor, and must not create one. Any future console-hosted capability that originates a real governed OT operation must first be established by a separate architecture decision as an ordinary governed producer or upstream source. It must then traverse the same governed intake, authentication, admission, subject establishment, authorization, binding, execution, and evidence path as any external origin. It receives no special trust, admission, or bypass because it is part of BASIS. Its workload identity, the administrative context of any human using it, and that human's subject context stay distinct. The console may consume BASIS's security architecture. It may not bypass it (ADR-0023 Decision 7).
+
 ---
 
 ## Future Possibilities
@@ -392,7 +399,7 @@ The following capabilities represent directions the console might develop. They 
 
 **Adapter status visibility** — richer display of adapter operational state: which protocol adapters are active, what devices they are connected to, and whether recent adapter activity shows anomalies.
 
-Each of these possibilities remains bounded by the same invariants: the console does not evaluate, authenticate, normalize protocols, or redefine audit. Future capabilities are additions to the interface layer, not expansions of the console's architectural role.
+Each of these possibilities remains bounded by the same invariants: the console does not evaluate, authenticate, normalize protocols, or redefine audit. Nor does it originate OT operations or gain a path into the governed chain (Design Invariants 11 through 15). Future capabilities are additions to the interface layer, not expansions of the console's architectural role. A capability that would originate a real governed OT operation is not a console possibility listed here. It would require its own architecture decision under Design Invariant 15.
 
 ---
 
@@ -404,6 +411,8 @@ The console occupies a specific, bounded position. It depends on `basis-gateway`
 
 The console's scope is the interface layer. What happens behind the interface — evaluation, enforcement, audit — belongs to `basis-core`, `basis-gateway`, and `basis-adapters`. The console makes that work visible to operators without substituting for it.
 
+The console administers BASIS. It does not operate OT equipment. OT intent originates in upstream supervisory platforms. A console login establishes a BASIS administrative context only, and confers no OT operation-initiation authority, execution authority, or authorization-subject standing on any OT operation. Console simulation and direct-path evaluation cannot support dispatch.
+
 ---
 
 ## Related Documents
@@ -414,4 +423,4 @@ The console's scope is the interface layer. What happens behind the interface �
 - [`docs/kernel-boundary-rules.md`](../kernel-boundary-rules.md) — the rules that protect `basis-core` as an isolated kernel; the console must not violate the kernel boundary
 - [`docs/architecture/compatibility-philosophy.md`](compatibility-philosophy.md) — compatibility commitments that govern the gateway API surface the console depends on
 - [`docs/glossary.md`](../glossary.md) — definitions for Console, Operator Workflow, Administrative Interface, and related terms
-- [`docs/adr/0023-supervisory-platform-and-administrative-interface-boundary.md`](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md) — ADR-0023 (`Status: Accepted`); establishes that BASIS is an authorization and security substrate, not a supervisory platform; that a console login establishes a BASIS administrative context only; and that no BASIS-native tool bypasses the governed producer path
+- [`docs/adr/0023-supervisory-platform-and-administrative-interface-boundary.md`](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md) — ADR-0023 (`Status: Accepted`); establishes that BASIS is an authorization and security substrate, not a supervisory platform; that a console login establishes a BASIS administrative context only; and that no BASIS-native tool bypasses the governed producer path; its rules are reflected in Design Invariants 11 through 15

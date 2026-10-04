@@ -11,11 +11,13 @@ Concretely, this document establishes:
 - the runtime and evidence invariants both modes must continue to share, regardless of how their interfaces diverge;
 - where Operator and Training experiences may intentionally differ, and where they must not;
 - principles for future UI, CLI, playbook, and investigation-workflow design;
-- a staged, non-committal path from the current console to a mature operational platform.
+- a staged, non-committal path from the current console to a mature operational platform for BASIS.
 
 This document does not implement a redesign of `basis-console`. It does not require immediate console work. It does not define new authorization semantics, and it does not introduce new contracts between `basis-console` and `basis-gateway`, `basis-core`, `basis-adapters`, or `basis-identity`. It does not imply that any capability described here as a future direction currently exists, and inclusion here is not a release commitment or an immediate implementation plan — consistent with how every other document under [`docs/roadmaps/`](.) is treated in this repository. Where this document uses illustrative field lists, example screens, or example commands, those examples are directional — they establish the shape of a future design space, not a committed interface.
 
 [`docs/architecture/basis-console.md`](../architecture/basis-console.md) defines the console's current component boundaries and responsibilities — what the console is and is not responsible for as a component in the BASIS Core Services Distribution. This roadmap records the deferred evolution of the Operator and Training experiences within those boundaries: it defines the interaction doctrine for the two human-facing experiences the console (and, eventually, a companion CLI) presents on top of that responsibility set. `basis-console.md`'s component boundaries and design invariants govern; this document's interaction doctrine is constrained by them, not a peer to them.
+
+**Scope of "operator" and "operation" in this document.** Unless a passage states otherwise, this roadmap concerns operating, administering, investigating, explaining, simulating, and training around BASIS itself. *Operator* means a human who operates and investigates the authorization system, consistent with `basis-console.md`'s terminology. It does not mean an OT operator who operates equipment. Under [ADR-0023](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md) (Accepted), BASIS is an authorization and security substrate, not a supervisory platform. Operator-driven OT intent originates in an upstream supervisory platform, and a console session establishes a BASIS administrative context only. Nothing in this roadmap plans for `basis-console` to become the default OT supervisory workstation.
 
 ---
 
@@ -89,7 +91,7 @@ Everything down through the authoritative result is a `basis-gateway` contract, 
 
 ## Operator Mode Doctrine
 
-Operator mode is a professional OT security operations environment, not a simplified default view that Training mode annotates. It should be characterized as serious, dense, precise, fast, keyboard-friendly, evidence-centered, context-preserving, predictable, resilient during degraded or abnormal conditions, and designed for repeat use by trained professionals.
+Operator mode is a professional OT security operations environment for operating and investigating BASIS, not a simplified default view that Training mode annotates, and not a workstation for operating OT equipment. It should be characterized as serious, dense, precise, fast, keyboard-friendly, evidence-centered, context-preserving, predictable, resilient during degraded or abnormal conditions, and designed for repeat use by trained professionals.
 
 Operator mode should optimize for: speed to relevant evidence; minimal navigation overhead; rapid correlation across identity, resource, and policy context; low-friction investigation; high information density; efficient repeated actions; deterministic workflows; visibility during partial failure; direct access to both raw and structured information; and minimal explanatory prose.
 
@@ -298,7 +300,9 @@ A professional interface may be fast without being reckless. Future work on cons
 
 Confirmation friction should not be added to read-only investigation actions — an operator reviewing evidence should never be interrupted by a dialog meant for someone about to change system state. Training mode must never be permitted to bypass a real safety boundary in the name of a smoother learning experience.
 
-This document does not define specific confirmation dialogs, risk levels, or thresholds. Those are implementation decisions for whichever future phase introduces consequential, execution-capable operator actions. No such phase is authorized by this document. [ADR-0023](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md) (Proposed, pending acceptance) proposes that a console session confers no OT operation-initiation or execution authority, and that normal OT operations originate in an upstream supervisory platform. Under that proposal, a console-hosted capability that originated a real governed operation would require its own decision establishing it as an ordinary admitted producer, traversing the same intake, authentication, authorization, binding, execution, and evidence path as any other origin, with no special trust because it is part of BASIS.
+This document does not define specific confirmation dialogs, risk levels, or thresholds. Those are implementation decisions for whichever future phase introduces consequential, execution-capable operator actions. No such phase is authorized by this document.
+
+Any such phase is bounded by [ADR-0023](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md) (Accepted). Consequential actions on BASIS itself, such as policy submission and configuration changes, remain administrative actions. The gateway authenticates them and policy evaluates them. They confer no OT operation-initiation or execution authority. Normal OT operations originate in an upstream supervisory platform. The Decision Simulator and other simulation or diagnostic submissions remain on the gateway's direct, non-producer path, and their results cannot support dispatch: `ALLOW` is not `DISPATCHED` (ADR-0020 Decision 6). There is no implicit privileged path from the console to the producer-intake boundary, the authorization-to-execution binding, or the protocol executor. A console-hosted capability that originated a real governed OT operation would first require its own architecture decision establishing it as an ordinary governed producer or upstream source. It would traverse the same intake, authentication, admission, subject establishment, authorization, binding, execution, and evidence path as any external origin, with no special trust because it is part of BASIS ([`basis-console.md`](../architecture/basis-console.md) Design Invariants 11 through 15).
 
 ---
 
@@ -350,7 +354,7 @@ The following stages are a deferred, directional roadmap, not an implementation 
 
 **Stage 6 — Advanced operations.** Execution evidence; identity telemetry; behavioral detections; investigation timelines; bounded response workflows.
 
-Each later stage depends on ecosystem capability this document does not assume exists yet — trusted-producer/adapter alignment, execution-result evidence, and durable identity-to-operation correlation remain future work elsewhere in the ecosystem, per [`ROADMAP.md`](../../ROADMAP.md) and the roadmaps referenced there.
+Stage 6's "bounded response workflows" are investigation and response workflows around BASIS. A workflow that would originate a real OT operation is outside this roadmap and would require its own architecture decision under ADR-0023 Decision 7. Each later stage depends on ecosystem capability this document does not assume exists yet — trusted-producer/adapter alignment, execution-result evidence, and durable identity-to-operation correlation remain future work elsewhere in the ecosystem, per [`ROADMAP.md`](../../ROADMAP.md) and the roadmaps referenced there.
 
 ---
 
@@ -380,7 +384,7 @@ These gates exist to prevent a premature visual redesign from substituting for t
 
 ## Non-Goals
 
-This document does not: redesign the current console; prescribe exact colors, fonts, or branding; define a finalized screen layout; introduce API changes; introduce schema changes; define CLI compatibility syntax; implement playbooks; create training content; introduce execution controls; define identity telemetry; create new repositories; schedule release dates; or claim current support for any future capability it describes.
+This document does not: redesign the current console; prescribe exact colors, fonts, or branding; define a finalized screen layout; introduce API changes; introduce schema changes; define CLI compatibility syntax; implement playbooks; create training content; introduce execution controls; make `basis-console` an OT supervisory workstation or a source of OT operations; define identity telemetry; create new repositories; schedule release dates; or claim current support for any future capability it describes.
 
 ---
 

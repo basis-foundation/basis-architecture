@@ -131,6 +131,8 @@ detect
 
 No autonomous southbound actuation is authorized by this roadmap. Any future automated containment, if ever allowed, would require an explicit policy, a bounded action vocabulary, affected-resource limits, dual control where appropriate, step-up authentication, a rollback or recovery path, full evidence, operator visibility, and a dedicated ADR and threat model of its own — none of which exist today, and none of which this roadmap creates.
 
+Human-approved responses are also bounded by [ADR-0023](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md) (Accepted). A response submitted through `basis-console` may act on BASIS-owned state, such as revoking a session or credential, disabling a producer trust relationship, or changing BASIS security configuration. Like any administrative action, the gateway authenticates it and policy evaluates it. It confers no OT operation-initiation or execution authority, and there is no privileged path from the console to the producer-intake boundary, the authorization-to-execution binding, or the protocol executor. A response that would originate a real OT operation, such as applying a bounded control or isolating a device, requires a separate architecture decision under ADR-0023 Decision 7. Under that decision it would be an ordinary governed producer or upstream source and traverse the complete governed chain. Without such a decision, a response class such as "request manual isolation" is a request to the people or supervisory platforms that operate the equipment. It is not an operation the console originates.
+
 ### Console boundary
 
 `basis-console` may investigate, explain, and submit approved workflows. It does not become the activity store, the graph authority, the detection authority, or the response enforcement point, consistent with the console invariant already established in [`docs/architecture/basis-console.md`](../architecture/basis-console.md) and restated by both roadmaps this document builds on.
@@ -413,7 +415,7 @@ The following ten phases are architecture phases, not a predetermined pull-reque
 
 **Purpose.** Define safe, human-governed response workflows, kept distinct from behavioral analytics per the Response boundary above.
 
-**Primary conceptual components.** `basis-console` for approval and submission; `basis-gateway` and `basis-adapters` for any resulting enforcement or execution, exactly as they already operate for ordinary authorized operations.
+**Primary conceptual components.** `basis-console` for approval and submission; `basis-gateway` and `basis-adapters` for any resulting enforcement or execution, exactly as they already operate for ordinary authorized operations. Responses that act on OT equipment remain subject to the ADR-0023 bound stated in the Response boundary above.
 
 **Prerequisites.** Phase 5's deterministic detections and Phase 6's investigation workflows, since response is initiated from a finding and an investigation disposition, not independently.
 

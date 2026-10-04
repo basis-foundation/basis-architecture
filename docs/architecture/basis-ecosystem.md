@@ -45,7 +45,7 @@ The API gateway wraps the authorization kernel and exposes it as a runtime servi
 
 **basis-console** — operator and administrator UI
 
-The console provides an operator and administrator interface for the authorization system. It supports policy inspection, authorization decision review, audit log querying, and basic operational management of the authorization system. It is not a device management platform or an OT operator workstation: operator-driven OT intent originates in an upstream supervisory system ([ADR-0018](../adr/0018-upstream-supervisory-producer-intake-boundary.md)). [ADR-0023](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md) (Proposed, pending acceptance) proposes that a console login confers no OT operation-initiation authority. It depends on basis-gateway. It does not contain authorization logic of its own. See [`docs/architecture/basis-console.md`](basis-console.md) for the canonical console architecture reference.
+The console provides an operator and administrator interface for the authorization system. It supports policy inspection, authorization decision review, audit log querying, and basic operational management of the authorization system. It administers BASIS; it does not operate OT equipment. It is not a device management platform, a supervisory platform, or an OT operator workstation: operator-driven OT intent originates in an upstream supervisory platform ([ADR-0018](../adr/0018-upstream-supervisory-producer-intake-boundary.md)). Under [ADR-0023](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md) (Accepted), a console login establishes a BASIS administrative context only and confers no OT operation-initiation authority, execution authority, or authorization-subject standing on any OT operation, and console simulation and direct-path evaluation cannot support dispatch. It depends on basis-gateway. It does not contain authorization logic of its own. See [`docs/architecture/basis-console.md`](basis-console.md) for the canonical console architecture reference.
 
 **basis-adapters** — protocol and integration adapters
 
@@ -66,6 +66,12 @@ The deployment component provides tooling for packaging, configuring, and distri
 **basis-schemas** — shared schemas, contracts, and compatibility definitions
 
 The schemas component defines the shared data contracts used across the distribution: the authorization request and response schemas, audit event schemas, policy format definitions, and compatibility specifications for interoperability between components. basis-schemas is a foundational dependency — all other components reference it for their shared data definitions.
+
+### Relationship to upstream supervisory platforms
+
+BASIS is an authorization and security substrate for OT operations. It is not a supervisory platform ([ADR-0023](../adr/0023-supervisory-platform-and-administrative-interface-boundary.md), Accepted). The distribution owns authorization and the governed security enforcement around OT operations: admitting the workloads on the governed path, establishing the authorization subject, evaluating authorization, binding a permitted decision to the exact operation, governing dispatch, and recording evidence. Upstream supervisory platforms own the normal human operational experience of OT equipment and originate operator-driven OT intent. These include BAS/BMS, HMI, SCADA, maintenance, orchestration, and similar applications, none of which is a special case. That intent reaches BASIS across the producer-intake boundary ([ADR-0018](../adr/0018-upstream-supervisory-producer-intake-boundary.md)) and is then carried by the operation-producer role to `basis-gateway`.
+
+Administering BASIS is distinct from originating OT operations (see **basis-console** above). No BASIS component or BASIS-native tool has a privileged path around the governed chain. A future BASIS-native capability that originates real OT operations would require its own architecture decision establishing it as an ordinary governed producer or upstream source, traversing the same path as any external origin. Subject-identity and shared-identity-provider rules are in [`basis-identity.md`](basis-identity.md).
 
 ### What the distribution is designed to support
 
@@ -173,7 +179,7 @@ Each component in the BASIS Core Services Distribution is expected to be maintai
 | - | - | - |
 | `basis-core` | Authorization kernel | Policy evaluation, enforcement semantics, audit contracts |
 | `basis-gateway` | API and runtime wrapper | Request handling, decision dispatch, policy distribution |
-| `basis-console` | Operator/admin UI | Policy inspection, audit review, operational management |
+| `basis-console` | Operator/admin UI | Policy inspection, audit review, diagnostics, and operational management of BASIS (not OT equipment) |
 | `basis-adapters` | Protocol adapters | Field-protocol normalization and evidence construction |
 | `basis-producer` | Operation-producer runtime | Evidence retention, reference-lifecycle management, producer workload credential custody, authenticated gateway submission, and REST adapter composition (established by [ADR-0010](../adr/0010-establish-basis-producer-as-operation-producer-runtime.md); Accepted; repository exists; Phase 2A evidence retention, Phase 2B reference lifecycle, Phase 3 authenticated gateway client, Phase 4 REST adapter composition, and Phase 5 conformance/demo/release-readiness all complete — bounded authorization slice complete; protocol execution unimplemented) |
 | `basis-identity` | Identity engine and federation boundary | External IdP integration, federation, login/session, claim mapping, canonical identity context |
