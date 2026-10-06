@@ -1,13 +1,13 @@
 # Basitra Ecosystem Identity and Boundary-Aware Security
 
-**Status:** Proposed architecture strategy. It is governed by [ADR-0019](../adr/0019-basitra-ecosystem-identity-and-terminology-hierarchy.md), which is also `Proposed`. Nothing in this document is canonical terminology, and nothing here authorizes a change to any repository, package, organization setting, or published artifact, until ADR-0019 is accepted through the process in [`docs/adr/README.md`](../adr/README.md). Even after acceptance, each follow-on change described in [Section 12](#12-cross-repository-adoption-roadmap) needs its own bounded PR.
+**Status:** Architecture strategy governed by [ADR-0019](../adr/0019-basitra-ecosystem-identity-and-terminology-hierarchy.md), which is `Accepted`. Where ADR-0019's Decision cites a section of this document (the definition in §5.1, the status mapping in §5.3 and §6, the convention in §5.5, the BASac gaps in §9.3, and the naming-root criteria in §10.2), that section is the referenced content of the accepted decision. The rest of the document, including the conflict recommendations, the adoption roadmap, the community principles, and the open decisions in [Section 13](#13-open-decisions), remains strategy and planning, not accepted architecture. Nothing here authorizes a change to any repository, package, organization setting, or published artifact. Each follow-on change described in [Section 12](#12-cross-repository-adoption-roadmap) needs its own bounded PR, and until those PRs are made, the repository's canonical reference documents (glossary, writing guidelines, terminology rules, `SECURITY.md`) keep their current text.
 
 This document does four things:
 
-1. It records the current, historical, and proposed terminology for the project's identity.
+1. It records the current, historical, and ADR-0019-adopted terminology for the project's identity.
 2. It defines **Boundary-Aware Security** as an architectural concept and checks that concept against architecture that already exists.
 3. It states a long-term community objective for the open-source project.
-4. It sets out a staged, cross-repository plan for adopting the proposed terminology without rewriting history.
+4. It sets out a staged, cross-repository plan for adopting the ADR-0019 terminology without rewriting history.
 
 The main constraint throughout is that branding must not outrun architecture. Every claim below about what BASIS does is traced to an existing document, ADR, or released contract. Where no such evidence exists, the claim is labeled future work.
 
@@ -23,12 +23,12 @@ Existing names, including the BASIS naming structure, the `basis-foundation` Git
 
 1. [Scope and Non-Goals](#1-scope-and-non-goals)
 2. [Status Vocabulary Used in This Document](#2-status-vocabulary-used-in-this-document)
-3. [Terminology Register: Current, Historical, and Proposed](#3-terminology-register-current-historical-and-proposed)
+3. [Terminology Register: Current, Historical, and Adopted](#3-terminology-register-current-historical-and-adopted)
 4. [Terminology Conflicts and Recommended Reconciliation](#4-terminology-conflicts-and-recommended-reconciliation)
 5. [Boundary-Aware Security](#5-boundary-aware-security)
 6. [Relationship to Existing Architecture](#6-relationship-to-existing-architecture)
 7. [Why Operational Technology Is a Strong Initial Domain](#7-why-operational-technology-is-a-strong-initial-domain)
-8. [Proposed Ecosystem Vocabulary](#8-proposed-ecosystem-vocabulary)
+8. [Ecosystem Vocabulary](#8-ecosystem-vocabulary)
 9. [BASac: Prospective Term and Formalization Gaps](#9-basac-prospective-term-and-formalization-gaps)
 10. [Naming and Branding Principles](#10-naming-and-branding-principles)
 11. [Community-Driven Objective and Principles](#11-community-driven-objective-and-principles)
@@ -44,7 +44,7 @@ Existing names, including the BASIS naming structure, the `basis-foundation` Git
 **In scope:**
 
 - recording what the repository currently says about the project's name, acronyms, and organizational entities;
-- proposing Basitra, Boundary-Aware Security, BASac, and a re-expansion of BASIS;
+- defining Basitra, Boundary-Aware Security, and the forward re-expansion of BASIS, which ADR-0019 adopts, and reserving BASac as a prospective term;
 - mapping Boundary-Aware Security onto existing architecture, with a status for each mapping;
 - community principles and a staged adoption roadmap.
 
@@ -52,7 +52,7 @@ Existing names, including the BASIS naming structure, the `basis-foundation` Git
 
 - It authorizes no rename or migration of any repository, the `basis-foundation` GitHub organization, any Python distribution, or any import namespace. It does not decide whether any of them *should* eventually be renamed; that is future work ([Section 12.4](#124-stage-4--basitra-target-architecture-and-repository-naming-reconciliation)).
 - It does not decide the long-term architectural scope of BASIS within Basitra ([OD-8](#13-open-decisions)).
-- It does not change any existing canonical acronym table, glossary definition, `SECURITY.md`, historical ADR, or release note. See [Section 3](#3-terminology-register-current-historical-and-proposed) for which documents are affected only after ADR-0019 is accepted.
+- It does not change any existing canonical acronym table, glossary definition, `SECURITY.md`, historical ADR, or release note. See [Section 3](#3-terminology-register-current-historical-and-adopted) for which documents ADR-0019's acceptance makes eligible for bounded follow-on updates.
 - It adds no kernel semantics, no evaluation behavior, and no `basis-schemas` contract. Boundary-Aware Security, as defined here, describes and organizes the architecture. It is not a new enforcement mechanism.
 - It does not define BASac as a normative model or specification.
 - It does not decide the organizational relationship between Basitra, the Basis Foundation, and BASAuth. That decision is recorded as open in [Section 13](#13-open-decisions).
@@ -71,9 +71,9 @@ Two status vocabularies are used, one for terminology and one for architecture.
 | - | - |
 | **Current canonical** | Defined in this repository's glossary, writing guidelines, terminology rules, or ecosystem document today. It governs contributions now. |
 | **Historical** | Used in earlier artifacts. It stays accurate as a record and is not rewritten. |
-| **Proposed** | Introduced by this document and ADR-0019. It is not canonical until ADR-0019 is accepted. |
-| **Prospective** | Named so that it can be discussed, but carrying no normative meaning even after ADR-0019 is accepted. A separate decision must give it one. |
-| **Future migration** | A change that ADR-0019's acceptance would make eligible for a later, bounded PR. |
+| **Accepted (ADR-0019)** | Introduced by this document and adopted by ADR-0019, which is `Accepted`. The canonical reference documents reflect it through the bounded follow-on PRs in ADR-0019 Decision 8. |
+| **Prospective** | Named so that it can be discussed, but carrying no normative meaning even though ADR-0019 is accepted. A separate decision must give it one. |
+| **Future migration** | A change that ADR-0019's acceptance makes eligible for a later, bounded PR. |
 
 **Architecture status** (used in [Sections 5](#5-boundary-aware-security), [6](#6-relationship-to-existing-architecture), and [9](#9-basac-prospective-term-and-formalization-gaps)):
 
@@ -87,13 +87,13 @@ Two status vocabularies are used, one for terminology and one for architecture.
 
 ---
 
-## 3. Terminology Register: Current, Historical, and Proposed
+## 3. Terminology Register: Current, Historical, and Adopted
 
 ### 3.1 Current canonical terminology
 
 | Term | Current canonical meaning | Source |
 | - | - | - |
-| **BASIS** | Acronym: *Building Automation Secure Identity Service*. It refers to the open-source core services distribution governed by the Basis Foundation. | [`writing-guidelines.md`](../standards/writing-guidelines.md) §3.3 and §4.1; [`SECURITY.md`](../../SECURITY.md) |
+| **BASIS** | Acronym. The cited reference documents state *Building Automation Secure Identity Service*, which is now the historical expansion ([Section 3.2](#32-historical-terminology)); the forward expansion adopted by ADR-0019 ([Section 3.3](#33-terminology-adopted-by-adr-0019)) reaches them through a bounded follow-on PR. It refers to the open-source core services distribution governed by the Basis Foundation. | [`writing-guidelines.md`](../standards/writing-guidelines.md) §3.3 and §4.1; [`SECURITY.md`](../../SECURITY.md) |
 | **BAS** | Acronym: *Building Automation System*. The white paper's primary domain; this repository uses it in that sense throughout. | [`writing-guidelines.md`](../standards/writing-guidelines.md) §3.3; [`glossary.md`](../glossary.md#building-automation-system-bas); [`README.md`](../../README.md) |
 | **Basis Foundation** | The nonprofit open-source governance body. It stewards the architecture, the distribution, and "the open-source repositories under the BASIS namespace." | [`basis-ecosystem.md`](basis-ecosystem.md#basis-foundation); [`glossary.md`](../glossary.md#basis-foundation); [`GOVERNANCE.md`](../../GOVERNANCE.md) |
 | **BASIS Core Services Distribution** | The set of open-source, deployable `basis-*` components. | [`basis-ecosystem.md`](basis-ecosystem.md#basis-core-services-distribution); [`glossary.md`](../glossary.md#basis-core-services-distribution) |
@@ -105,19 +105,19 @@ Two status vocabularies are used, one for terminology and one for architecture.
 
 | Term | Where it appears | Treatment |
 | - | - | - |
-| *Building Automation Secure Identity Service* as the BASIS expansion | This repository (`SECURITY.md`, `writing-guidelines.md`), the `basis-poc` README, the BASIS website source, and all prior ADRs, release notes, and white-paper text written under it | Remains current canonical until ADR-0019 is accepted. After that it remains the accurate historical expansion for everything written under it and is never retroactively replaced. |
+| *Building Automation Secure Identity Service* as the BASIS expansion | This repository (`SECURITY.md`, `writing-guidelines.md`), the `basis-poc` README, the BASIS website source, and all prior ADRs, release notes, and white-paper text written under it | Was the current canonical expansion until ADR-0019's acceptance. It remains the accurate historical expansion for everything written under it and is never retroactively replaced. The current documents that still state it as current (`SECURITY.md`, `writing-guidelines.md`) are updated through ADR-0019 Decision 8 follow-on PRs. |
 | *Building Automation Systems Identity Shield (BASis)* | The README of the `basis-foundation/basis` repository, an early 2025 predecessor artifact | Historical only. It is not a current term and is not revived. It is recorded so the inventory in [Section 12.2](#122-stage-2--ecosystem-inventory) is complete. |
 
-### 3.3 Proposed terminology (ADR-0019)
+### 3.3 Terminology adopted by ADR-0019
 
-| Term | Proposed meaning | Status |
+| Term | Meaning | Status |
 | - | - | - |
-| **Basitra** | A proper noun, not an acronym. The intended long-term canonical identity of the open-source project, its community, its ecosystem, and eventually its organizational and GitHub namespace. | Proposed |
-| **Boundary-Aware Security (BAS)** | The architectural security approach defined in [Section 5](#5-boundary-aware-security). The abbreviation is context-qualified and never universal; see [Section 5.5](#55-the-bas-abbreviation-disambiguation-convention). | Proposed |
-| **BASIS** re-expansion: *Boundary-Aware Secure Identity Service* | Forward-only re-expansion of the existing acronym. It changes the expansion only. It neither fixes BASIS's long-term scope within Basitra ([OD-8](#13-open-decisions)) nor renames anything. | Proposed |
+| **Basitra** | A proper noun, not an acronym. The intended long-term canonical identity of the open-source project, its community, its ecosystem, and eventually its organizational and GitHub namespace. | Accepted (ADR-0019) |
+| **Boundary-Aware Security (BAS)** | The architectural security approach defined in [Section 5](#5-boundary-aware-security). The abbreviation is context-qualified and never universal; see [Section 5.5](#55-the-bas-abbreviation-disambiguation-convention). | Accepted (ADR-0019) |
+| **BASIS** re-expansion: *Boundary-Aware Secure Identity Service* | Forward-only re-expansion of the existing acronym. It changes the expansion only. It neither fixes BASIS's long-term scope within Basitra ([OD-8](#13-open-decisions)) nor renames anything. | Accepted (ADR-0019) |
 | **BASac**: *Boundary-Aware Secure Access Control* | A name reserved for a possible future formal access-control model. | Prospective |
 
-### 3.4 Why the BASIS re-expansion is proposed
+### 3.4 Why the BASIS re-expansion was adopted
 
 BASIS began in building automation. The white paper takes building automation systems as its primary domain, and the name *Building Automation Secure Identity Service* described that starting point accurately.
 
@@ -137,19 +137,19 @@ The re-expansion is forward-only. Documents written under the original expansion
 
 ## 4. Terminology Conflicts and Recommended Reconciliation
 
-The proposed terminology overlaps with existing terms in several places. None of these overlaps is reconciled silently by this document. Each is listed with its current state and a recommended controlled follow-on.
+The terminology adopted by ADR-0019 overlaps with existing terms in several places. None of these overlaps is reconciled silently by this document. Each is listed with its current state and a recommended controlled follow-on.
 
 ### C-1. "BAS" already means Building Automation System, inside this repository
 
 **Current state.** The writing guidelines' capitalization table defines BAS as *Building Automation System*. The repository uses bare "BAS" in that sense in dozens of places, including the root README's statement of the primary domain, the architecture principles, the white paper, and diagram labels such as `BAS Controller (BACnet)`. The overlap therefore exists within this repository's own vocabulary, not only with industry usage.
 
-**Risk.** Under the proposed hierarchy, a reader could take an existing bare "BAS" to mean Boundary-Aware Security. That would change the meaning of historical text such as "a BAS controller point" or "the BAS VLAN."
+**Risk.** Under the ADR-0019 hierarchy, a reader could take an existing bare "BAS" to mean Boundary-Aware Security. That would change the meaning of historical text such as "a BAS controller point" or "the BAS VLAN."
 
-**Recommendation.** Keep *building automation system* as the default meaning of bare "BAS" in this repository, and apply the convention in [Section 5.5](#55-the-bas-abbreviation-disambiguation-convention). After ADR-0019 is accepted, add a context-qualified second row to the capitalization table. Do not replace the existing row. Do not edit any existing use of "BAS."
+**Recommendation.** Keep *building automation system* as the default meaning of bare "BAS" in this repository, and apply the convention in [Section 5.5](#55-the-bas-abbreviation-disambiguation-convention). With ADR-0019 accepted, a bounded follow-on PR adds a context-qualified second row to the capitalization table. Do not replace the existing row. Do not edit any existing use of "BAS."
 
 ### C-2. The BASIS acronym's "BAS" and the canonical "BAS" would no longer align
 
-**Current state.** Under the current canonical expansion, the "BAS" inside "BASIS" loosely echoes *Building Automation*. Under the proposed re-expansion, it would read as *Boundary-Aware Secure*, while bare "BAS" in this repository would still mean building automation system (C-1).
+**Current state.** Under the historical expansion, the "BAS" inside "BASIS" loosely echoes *Building Automation*. Under the forward re-expansion adopted by ADR-0019, it reads as *Boundary-Aware Secure*, while bare "BAS" in this repository still means building automation system (C-1).
 
 **Risk.** Readers may assume that BASIS is "BAS + IS" in the building-automation sense, or in the Boundary-Aware sense, depending on which document they read first.
 
@@ -157,7 +157,7 @@ The proposed terminology overlaps with existing terms in several places. None of
 
 ### C-3. Basis Foundation and Basitra's "eventual organization" role
 
-**Current state.** The Basis Foundation is the canonical stewardship body. It governs the open-source work and owns the `basis-foundation` GitHub organization. The proposal describes Basitra as the project and community identity *and eventually an organization*.
+**Current state.** The Basis Foundation is the canonical stewardship body. It governs the open-source work and owns the `basis-foundation` GitHub organization. ADR-0019 describes Basitra as the project and community identity *and eventually an organization*.
 
 **Risk.** Two organizational names could both claim stewardship of the same open-source work. Contributors could be unsure which body reviews or accepts a proposal.
 
@@ -173,7 +173,7 @@ The long-term relationship is an explicit future decision, not an assumption of 
 
 Neither this document nor ADR-0019 decides them.
 
-### C-4. BASAuth and the proposed BAS naming root
+### C-4. BASAuth and the BAS naming root
 
 **Current state.** BASAuth is the future commercial entity. The architecture states that it does not govern the open-source work.
 
@@ -187,7 +187,7 @@ Neither this document nor ADR-0019 decides them.
 
 **Risk.** A "Basitra ecosystem" would overlap with "BASIS ecosystem," and the two would have different membership, since the current umbrella includes a commercial entity.
 
-**Recommendation.** After ADR-0019 is accepted, the terminology rules should define the relationship explicitly:
+**Recommendation.** With ADR-0019 accepted, a bounded follow-on PR to the terminology rules should define the relationship explicitly:
 
 - The **Basitra ecosystem** is the open-source project and community, plus independent community work that identifies with it.
 - **BASIS** is, today, the technical component family inside it. Its long-term scope within Basitra is [OD-8](#13-open-decisions).
@@ -199,9 +199,9 @@ Until then, "BASIS ecosystem" keeps its current meaning. Existing uses are histo
 
 **Current state.** Ipotio's architecture documents already use "Basitra" to name the authorization system Ipotio consumes. For example: "Ipotio depends on Basitra," "Basitra operation-producer role," and "Basitra gateway / kernel." They also describe ADR-0018 as "Basitra's half" of a matched decision.
 
-**Risk.** That usage treats Basitra as a component or runtime name. This document proposes Basitra as a project and community identity, with BASIS as the component family. Role and component references across the two ecosystems could drift.
+**Risk.** That usage treats Basitra as a component or runtime name. ADR-0019 adopts Basitra as a project and community identity, with BASIS as the component family. Role and component references across the two ecosystems could drift.
 
-**Recommendation.** Record a cross-ecosystem reconciliation item: once ADR-0019 is accepted, Ipotio's architecture should refer to Basitra for the project and to the component and role names for components and roles. Today those are BASIS names, such as "BASIS operation-producer role" or "`basis-gateway`." Because those names may change under [OD-8 and OD-9](#13-open-decisions), the Ipotio reconciliation should follow those decisions rather than precede them. The dependency direction Ipotio records, Ipotio depending on Basitra/BASIS and not the reverse, is consistent with [ADR-0018](../adr/0018-upstream-supervisory-producer-intake-boundary.md) and needs no change. This is a change to the Ipotio repository and is not made here.
+**Recommendation.** Record a cross-ecosystem reconciliation item: with ADR-0019 accepted, Ipotio's architecture should refer to Basitra for the project and to the component and role names for components and roles. Today those are BASIS names, such as "BASIS operation-producer role" or "`basis-gateway`." Because those names may change under [OD-8 and OD-9](#13-open-decisions), the Ipotio reconciliation should follow those decisions rather than precede them. The dependency direction Ipotio records, Ipotio depending on Basitra/BASIS and not the reverse, is consistent with [ADR-0018](../adr/0018-upstream-supervisory-producer-intake-boundary.md) and needs no change. This is a change to the Ipotio repository and is not made here.
 
 ### C-7. The "five ecosystem entities" list predates current components
 
@@ -278,7 +278,7 @@ Boundary-Aware Security should therefore not be described as covering environmen
 
 ### 5.5 The BAS abbreviation disambiguation convention
 
-*Building automation system (BAS)* is an established industry term. It is also this repository's current canonical meaning of "BAS" ([C-1](#c-1-bas-already-means-building-automation-system-inside-this-repository)). The ecosystem does not redefine the abbreviation. The proposed convention, effective on acceptance of ADR-0019:
+*Building automation system (BAS)* is an established industry term. It is also this repository's current canonical meaning of "BAS" ([C-1](#c-1-bas-already-means-building-automation-system-inside-this-repository)). The ecosystem does not redefine the abbreviation. The convention, in effect since ADR-0019's acceptance (Decision 4):
 
 1. **Industry meaning is the default in this repository.** Bare "BAS" in `basis-architecture` continues to mean *building automation system*. Existing uses are not edited.
 2. **Boundary-Aware Security is written in full.** Use "Boundary-Aware Security (BAS)" at first use in any document that uses the abbreviation. In any document that also discusses building automation systems, spell out *Boundary-Aware Security* at every use and do not use bare "BAS" for it at all.
@@ -343,9 +343,9 @@ Basitra terminology does not replace, reinterpret, or claim conformance with ISA
 
 ---
 
-## 8. Proposed Ecosystem Vocabulary
+## 8. Ecosystem Vocabulary
 
-The definitions below are **Proposed** and take effect only on acceptance of ADR-0019.
+The definitions below are adopted by ADR-0019, which is `Accepted`, except BASac, which remains prospective. The corresponding glossary entries are promoted through a bounded follow-on PR (ADR-0019 Decision 8).
 
 ### Basitra
 
@@ -368,8 +368,8 @@ A **prospective** term for a possible future formal access-control model derived
 
 Today, the technical identity of the component family and its architecture: the `basis-*` components of the BASIS Core Services Distribution and the architecture in this repository.
 
-- **Current canonical expansion:** *Building Automation Secure Identity Service*.
-- **Proposed forward expansion:** *Boundary-Aware Secure Identity Service* ([Section 3.4](#34-why-the-basis-re-expansion-is-proposed)).
+- **Forward canonical expansion (ADR-0019 Decision 3):** *Boundary-Aware Secure Identity Service* ([Section 3.4](#34-why-the-basis-re-expansion-was-adopted)).
+- **Historical expansion:** *Building Automation Secure Identity Service*. It remains accurate for everything written under it.
 
 BASIS is not a synonym for `basis-core`. This document does not assume that BASIS permanently remains the umbrella name for every current `basis-*` component. Its long-term scope within Basitra is an explicit future decision ([OD-8](#13-open-decisions)): it may remain a component family, become a narrower identity and security subsystem, or take another role justified by the Basitra target architecture. No repository rename is authorized by this document.
 
@@ -377,10 +377,10 @@ BASIS is not a synonym for `basis-core`. This document does not assume that BASI
 
 A separate operational technology platform ecosystem with its own architecture and governance. Under ADR-0018, Ipotio is one valid *upstream supervisory system*: it may submit supervisory intent to BASIS across the producer-intake boundary. It is not a BASIS operation producer, protocol executor, or authorization authority. BASIS defines no Ipotio-specific contract (ADR-0018 Decision 9, platform neutrality). Ipotio is not part of Basitra governance, and this document does not describe Ipotio's internal architecture.
 
-### Entities whose roles this proposal does not change
+### Entities whose roles ADR-0019 does not change
 
 - **Basis Foundation** remains the governing and stewardship body today. Its long-term relationship to Basitra is [OD-1](#13-open-decisions) ([C-3](#c-3-basis-foundation-and-basitras-eventual-organization-role)).
-- **BASAuth** remains the future commercial entity. It is external to the open-source vocabulary and to Basitra community processes ([C-4](#c-4-basauth-and-the-proposed-bas-naming-root)).
+- **BASAuth** remains the future commercial entity. It is external to the open-source vocabulary and to Basitra community processes ([C-4](#c-4-basauth-and-the-bas-naming-root)).
 
 ### 8.1 Relationship diagram
 
@@ -388,17 +388,17 @@ The diagram shows conceptual and naming relationships, not software dependencies
 
 ```text
 Basitra
-  intended long-term project / community / ecosystem identity   (Proposed)
+  intended long-term project / community / ecosystem identity   (Accepted, ADR-0019)
   stewarded today by the Basis Foundation                  (Current canonical; see OD-1, OD-7)
         │
         │  conceptual root
         ▼
-Boundary-Aware Security                                    (Proposed architectural concept)
+Boundary-Aware Security                                    (Architectural concept; ADR-0019)
         │
         ├── BASIS                                          (Current component family;
         │                                                   long-term scope: OD-8)
-        │   Building Automation Secure Identity Service    (current canonical expansion)
-        │   Boundary-Aware Secure Identity Service         (proposed forward expansion)
+        │   Boundary-Aware Secure Identity Service         (forward canonical expansion)
+        │   Building Automation Secure Identity Service    (historical expansion)
         │   today: basis-core, basis-gateway, basis-identity, basis-adapters,
         │   basis-producer, basis-console, basis-schemas, (basis-deploy: not established)
         │   component names subject to Basitra-first review (Stage 4, OD-9)
@@ -485,7 +485,7 @@ Each item needs architecture work and, where it changes a compatibility surface 
 
 Mature ecosystems often develop a recognizable vocabulary around a shared root. "BAS" may serve that purpose for Basitra. BAS-derived names are optional vocabulary, not a requirement imposed on components: nothing needs to begin with "BAS," and a plain descriptive name is preferred wherever a BAS-derived one would not correspond to a genuine architectural concept. This document lists no speculative names.
 
-The current meaningful members are **Basitra**, **Boundary-Aware Security**, **BASac** (prospective), and **BASIS**. BASAuth shares the letters but is not a member ([C-4](#c-4-basauth-and-the-proposed-bas-naming-root)).
+The current meaningful members are **Basitra**, **Boundary-Aware Security**, **BASac** (prospective), and **BASIS**. BASAuth shares the letters but is not a member ([C-4](#c-4-basauth-and-the-bas-naming-root)).
 
 A future BAS-derived name should be adopted only when all of the following hold:
 
@@ -571,13 +571,13 @@ Valuable contributions include field knowledge, protocol behavior reports, opera
 
 ## 12. Cross-Repository Adoption Roadmap
 
-The steps below are called **Stages**, to avoid confusion with the Phases in [`ROADMAP.md`](../../ROADMAP.md), `basis-producer`'s implementation phases, and roadmap-document phases. Each stage after Stage 1 requires ADR-0019 to be `Accepted` and proceeds through bounded PRs. Stages are not a schedule.
+The steps below are called **Stages**, to avoid confusion with the Phases in [`ROADMAP.md`](../../ROADMAP.md), `basis-producer`'s implementation phases, and roadmap-document phases. Each stage after Stage 1 requires ADR-0019 to be `Accepted`, which it now is, and proceeds through bounded PRs. Stages are not a schedule.
 
 Stage 4 is a **decision gate**. No final repository, package, or organization naming is assumed before it is passed, and Stage 5 depends on it.
 
 ### 12.1 Stage 1 — Architecture authority
 
-Establish the strategy and terminology in `basis-architecture` without implementation changes. This document, [ADR-0019](../adr/0019-basitra-ecosystem-identity-and-terminology-hierarchy.md) (Proposed), a clearly marked proposed-terminology block in the [glossary](../glossary.md), and README discoverability links make up this stage. Stage 1 is complete when ADR-0019 is accepted, amended, or rejected through its own review.
+Establish the strategy and terminology in `basis-architecture` without implementation changes. This document, [ADR-0019](../adr/0019-basitra-ecosystem-identity-and-terminology-hierarchy.md), a clearly marked proposed-terminology block in the [glossary](../glossary.md), and README discoverability links made up this stage. Stage 1 is complete: ADR-0019 has been accepted through its own review.
 
 ### 12.2 Stage 2 — Ecosystem inventory
 
@@ -719,7 +719,7 @@ The following are deliberately **not** done by this document or ADR-0019:
 
 ## 15. References
 
-- [ADR-0019](../adr/0019-basitra-ecosystem-identity-and-terminology-hierarchy.md): Basitra ecosystem identity and terminology hierarchy (Proposed)
+- [ADR-0019](../adr/0019-basitra-ecosystem-identity-and-terminology-hierarchy.md): Basitra ecosystem identity and terminology hierarchy (Accepted)
 - [`docs/architecture/basis-ecosystem.md`](basis-ecosystem.md)
 - [`docs/standards/terminology-rules.md`](../standards/terminology-rules.md)
 - [`docs/standards/writing-guidelines.md`](../standards/writing-guidelines.md)
