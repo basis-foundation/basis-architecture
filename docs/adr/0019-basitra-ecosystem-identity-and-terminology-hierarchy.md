@@ -2,9 +2,9 @@
 
 ## Status
 
-Proposed
+Accepted
 
-Consistent with this repository's established practice (see ADR-0018's Context), this ADR is numbered when first proposed and submitted as `Proposed`. Merging it does not accept it. Acceptance requires a separate, dedicated review, and until then nothing below is canonical terminology. The mismatch between this practice and [`README.md`](README.md#numbering), which says numbers are assigned at acceptance, is recorded as open decision OD-5 in the strategy document.
+Consistent with this repository's established practice (see ADR-0018's Context), this ADR was numbered when first proposed and submitted as `Proposed`, and its merging did not constitute acceptance. It has since undergone that separate, dedicated formal-acceptance review, and its status now records `Accepted`. Acceptance changes no part of the decision below, renames nothing, and authorizes none of the follow-on work in Decision 8, each item of which requires its own bounded PR. The mismatch between this practice and [`README.md`](README.md#numbering), which says numbers are assigned at acceptance, is recorded as open decision OD-5 in the strategy document.
 
 ## Context
 
@@ -93,7 +93,7 @@ On acceptance, the following terminology decisions take effect. None of them ren
 
 **Keep the current terminology unchanged.** Rejected. It leaves the project without a domain-independent public identity. It leaves the boundary-by-boundary security model the accepted ADR chain has converged on without a name. And it leaves a single-domain acronym expansion describing a scope that already extends beyond that domain.
 
-**Keep BASIS's current expansion and add Basitra and Boundary-Aware Security above it.** Viable, and less disruptive. Not preferred: the "Building Automation" expansion would keep signaling a narrower scope than the architecture now has. It would also leave BASIS as the only name in the family that does not describe the security model. This alternative remains available if reviewers judge the re-expansion not worth the churn. Decisions 1, 2, and 4–6 do not depend on Decision 3.
+**Keep BASIS's current expansion and add Basitra and Boundary-Aware Security above it.** Viable, and less disruptive. Not preferred: the "Building Automation" expansion would keep signaling a narrower scope than the architecture now has. It would also leave BASIS as the only name in the family that does not describe the security model. This alternative remained available had reviewers judged the re-expansion not worth the churn. Decisions 1, 2, and 4–6 do not depend on Decision 3.
 
 **Rename repositories and packages to `basitra-*` in this ADR.** Rejected for this ADR, not as an eventual outcome. Names should follow the target architecture, so the long-term scope of BASIS (OD-8) and repository naming (OD-9) must be decided first. A mechanical `basitra-*` rename now could require a second migration. Import-namespace changes are also breaking changes under [`compatibility-philosophy.md`](../architecture/compatibility-philosophy.md) and need their own migration planning. Package and distribution conventions are decided afterward (strategy document §12.5, OD-10).
 
@@ -109,7 +109,7 @@ On acceptance, the following terminology decisions take effect. None of them ren
 
 ## Consequences
 
-- Current canonical terminology does not change until acceptance. After acceptance it changes only through the bounded follow-on PRs listed in Decision 8.
+- Current canonical terminology did not change while this ADR was `Proposed`. Now that it is `Accepted`, the repository's canonical reference documents change only through the bounded follow-on PRs listed in Decision 8.
 - Final repository, package, and organization naming is gated on the strategy document's Stage 4 reconciliation and on OD-1 and OD-7 through OD-10. Some outcomes may require superseding accepted ADRs that fix names. For example, [ADR-0010](0010-establish-basis-producer-as-operation-producer-runtime.md) establishes `basis-producer` as the permanent repository for the operation-producer runtime. Its component boundary is unaffected by this ADR, but a change to its name would need a superseding ADR.
 - Historical documents keep their original terminology permanently. Readers will see both BASIS expansions in the repository, and the dated register in strategy document §3 is the reference for which applies where.
 - Contributors must apply the BAS disambiguation convention. Reviewers should reject bare "BAS" used for Boundary-Aware Security in documents that also discuss building automation systems.

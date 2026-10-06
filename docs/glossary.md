@@ -384,7 +384,7 @@ A security model premised on the assumption that no subject, device, or network 
 
 ## Proposed Terminology (Not Yet Canonical)
 
-The entries in this block are **proposed** by [ADR-0019](adr/0019-basitra-ecosystem-identity-and-terminology-hierarchy.md), which is `Proposed`. They are recorded here, in the single definition point that [`terminology-rules.md`](standards/terminology-rules.md#introducing-new-terms) requires, so that proposal documents can refer to them. They are **not canonical**. They do not change any definition above, the canonical BASIS expansion (*Building Automation Secure Identity Service*), or the canonical meaning of BAS (*Building Automation System*). They are promoted to canonical entries only if ADR-0019 is accepted. Full analysis: [`docs/architecture/basitra-ecosystem-and-boundary-aware-security.md`](architecture/basitra-ecosystem-and-boundary-aware-security.md).
+The entries in this block were recorded while [ADR-0019](adr/0019-basitra-ecosystem-identity-and-terminology-hierarchy.md) was `Proposed`. ADR-0019 is now `Accepted`, but under its Decision 8 these entries are promoted to canonical glossary entries only through a separate, bounded follow-on PR. Until then they remain recorded here, in the single definition point that [`terminology-rules.md`](standards/terminology-rules.md#introducing-new-terms) requires, and they do not change any definition above, the BASIS expansion stated in the canonical reference documents, or the canonical meaning of BAS (*Building Automation System*). Full analysis: [`docs/architecture/basitra-ecosystem-and-boundary-aware-security.md`](architecture/basitra-ecosystem-and-boundary-aware-security.md).
 
 ### Basitra (proposed)
 
