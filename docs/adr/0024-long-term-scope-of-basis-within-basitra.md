@@ -2,9 +2,9 @@
 
 ## Status
 
-Proposed
+Accepted
 
-Consistent with this repository's established practice (see ADR-0018's Context, and the Status sections of ADR-0019 and ADR-0023), this ADR is numbered when first proposed and submitted as `Proposed`. Merging it does not constitute acceptance. Acceptance requires a separate, dedicated formal-acceptance review. Until then, open decision OD-8 in the [strategy document](../architecture/basitra-ecosystem-and-boundary-aware-security.md#13-open-decisions) has a proposed resolution here but is not resolved, and no canonical reference document changes because of this ADR. The mismatch between this numbering practice and [`README.md`](README.md#numbering) remains open decision OD-5.
+Consistent with this repository's established practice (see ADR-0018's Context, and the Status sections of ADR-0019 and ADR-0023), this ADR was numbered when first proposed and submitted as `Proposed`, and its merging did not constitute acceptance. It has since undergone that separate, dedicated formal-acceptance review, and its status now records `Accepted`. Acceptance resolves open decision OD-8 in the [strategy document](../architecture/basitra-ecosystem-and-boundary-aware-security.md#13-open-decisions). It changes no part of the decision below, renames nothing, and performs none of the follow-on work listed under **Follow-On Work**, each item of which requires its own bounded PR. No canonical reference document changes because of this acceptance. The mismatch between this numbering practice and [`README.md`](README.md#numbering) remains open decision OD-5.
 
 ## Context
 
@@ -275,7 +275,7 @@ This ADR supersedes no ADR, modifies no accepted ADR's body, and changes no ADR'
 | [ADR-0011](0011-protocol-execution-role-and-bounded-reference-topology.md) through [ADR-0016](0016-bounded-target-replay-freshness-posture.md) | Semantically unchanged. The executor, binding, lifecycle, evidence, first-target, and replay decisions are inside BASIS. ADR-0011 Decision 4 reserves no executor repository name, and nothing here reserves one. |
 | [ADR-0017](0017-action-vocabulary-naming-structure.md) | Semantically unchanged. The vocabulary's semantics are BASIS contract semantics, published at the Basitra level (Decision 4). |
 | [ADR-0018](0018-upstream-supervisory-producer-intake-boundary.md) | Semantically unchanged. "The BASIS side" is the subsystem defined here. Intake, the producer, and the executor are BASIS roles. Intake's repository placement remains deferred. |
-| [ADR-0019](0019-basitra-ecosystem-identity-and-terminology-hierarchy.md) | Fulfilled, not superseded. ADR-0019 Decision 3 delegated BASIS's long-term scope to this decision. Its Decision 6 description of BASIS as, "today, the component family" is current usage until this ADR is accepted. After that, it reads as current naming in the sense of Decision 8. The expansion, the BAS abbreviation convention, BASac's prospective status, and the naming principle are unchanged. |
+| [ADR-0019](0019-basitra-ecosystem-identity-and-terminology-hierarchy.md) | Fulfilled, not superseded. ADR-0019 Decision 3 delegated BASIS's long-term scope to this decision. Its Decision 6 description of BASIS as, "today, the component family" was current usage while this ADR was `Proposed`. With this ADR accepted, it reads as current naming in the sense of Decision 8. The expansion, the BAS abbreviation convention, BASac's prospective status, and the naming principle are unchanged. |
 | [ADR-0020](0020-operation-to-authorization-mapping-and-composition-boundary.md), [ADR-0021](0021-upstream-context-assertion-trust-boundary.md) | Semantically unchanged. Composition, context admission, mapping configuration, and the category trust policy are BASIS responsibilities or BASIS-governed configuration. Their administrative surfaces are consumers (Decision 6). |
 | [ADR-0022](0022-workload-credential-lifecycle-and-scope-boundary.md) | Semantically unchanged. Logical workload identities are role-specific. Inference: a later component rename that leaves role and scope unchanged would not by itself change a logical workload identity. A migration plan should confirm this. |
 | [ADR-0023](0023-supervisory-platform-and-administrative-interface-boundary.md) | Semantically unchanged; interpretive continuity for one phrase family. Decision 1's "authorization and security substrate" is the subsystem defined here, and Decisions 1 and 4 list only BASIS responsibilities. "BASIS user interface," "BASIS administrative interface," and "BASIS-native tool" name interfaces and tools that administer or consume BASIS. Under this decision those interfaces are Basitra-level consumers, outside the subsystem (Decision 6). The phrases keep their meaning, and "BASIS" in them identifies what is administered, not subsystem membership. Decision 7 applies to them unchanged. A future BASIS-native capability architected as a governed producer under Decision 7 would fulfill the operation-producer role, a BASIS role, and would still receive no privilege. |
@@ -381,7 +381,7 @@ Historical artifacts (`basis-poc`, `basis-foundation/basis`) and the uninitializ
 
 ### Positive
 
-- OD-8 has a proposed resolution. On acceptance, OD-9 can begin: every current repository can be evaluated against a stable, responsibility-based boundary (see **Placement Summary**).
+- OD-8 is resolved. With this ADR accepted, OD-9 can begin: every current repository can be evaluated against a stable, responsibility-based boundary (see **Placement Summary**).
 - A future role can be placed by a stated test, with no default inclusion and no circular reasoning.
 - Accepted statements about what BASIS owns keep their meaning. No supersession is needed for OD-8.
 - Conforming third-party work has a clear architectural position: it implements BASIS roles, separate from Foundation maintenance.
@@ -391,7 +391,7 @@ Historical artifacts (`basis-poc`, `basis-foundation/basis`) and the uninitializ
 ### Negative / Tradeoff
 
 - **"BASIS" now has two current uses**: the subsystem defined here, and the existing naming in "BASIS Core Services Distribution," "BASIS ecosystem," "BASIS namespace," and `basis-*`. Readers must apply the reading rule in Decision 12 until OD-9 and OD-10 reconcile names.
-- **Current-state documents become partly inaccurate once this ADR is accepted.** Examples: [`writing-guidelines.md`](../standards/writing-guidelines.md) §4.1 ("BASIS refers to the open-source core services distribution"), the BASIS glossary and terminology-rules entries, and the strategy document's §3.1 and §8 descriptions of BASIS as the component family. Each needs a bounded follow-on PR after acceptance. None is changed here.
+- **Current-state documents are now partly inaccurate, because this ADR is accepted.** Examples: [`writing-guidelines.md`](../standards/writing-guidelines.md) §4.1 ("BASIS refers to the open-source core services distribution"), the BASIS glossary and terminology-rules entries, and the strategy document's §3.1 and §8 descriptions of BASIS as the component family. Each needs a bounded follow-on PR. None is changed by this ADR or its acceptance.
 - **Some current repository names may no longer answer the Stage 4 naming question well.** For example, a `basis-*` name on a component that is now outside BASIS, or a single-role name on a component hosting several BASIS roles. This ADR records the tension and decides nothing about it.
 - **The protocol-adapter role is the BASIS role the expansion describes least well** (Decision 9).
 
@@ -403,9 +403,9 @@ Historical artifacts (`basis-poc`, `basis-foundation/basis`) and the uninitializ
 
 ## Follow-On Work
 
-Each item needs its own bounded PR. Item 1 is the formal acceptance review that moves this ADR from `Proposed` to `Accepted`, and it takes place while the ADR is `Proposed`. Items 2 onward do not begin unless and until this ADR is `Accepted`:
+Each item needs its own bounded PR. Item 1, the formal acceptance review that moved this ADR from `Proposed` to `Accepted`, is complete. Items 2 onward did not begin while this ADR was `Proposed`; with it accepted, each is now eligible to begin in its own bounded PR:
 
-1. **Formal acceptance review** of this ADR.
+1. **Formal acceptance review** of this ADR. Complete.
 2. **OD-9: repository and component naming.** Apply the Stage 4 question to each repository using the **Placement Summary**, including whether ADR-0010's name requires supersession and how the distribution term (Decision 8) is treated.
 3. **OD-10: package, distribution, and import-namespace conventions**, after OD-9 and in coordination with OD-1 and OD-7.
 4. **Current-documentation reconciliation**, limited to current-state text:
