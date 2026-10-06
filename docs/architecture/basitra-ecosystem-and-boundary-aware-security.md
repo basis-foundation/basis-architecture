@@ -629,6 +629,8 @@ This stage is a decision gate. It determines the target names before any reposit
 
 The outcome is recorded by ADR. This stage renames nothing; renames are executed afterward as separate, planned PRs.
 
+**Current state.** Step 1 has begun. [`basitra-target-architecture-discovery-assessment.md`](basitra-target-architecture-discovery-assessment.md) is a non-normative discovery assessment that inventories existing capabilities and roles by architectural responsibility and analyzes candidate shapes for OD-8. It informs the OD-8 decision and does not make it. OD-8 and OD-9 remain open.
+
 ### 12.5 Stage 5 — Public artifact naming
 
 After Stage 4, and before any package is published to a global registry, decide a consistent provenance and namespace convention (OD-10). Three naming surfaces must be kept distinct:
