@@ -3,6 +3,8 @@
 > **Status: non-normative discovery assessment.** This assessment informs the future OD-8 architecture decision. It does not itself define the long-term scope of BASIS, rename any component, or authorize migration.
 >
 > It inventories the architectural capabilities, roles, layers, and boundaries that already exist in accepted or implemented architecture, independent of current repository names. It creates no ADR, resolves neither OD-8 nor OD-9, supersedes no accepted decision, modifies no implementation repository or contract, and creates no new runtime responsibility. Where it reaches a judgment, the judgment is labeled as an inference or a recommendation to the future OD-8 ADR, not as accepted architecture.
+>
+> **OD-8 has since been taken up:** [ADR-0024](../adr/0024-long-term-scope-of-basis-within-basitra.md) (`Proposed`) is the OD-8 decision this assessment informs. This assessment is not revised to match it, and it remains the evidentiary record ADR-0024 cites.
 
 **Scope of this pass:** read-only inspection of `basis-architecture` only. Implementation status is taken from what this repository records ([`README.md`](../../README.md), [`ROADMAP.md`](../../ROADMAP.md), the ADRs, and the component architecture documents). Implementation repositories were not re-inspected for this assessment, so every "Implemented" label below means "recorded as implemented in this repository."
 
