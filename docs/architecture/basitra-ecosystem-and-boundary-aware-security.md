@@ -1,6 +1,6 @@
 # Basitra Ecosystem Identity and Boundary-Aware Security
 
-**Status:** Architecture strategy governed by [ADR-0019](../adr/0019-basitra-ecosystem-identity-and-terminology-hierarchy.md), which is `Accepted`. Where ADR-0019's Decision cites a section of this document (the definition in §5.1, the status mapping in §5.3 and §6, the convention in §5.5, the BASac gaps in §9.3, and the naming-root criteria in §10.2), that section is the referenced content of the accepted decision. The rest of the document, including the conflict recommendations, the adoption roadmap, the community principles, and the open decisions in [Section 13](#13-open-decisions), remains strategy and planning, not accepted architecture. Nothing here authorizes a change to any repository, package, organization setting, or published artifact. Each follow-on change described in [Section 12](#12-cross-repository-adoption-roadmap) needs its own bounded PR, and until those PRs are made, the repository's canonical reference documents (glossary, writing guidelines, terminology rules, `SECURITY.md`) keep their current text.
+**Status:** Architecture strategy governed by [ADR-0019](../adr/0019-basitra-ecosystem-identity-and-terminology-hierarchy.md), which is `Accepted`. Where ADR-0019's Decision cites a section of this document (the definition in §5.1, the status mapping in §5.3 and §6, the convention in §5.5, the BASac gaps in §9.3, and the naming-root criteria in §10.2), that section is the referenced content of the accepted decision. The rest of the document, including the conflict recommendations, the adoption roadmap, the community principles, and the open decisions in [Section 13](#13-open-decisions), remains strategy and planning, not accepted architecture. Nothing here authorizes a change to any repository, package, organization setting, or published artifact. Each follow-on change described in [Section 12](#12-cross-repository-adoption-roadmap) needs its own bounded PR, and until those PRs are made, the repository's canonical reference documents (glossary, writing guidelines, terminology rules, `SECURITY.md`) keep their current text. [ADR-0024](../adr/0024-long-term-scope-of-basis-within-basitra.md), which is `Accepted`, resolves [OD-8](#13-open-decisions). Where text below describes BASIS's long-term scope within Basitra as undecided (for example C-5, §8, §10.1, and §12.5), that text predates the acceptance and ADR-0024 governs. Its reconciliation is bounded follow-on work ([Section 12.4](#124-stage-4--basitra-target-architecture-and-repository-naming-reconciliation)).
 
 This document does four things:
 
@@ -631,7 +631,7 @@ The outcome is recorded by ADR. This stage renames nothing; renames are executed
 
 **Current state.** Step 1 is complete. [`basitra-target-architecture-discovery-assessment.md`](basitra-target-architecture-discovery-assessment.md) is the non-normative discovery assessment that inventories existing capabilities and roles by architectural responsibility and analyzes candidate shapes for OD-8. It remains the evidentiary record and is not revised to match the decision.
 
-Step 2 has a proposed decision. [ADR-0024](../adr/0024-long-term-scope-of-basis-within-basitra.md) (`Proposed`) proposes that BASIS name an architectural subsystem: the Boundary-Aware Security subsystem of Basitra that governs operations along the governed path, defined by roles rather than repositories. Under it:
+Step 2 is complete. [ADR-0024](../adr/0024-long-term-scope-of-basis-within-basitra.md) (`Accepted`) resolves OD-8: BASIS names an architectural subsystem, the Boundary-Aware Security subsystem of Basitra that governs operations along the governed path, defined by roles rather than repositories. Under it:
 
 - trust establishment, authorization (including the protocol-adapter role), operation and execution governance, and the evidence each owning role produces are inside BASIS;
 - contract semantics are inside BASIS, and contract publication is a Basitra-level role;
@@ -639,9 +639,9 @@ Step 2 has a proposed decision. [ADR-0024](../adr/0024-long-term-scope-of-basis-
 - architecture governance and deployment tooling are Basitra level;
 - the BASIS Core Services Distribution is a broader, Foundation-maintained distribution, not a synonym for BASIS.
 
-OD-8 is resolved only when ADR-0024 is accepted. Until then, this document's descriptions of BASIS as the current component family stand.
+This document's descriptions of BASIS as the current component family, and its statements that BASIS's long-term scope is undecided, predate that acceptance. They are reconciled through the bounded current-documentation follow-on work that ADR-0024 lists, not here.
 
-**Next unresolved Stage 4 decision:** OD-9 (step 3, naming). It remains open, and it begins only after ADR-0024 is accepted.
+**Next unresolved Stage 4 decision:** OD-9 (step 3, naming). It remains open. With ADR-0024 accepted, it is no longer blocked by OD-8 and may begin in its own bounded work.
 
 ### 12.5 Stage 5 — Public artifact naming
 
@@ -710,8 +710,8 @@ Each would be introduced by a governance decision when it is warranted, not in a
 | **OD-5** | ADR numbering convention: [`docs/adr/README.md`](../adr/README.md#numbering) says numbers are assigned at acceptance, but ADR-0007 through ADR-0018 were numbered when first proposed (as recorded in ADR-0018's Context). ADR-0019 follows the established practice. | Architecture maintainers | Non-blocking; a documentation reconciliation |
 | **OD-6** | Whether the community principles in Section 11.3 should become governance text in `GOVERNANCE.md` and what form it takes | Basis Foundation governance | Non-blocking |
 | **OD-7** | Whether, when, and how the `basis-foundation` GitHub organization migrates toward a Basitra identity, including redirects and the effect on repository URLs cited in accepted ADRs | Basis Foundation governance, with architecture review | Blocks any organization-level rename; depends on OD-1 |
-| **OD-8** | The long-term architectural scope of BASIS within Basitra: the whole component family, a narrower identity and security subsystem, or another justified role | Architecture review (ADR) | Blocks OD-9 and OD-10; decided in Stage 4. **Proposed resolution:** [ADR-0024](../adr/0024-long-term-scope-of-basis-within-basitra.md) (`Proposed`). Resolved on its acceptance. |
-| **OD-9** | Repository and component naming under the Basitra target architecture, per the Stage 4 evaluation question | Architecture review (ADR), with a superseding ADR where an accepted ADR fixes a name (for example, ADR-0010) | Blocks any repository rename; depends on OD-8. Open; the next unresolved Stage 4 decision. |
+| **OD-8** | The long-term architectural scope of BASIS within Basitra: the whole component family, a narrower identity and security subsystem, or another justified role | Architecture review (ADR) | **Resolved** in Stage 4 by [ADR-0024](../adr/0024-long-term-scope-of-basis-within-basitra.md) (`Accepted`): BASIS is the Boundary-Aware Security subsystem of Basitra, defined by architectural roles rather than repositories. No longer blocks OD-9 or OD-10. |
+| **OD-9** | Repository and component naming under the Basitra target architecture, per the Stage 4 evaluation question | Architecture review (ADR), with a superseding ADR where an accepted ADR fixes a name (for example, ADR-0010) | Blocks any repository rename; depends on OD-8, now resolved by ADR-0024. Open and unblocked; the next unresolved Stage 4 decision. |
 | **OD-10** | Package, distribution, and import-namespace conventions, including whether a `basitra-` prefix is used | Architecture review | Blocks registry publication naming; depends on OD-1, OD-7, OD-8, and OD-9 |
 
 ---
