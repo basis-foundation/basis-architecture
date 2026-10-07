@@ -643,6 +643,8 @@ This document's descriptions of BASIS as the current component family, and its s
 
 **Next unresolved Stage 4 decision:** OD-9 (step 3, naming). It remains open. With ADR-0024 accepted, it is no longer blocked by OD-8 and may begin in its own bounded work.
 
+Step 3 has begun. [`basitra-repository-and-component-naming-assessment.md`](basitra-repository-and-component-naming-assessment.md) is a non-normative assessment that evaluates each current repository and naming concept against ADR-0024 and records provisional recommendations for the future OD-9 decision. It resolves nothing, and no name is changed or adopted by it.
+
 ### 12.5 Stage 5 — Public artifact naming
 
 After Stage 4, and before any package is published to a global registry, decide a consistent provenance and namespace convention (OD-10). Three naming surfaces must be kept distinct:
@@ -711,7 +713,7 @@ Each would be introduced by a governance decision when it is warranted, not in a
 | **OD-6** | Whether the community principles in Section 11.3 should become governance text in `GOVERNANCE.md` and what form it takes | Basis Foundation governance | Non-blocking |
 | **OD-7** | Whether, when, and how the `basis-foundation` GitHub organization migrates toward a Basitra identity, including redirects and the effect on repository URLs cited in accepted ADRs | Basis Foundation governance, with architecture review | Blocks any organization-level rename; depends on OD-1 |
 | **OD-8** | The long-term architectural scope of BASIS within Basitra: the whole component family, a narrower identity and security subsystem, or another justified role | Architecture review (ADR) | **Resolved** in Stage 4 by [ADR-0024](../adr/0024-long-term-scope-of-basis-within-basitra.md) (`Accepted`): BASIS is the Boundary-Aware Security subsystem of Basitra, defined by architectural roles rather than repositories. No longer blocks OD-9 or OD-10. |
-| **OD-9** | Repository and component naming under the Basitra target architecture, per the Stage 4 evaluation question | Architecture review (ADR), with a superseding ADR where an accepted ADR fixes a name (for example, ADR-0010) | Blocks any repository rename; depends on OD-8, now resolved by ADR-0024. Open and unblocked; the next unresolved Stage 4 decision. |
+| **OD-9** | Repository and component naming under the Basitra target architecture, per the Stage 4 evaluation question | Architecture review (ADR), with a superseding ADR where an accepted ADR fixes a name (for example, ADR-0010) | Blocks any repository rename; depends on OD-8, now resolved by ADR-0024. Open and unblocked; the next unresolved Stage 4 decision. A non-normative naming assessment ([`basitra-repository-and-component-naming-assessment.md`](basitra-repository-and-component-naming-assessment.md)) has begun it and resolves nothing. |
 | **OD-10** | Package, distribution, and import-namespace conventions, including whether a `basitra-` prefix is used | Architecture review | Blocks registry publication naming; depends on OD-1, OD-7, OD-8, and OD-9 |
 
 ---
