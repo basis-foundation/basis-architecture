@@ -2,9 +2,9 @@
 
 ## Status
 
-Proposed
+Accepted
 
-Consistent with this repository's established practice (see ADR-0018's Context, and the Status sections of ADR-0019, ADR-0023, and ADR-0024), this ADR is numbered when first proposed and submitted as `Proposed`. Merging it does not constitute acceptance. Acceptance requires a separate, dedicated formal-acceptance review. Until then, open decision OD-9 in the [strategy document](../architecture/basitra-ecosystem-and-boundary-aware-security.md#13-open-decisions) has a proposed resolution here but is not resolved, and no canonical reference document changes because of this ADR. Acceptance would itself rename nothing (Decision 15). The mismatch between this numbering practice and [`README.md`](README.md#numbering) remains open decision OD-5.
+Consistent with this repository's established practice (see ADR-0018's Context, and the Status sections of ADR-0019, ADR-0023, and ADR-0024), this ADR was numbered when first proposed and submitted as `Proposed`, and its merging did not constitute acceptance. It has since undergone that separate, dedicated formal-acceptance review, and its status now records `Accepted`. Acceptance resolves open decision OD-9 in the [strategy document](../architecture/basitra-ecosystem-and-boundary-aware-security.md#13-open-decisions) by fixing target names. It changes no part of the decision below. It renames, creates, or migrates no repository, package, organization, or site (Decision 15), and performs none of the follow-on work listed under **Follow-On Work**, each item of which requires its own bounded work. No canonical reference document changes because of this acceptance. The mismatch between this numbering practice and [`README.md`](README.md#numbering) remains open decision OD-5.
 
 ## Context
 
@@ -341,7 +341,7 @@ The four conventions analyzed in [naming assessment §12](../architecture/basitr
 
 ### Positive
 
-- **OD-9 is resolved when this ADR is accepted**, not before. Every current and planned repository, and the distribution term, has a decided target treatment, and future repositories can be named by rule.
+- **OD-9 is resolved** by this ADR's acceptance. Every current and planned repository, and the distribution term, has a decided target treatment, and future repositories can be named by rule.
 - **Basitra becomes visible where the concern is ecosystem-wide.** That is the architecture repository, deployment tooling, and the distribution. BASIS stays visible where the concern is BASIS.
 - **BASIS remains a permanent architectural subsystem of Basitra.** Five of seven current component repositories keep names that are accurate under every reading of the prefix.
 - **No accepted ADR is superseded.** ADR-0010 remains `Accepted` and unchanged, so the whole-ADR supersession gap does not have to be solved for OD-9.
@@ -363,9 +363,9 @@ The four conventions analyzed in [naming assessment §12](../architecture/basitr
 
 ## Follow-On Work
 
-Each item needs its own bounded work. Some may need more than one PR. Item 1 may begin after this ADR merges as `Proposed`. Items 2 onward do not begin until this ADR is accepted:
+Each item needs its own bounded work. Some may need more than one PR. Item 1, the formal acceptance review that moved this ADR from `Proposed` to `Accepted`, is complete. Items 2 onward did not begin while this ADR was `Proposed`; with it accepted, each is now eligible as a separate bounded workstream, and none is performed by the acceptance:
 
-1. **Formal acceptance review** of this ADR through independent architecture review.
+1. **Formal acceptance review** of this ADR through independent architecture review. Complete.
 2. **OD-10: package, distribution, import-namespace, and compatibility-bearing technical naming**, in coordination with OD-1 and OD-7 (Decision 14).
 3. **Repository migration plan** for the names this ADR changes:
    - `basis-architecture` → `basitra-architecture`, including link, badge, automation, and redirect verification;
